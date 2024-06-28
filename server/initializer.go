@@ -49,7 +49,7 @@ func accessToken(c *gin.Context) {
     client := &http.Client{}
     resp, _ := client.Do(req) 
     fmt.Println(resp)*/
-    c.Redirect(302, "http://localhost:8080")
+    c.Redirect(http.StatusFound, "http://localhost:8080")
 
 
 
