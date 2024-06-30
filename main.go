@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Jack-Gitter/tunes/handlers"
+	"github.com/Jack-Gitter/tunes/server"
 	"github.com/joho/godotenv"
 )
 
@@ -9,7 +9,7 @@ func main() {
 
     godotenv.Load()
 
-    r := handlers.InitializeHttpServer()
+    r := server.InitializeHttpServer()
     r.Run(":2000")
 
 }

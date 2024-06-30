@@ -1,4 +1,4 @@
-package handlers
+package spotifyHelpers
 
 import (
 	"bytes"
@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-
 )
 
 func RetrieveAccessToken(authorizationCode string) *AccessTokenResponnse {

@@ -1,4 +1,4 @@
-package handlers
+package spotifyHelpers
 
 type AccessTokenResponnse struct {
     Access_token string 

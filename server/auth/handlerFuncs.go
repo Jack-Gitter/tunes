@@ -1,4 +1,4 @@
-package handlers
+package auth
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-
+	"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -24,8 +24,8 @@ func Login(c *gin.Context) {
 
 func GenerateJWT(c *gin.Context) {
 
-    accessTokenResponse := RetrieveAccessToken(c.Query("code"))
-    userProfileResponse := RetrieveUserProfile(accessTokenResponse.Access_token)
+    accessTokenResponse := spotifyHelpers.RetrieveAccessToken(c.Query("code"))
+    userProfileResponse := spotifyHelpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
     claims :=  jwt.MapClaims{
 		"exp": time.Now().Add(time.Hour).Unix(), 

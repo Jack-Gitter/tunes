@@ -1,6 +1,7 @@
-package handlers
+package server
 
 import (
+	"github.com/Jack-Gitter/tunes/server/auth"
 	"github.com/gin-gonic/gin"
 )
 
