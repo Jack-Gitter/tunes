@@ -20,23 +20,26 @@ POST:
     albumID
     rating
     text
-    likes
-    dislikes
 
 COMMENT: 
     text
-    likes
-    dislikes
 
 RELATIONSHIPS: 
 
 COMMENTED_ON_POST
+    date
 RESPONDED_TO_COMMENT
+    date
 LIKED_COMMENT
+    date    
 DISLIKED_COMMENT
+    date
 POSTED
+    date
 LIKED_POST
+    date
 DISLIKED_POST
+    date
 FOLLOWS
 
 
@@ -62,6 +65,8 @@ post {
     comments: [Comment]
     likes
     dislikes
+    date
+    likedBy: [{username, userID}]
 }
 
 comment {
@@ -70,4 +75,6 @@ comment {
     text
     likes
     dislikes
+    date
+    likedBy: [{username, userID}]
 }
