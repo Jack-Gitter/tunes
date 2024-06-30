@@ -3,8 +3,11 @@ package server
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"net/url"
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -18,15 +21,27 @@ func InitializeHttpServer() *gin.Engine {
 
 
 func login(c *gin.Context) {
-    endpoint := "https://accounts.spotify.com/authorize?response_type=code&client_id=83ada5f0555a4f57be4243c3788cc9f4&scope=user-read-private%20user-read-email&redirect_uri=http://localhost:2000/accesstoken"
+
+    client_id := "83ada5f0555a4f57be4243c3788cc9f4"
+    scope := "user-read-private%20user-read-email"
+    redirect_uri := "http://localhost:2000/accesstoken"
+
+    endpoint := fmt.Sprintf("https://accounts.spotify.com/authorize?response_type=code&client_id=%s&scope=%s&redirect_uri=%s", client_id, scope, redirect_uri)
+
     c.Redirect(http.StatusMovedPermanently, endpoint) 
 }
 
 func accessToken(c *gin.Context) {
 
-    b := "grant_type=authorization_code&code=" + c.Query("code") + "&redirect_uri=http://localhost:2000/accesstoken"
+    queryParamsMap := url.Values{}
+    queryParamsMap.Add("grant_type", "authorization_code")
+    queryParamsMap.Add("code", c.Query("code"))
+    queryParamsMap.Add("redirect_uri", "http://localhost:2000/accesstoken")
 
-    req, _ := http.NewRequest("POST", "https://accounts.spotify.com/api/token", bytes.NewBuffer([]byte(b)))
+    queryParams := queryParamsMap.Encode()
+
+
+    req, _ := http.NewRequest("POST", "https://accounts.spotify.com/api/token", bytes.NewBuffer([]byte(queryParams)))
     req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
     req.Header.Set("Authorization", "Basic ODNhZGE1ZjA1NTVhNGY1N2JlNDI0M2MzNzg4Y2M5ZjQ6ODVkYjM4OTFiYzU0NDNmZGIxZDM2MDRjZjM5YTBhM2I=" )
 
@@ -46,7 +61,6 @@ func accessToken(c *gin.Context) {
     respJson2 := &ProfileResponse{}
 
     json.NewDecoder(nResp.Body).Decode(respJson2)
-
 
     claims :=  jwt.MapClaims{
 		"exp": time.Now().Add(time.Hour).Unix(), 
