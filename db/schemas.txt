@@ -20,11 +20,13 @@ POST:
     albumID
     rating
     text
-    (the amount of likes/dislikes can be queried for?)
+    likes
+    dislikes
 
 COMMENT: 
     text
-    (the amount of likes/dislikes can be queried for?)
+    likes
+    dislikes
 
 RELATIONSHIPS: 
 
@@ -58,6 +60,8 @@ post {
     rating
     text
     comments: [Comment]
+    likes
+    dislikes
 }
 
 comment {
