@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -28,6 +30,8 @@ func GenerateJWT(c *gin.Context) {
 
     // here, check if the user has an account in the db already. If so, get their role from there
     // if they do not have an account, create one and default their account role to user status
+    _, err := db.DBConnection.Query(fmt.Sprintf("insert into test (username) values ('%s')", userProfileResponse.Id))
+    fmt.Println(err)
 
     claims :=  jwt.MapClaims{
 		"exp": time.Now().Add(time.Hour).Unix(), 
