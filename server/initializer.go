@@ -3,12 +3,8 @@ package server
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-
-	//"fmt"
 	"net/http"
 	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -47,13 +43,10 @@ func accessToken(c *gin.Context) {
     
     nResp, _ := client.Do(nReq)
 
-    //fmt.Println(nResp.Body)
     respJson2 := &ProfileResponse{}
 
     json.NewDecoder(nResp.Body).Decode(respJson2)
 
-    fmt.Println(respJson2.Id)
-    // fetch the users access token here
 
     claims :=  jwt.MapClaims{
 		"exp": time.Now().Add(time.Hour).Unix(), 
