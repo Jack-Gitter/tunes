@@ -1,24 +1,13 @@
 package server
 
 import (
-	//"bytes"
-	//"encoding/json"
-	//	"fmt"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"time"
 
-	//"io"
-	//"time"
-
-	//"encoding/json"
 	//"fmt"
 	"net/http"
-
-	//"net/url"
-
-	//"net/url"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -26,14 +15,14 @@ import (
 
 func InitializeHttpServer() *gin.Engine {
     r := gin.Default()
-    r.GET("/auth", auth)
+    r.GET("/login", login)
     r.GET("/accesstoken", accessToken)
     return r
 }
 
 
-func auth(c *gin.Context) {
-    endpoint := "https://accounts.spotify.com/authorize?response_type=code&client_id=83ada5f0555a4f57be4243c3788cc9f4&scope=user-read-private&redirect_uri=http://localhost:2000/accesstoken"
+func login(c *gin.Context) {
+    endpoint := "https://accounts.spotify.com/authorize?response_type=code&client_id=83ada5f0555a4f57be4243c3788cc9f4&scope=user-read-private%20user-read-email&redirect_uri=http://localhost:2000/accesstoken"
     c.Redirect(http.StatusMovedPermanently, endpoint) 
 }
 
@@ -52,27 +41,35 @@ func accessToken(c *gin.Context) {
 
     json.NewDecoder(resp.Body).Decode(respJson)
 
-    fmt.Println("the json is!!!")
-    fmt.Println(respJson)
+
+    nReq, _ := http.NewRequest("GET", "https://api.spotify.com/v1/me", bytes.NewBuffer([]byte{}))
+    nReq.Header.Set("Authorization", "Bearer " + respJson.Access_token)
+    
+    nResp, _ := client.Do(nReq)
+
+    //fmt.Println(nResp.Body)
+    respJson2 := &ProfileResponse{}
+
+    json.NewDecoder(nResp.Body).Decode(respJson2)
+
+    fmt.Println(respJson2.Id)
+    // fetch the users access token here
 
     claims :=  jwt.MapClaims{
-		"sub": "test",
-		"iss": "todo-app",                 
-		"aud": "role",
 		"exp": time.Now().Add(time.Hour).Unix(), 
 		"iat": time.Now().Unix(),
-        "spotifyID": "testID",
+        "spotifyID": respJson2.Id,
         "accessToken": respJson.Access_token,
         "refreshToken": respJson.Refresh_token,
         "accessTokenExpiresAt": respJson.Expires_in,
+        "userRole": "user",
     }        
-
 
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
     tokenString, _ := token.SignedString([]byte("yadda"))
 
-    c.SetCookie("test_cookie", tokenString, 3600, "/", "localhost", false, true)
+    c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
     
     c.JSON(200, gin.H{
         "message": "nice!",
@@ -89,4 +86,7 @@ type AccessTokenResponnse struct {
     Refresh_token string 
 }
 
+type ProfileResponse struct {
+    Id string
+}
 
