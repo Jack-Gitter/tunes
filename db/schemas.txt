@@ -1,0 +1,20 @@
+Users
+    spotifyID (pk)
+    followers
+    following
+
+Posts
+    postID (pk)
+    spotifyID (fk)
+    likes
+    dislikes
+    comment
+    
+Comments
+    commentID (pk)
+    parentCommentID (fk)
+    postID (fk)
+    spotifyID (fk)
+    likes 
+    dislikes
+
