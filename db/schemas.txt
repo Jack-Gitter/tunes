@@ -1,0 +1,66 @@
+NODE_TAGS
+
+USER
+POST
+COMMENT
+
+NODE_DATA
+
+USER:
+    spotifyID
+    username
+    description
+
+POST: 
+    songID
+    songName
+    albumName
+    albumID
+    rating
+    text
+    (the amount of likes/dislikes can be queried for?)
+
+COMMENT: 
+    text
+    (the amount of likes/dislikes can be queried for?)
+
+RELATIONSHIPS: 
+
+COMMENTED_ON_POST
+RESPONDED_TO_COMMENT
+LIKED_COMMENT
+DISLIKED_COMMENT
+POSTED
+LIKED_POST
+DISLIKED_POST
+FOLLOWS
+
+
+actual json data
+
+user {
+    spotifyID
+    profilePictureURI?
+    username
+    posts: [{songname, postID}]
+    followers: [{username, userID}]
+    following: [{username, userID}]
+}
+
+post {
+    songID
+    songName
+    songAlbum
+    albumArtURI?
+    rating
+    text
+    comments: [Comment]
+}
+
+comment {
+    commentID
+    parentCommentID
+    text
+    likes
+    dislikes
+}
