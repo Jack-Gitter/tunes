@@ -1,4 +1,4 @@
-package server
+package handlers
 
 import (
 	"bytes"
@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -15,7 +14,7 @@ import (
 func InitializeHttpServer() *gin.Engine {
     r := gin.Default()
     r.GET("/login", login)
-    r.GET("/accesstoken", accessToken)
+    r.GET("/accesstoken", generateJWT)
     return r
 }
 
@@ -31,15 +30,13 @@ func login(c *gin.Context) {
     c.Redirect(http.StatusMovedPermanently, endpoint) 
 }
 
-func accessToken(c *gin.Context) {
+func retrieveAccessToken(authorizationCode string) *AccessTokenResponnse {
 
     queryParamsMap := url.Values{}
     queryParamsMap.Add("grant_type", "authorization_code")
-    queryParamsMap.Add("code", c.Query("code"))
+    queryParamsMap.Add("code", authorizationCode)
     queryParamsMap.Add("redirect_uri", "http://localhost:2000/accesstoken")
-
     queryParams := queryParamsMap.Encode()
-
 
     req, _ := http.NewRequest("POST", "https://accounts.spotify.com/api/token", bytes.NewBuffer([]byte(queryParams)))
     req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -47,28 +44,39 @@ func accessToken(c *gin.Context) {
 
     client := &http.Client{}
     resp, _ := client.Do(req) 
-
     respJson := &AccessTokenResponnse{}
-
     json.NewDecoder(resp.Body).Decode(respJson)
+    return respJson
+}
 
+func retrieveUserProfile(accessToken string) *ProfileResponse {
 
     nReq, _ := http.NewRequest("GET", "https://api.spotify.com/v1/me", bytes.NewBuffer([]byte{}))
-    nReq.Header.Set("Authorization", "Bearer " + respJson.Access_token)
+    nReq.Header.Set("Authorization", "Bearer " + accessToken) 
     
+    client := &http.Client{}
     nResp, _ := client.Do(nReq)
 
     respJson2 := &ProfileResponse{}
 
     json.NewDecoder(nResp.Body).Decode(respJson2)
 
+    return respJson2
+
+}
+
+func generateJWT(c *gin.Context) {
+
+    accessTokenResponse := retrieveAccessToken(c.Query("code"))
+    userProfileResponse := retrieveUserProfile(accessTokenResponse.Access_token)
+
     claims :=  jwt.MapClaims{
 		"exp": time.Now().Add(time.Hour).Unix(), 
 		"iat": time.Now().Unix(),
-        "spotifyID": respJson2.Id,
-        "accessToken": respJson.Access_token,
-        "refreshToken": respJson.Refresh_token,
-        "accessTokenExpiresAt": respJson.Expires_in,
+        "spotifyID": userProfileResponse.Id,
+        "accessToken": accessTokenResponse.Access_token,
+        "refreshToken": accessTokenResponse.Refresh_token,
+        "accessTokenExpiresAt": accessTokenResponse.Expires_in,
         "userRole": "user",
     }        
 
@@ -78,9 +86,7 @@ func accessToken(c *gin.Context) {
 
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
     
-    c.JSON(200, gin.H{
-        "message": "nice!",
-    })
+    c.Status(http.StatusOK)
 }
 
 

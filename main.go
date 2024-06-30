@@ -1,10 +1,10 @@
 package main
 
-import "github.com/Jack-Gitter/tunes/server"
+import "github.com/Jack-Gitter/tunes/handlers"
 
 func main() {
 
-    r := server.InitializeHttpServer()
+    r := handlers.InitializeHttpServer()
     r.Run(":2000")
 
 }
