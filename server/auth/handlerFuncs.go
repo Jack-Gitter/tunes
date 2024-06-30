@@ -27,6 +27,9 @@ func GenerateJWT(c *gin.Context) {
     accessTokenResponse := spotifyHelpers.RetrieveAccessToken(c.Query("code"))
     userProfileResponse := spotifyHelpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
+    // here, check if the user has an account in the db already. If so, get their role from there
+    // if they do not have an account, create one and default their account role to user status
+
     claims :=  jwt.MapClaims{
 		"exp": time.Now().Add(time.Hour).Unix(), 
 		"iat": time.Now().Unix(),
