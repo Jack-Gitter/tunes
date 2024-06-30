@@ -8,13 +8,15 @@ NODE_DATA
 
 USER:
     spotifyID
+    profilePictureURI?
     username
-    description
+    bio
 
 POST: 
     songID
     songName
     albumName
+    albumArtURI
     albumID
     rating
     text
@@ -41,6 +43,7 @@ actual json data
 user {
     spotifyID
     profilePictureURI?
+    bio
     username
     posts: [{songname, postID}]
     followers: [{username, userID}]
