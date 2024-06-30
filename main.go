@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/server"
 	"github.com/joho/godotenv"
 )
@@ -8,6 +9,7 @@ import (
 func main() {
 
     godotenv.Load()
+    db.ConnectToDB()
 
     r := server.InitializeHttpServer()
     r.Run(":2000")
