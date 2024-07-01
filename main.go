@@ -18,7 +18,6 @@ func main() {
     result := db.GetUserFromDbBySpotifyID("id")
     fmt.Println(result.Records[0])
 
-
     r := server.InitializeHttpServer()
     r.Run(":2000")
 
