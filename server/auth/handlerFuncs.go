@@ -5,10 +5,13 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	//"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func Login(c *gin.Context) {
@@ -29,8 +32,18 @@ func GenerateJWT(c *gin.Context) {
 
     // here, check if the user has an account in the db already. If so, get their role from there
     // if they do not have an account, create one and default their account role to user status
-    _, err := db.DBConnection.Query(fmt.Sprintf("insert into test (username) values ('%s')", userProfileResponse.Id))
-    fmt.Println(err)
+    //_, err := db.DBConnection.Query(fmt.Sprintf("insert into test (username) values ('%s')", userProfileResponse.Id))
+    //fmt.Println(err)
+    result, _ := neo4j.ExecuteQuery(db.DB.Ctx, db.DB.Driver, 
+        "MERGE (p:Person {name: $name})",
+        map[string]any{
+            "name": "jack",
+        }, neo4j.EagerResultTransformer,
+        neo4j.ExecuteQueryWithDatabase("neo4j"),
+    )
+
+    fmt.Println(result)
+
 
     claims :=  jwt.MapClaims{
 		"exp": time.Now().Add(time.Hour).Unix(), 
