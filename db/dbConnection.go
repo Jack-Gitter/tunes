@@ -32,9 +32,9 @@ func ConnectToDB() {
     
 }
 
-func GetUserFromDB(spotifyID string) *neo4j.EagerResult {
+func GetUserFromDbBySpotifyID(spotifyID string) []any {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-   "MATCH (u:User {spotifyID: $spotifyID}) return u",
+   "MATCH (u:User {spotifyID: $spotifyID}) return u.username, u.spotifyID, u.role",
         map[string]any{
             "spotifyID": spotifyID,
         }, neo4j.EagerResultTransformer,
@@ -45,7 +45,7 @@ func GetUserFromDB(spotifyID string) *neo4j.EagerResult {
         return nil
     }
 
-    return res
+    return res.Records[0].Values
 
 }
 
@@ -59,5 +59,6 @@ func InsertUserIntoDB(spotifyID string, username string) {
         neo4j.ExecuteQueryWithDatabase("neo4j"),
     )
 }
+
 
 

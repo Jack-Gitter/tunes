@@ -11,7 +11,7 @@ import (
 	"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+//	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func Login(c *gin.Context) {
@@ -30,7 +30,7 @@ func GenerateJWT(c *gin.Context) {
     accessTokenResponse := spotifyHelpers.RetrieveAccessToken(c.Query("code"))
     userProfileResponse := spotifyHelpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
-    user := db.GetUserFromDB(userProfileResponse.Id)
+    user := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if user == nil {
         db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name)
@@ -43,6 +43,7 @@ func GenerateJWT(c *gin.Context) {
         "accessToken": accessTokenResponse.Access_token,
         "refreshToken": accessTokenResponse.Refresh_token,
         "accessTokenExpiresAt": accessTokenResponse.Expires_in,
+        //"userRole": user.Role,
         "userRole": "user",
     }        
 
