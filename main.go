@@ -16,7 +16,7 @@ func main() {
     godotenv.Load()
     db.ConnectToDB()
     result := db.GetUserFromDbBySpotifyID("id")
-    fmt.Println(result.Records[0].Values)
+    fmt.Println(result.Records[0])
 
 
     r := server.InitializeHttpServer()
