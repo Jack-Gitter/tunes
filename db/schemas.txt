@@ -11,6 +11,7 @@ USER:
     profilePictureURI?
     username
     bio
+    role
 
 POST: 
     songID
@@ -53,6 +54,7 @@ user {
     posts: [{songname, postID}]
     followers: [{username, userID}]
     following: [{username, userID}]
+    role
 }
 
 post {
