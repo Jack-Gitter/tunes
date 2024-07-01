@@ -10,6 +10,7 @@ type AccessTokenResponnse struct {
 
 type ProfileResponse struct {
     Id string
+    Display_name string
 }
 
 

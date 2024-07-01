@@ -30,20 +30,11 @@ func GenerateJWT(c *gin.Context) {
     accessTokenResponse := spotifyHelpers.RetrieveAccessToken(c.Query("code"))
     userProfileResponse := spotifyHelpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
-    // here, check if the user has an account in the db already. If so, get their role from there
-    // if they do not have an account, create one and default their account role to user status
-    //_, err := db.DBConnection.Query(fmt.Sprintf("insert into test (username) values ('%s')", userProfileResponse.Id))
-    //fmt.Println(err)
-    result, _ := neo4j.ExecuteQuery(db.DB.Ctx, db.DB.Driver, 
-        "MERGE (p:Person {name: $name})",
-        map[string]any{
-            "name": "jack",
-        }, neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase("neo4j"),
-    )
+    user := db.GetUserFromDB(userProfileResponse.Id)
 
-    fmt.Println(result)
-
+    if user == nil {
+        db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name)
+    }
 
     claims :=  jwt.MapClaims{
 		"exp": time.Now().Add(time.Hour).Unix(), 
