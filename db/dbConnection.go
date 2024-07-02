@@ -1,9 +1,12 @@
 package db
 
 import (
-    "fmt"
-    "context"
-    "github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"context"
+	"fmt"
+
+	"github.com/mitchellh/mapstructure"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	//"github.com/mi"
 )
 
 type dbConnection struct {
@@ -32,9 +35,9 @@ func ConnectToDB() {
     
 }
 
-func GetUserFromDbBySpotifyID(spotifyID string) *neo4j.EagerResult {
+func GetUserFromDbBySpotifyID(spotifyID string) (*User, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-   "MATCH (u:User {spotifyID: $spotifyID}) return u",
+   "MATCH (u:User {spotifyID: $spotifyID}) return properties(u) as properties",
         map[string]any{
             "spotifyID": spotifyID,
         }, neo4j.EagerResultTransformer,
@@ -42,10 +45,19 @@ func GetUserFromDbBySpotifyID(spotifyID string) *neo4j.EagerResult {
     )
 
     if err != nil {
-        return nil
+        return nil, nil
     }
 
-    return res
+    properties, exists := res.Records[0].Get("properties")
+
+    user := &User{}
+    mapstructure.Decode(properties, user)
+    
+    if exists == false {
+        return nil, nil
+    }
+
+    return user, nil
 
 }
 
@@ -62,3 +74,7 @@ func InsertUserIntoDB(spotifyID string, username string) {
 
 
 
+type User struct {
+    Username string
+    SpotifyID string
+}

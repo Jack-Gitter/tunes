@@ -30,7 +30,7 @@ func GenerateJWT(c *gin.Context) {
     accessTokenResponse := spotifyHelpers.RetrieveAccessToken(c.Query("code"))
     userProfileResponse := spotifyHelpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
-    user := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
+    user, _ := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if user == nil {
         db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name)
