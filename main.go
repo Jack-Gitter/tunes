@@ -11,8 +11,10 @@ func main() {
     godotenv.Load()
 
     db.ConnectToDB()
+    defer db.DB.Driver.Close(db.DB.Ctx)
 
     r := server.InitializeHttpServer()
     r.Run(":2000")
+
 
 }
