@@ -5,13 +5,10 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	//"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-//	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func Login(c *gin.Context) {
@@ -51,7 +48,7 @@ func GenerateJWT(c *gin.Context) {
     }        
 
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-    tokenString, _ := token.SignedString([]byte("yadda"))
+    tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
     c.Status(http.StatusOK)

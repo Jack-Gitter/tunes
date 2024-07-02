@@ -3,7 +3,9 @@ package db
 import (
 	"context"
 	"errors"
+	"os"
 
+	"github.com/Jack-Gitter/tunes/models"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -17,9 +19,9 @@ var DB = &dbConnection{}
 
 func ConnectToDB() {
     DB.Ctx = context.Background()
-    dbUri := "neo4j://localhost"
-    dbUser := "test"
-    dbPassword := "testtest"
+    dbUri := os.Getenv("DB_URI")
+    dbUser := os.Getenv("DB_USER")
+    dbPassword := os.Getenv("DB_PASS")
 
     var err error = nil
     DB.Driver, err = neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth(dbUser, dbPassword, ""))
@@ -31,7 +33,7 @@ func ConnectToDB() {
     }
 }
 
-func GetUserFromDbBySpotifyID(spotifyID string) (*User, error) {
+func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
    "MATCH (u:User {spotifyID: $spotifyID}) return properties(u) as properties",
         map[string]any{
@@ -45,29 +47,25 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*User, error) {
     }
 
     if len(res.Records) < 1 {
-        return nil, errors.New("err")
+        return nil, errors.New("could not find user in database")
     } 
-    properties, exists := res.Records[0].Get("properties")
+    properties, _ := res.Records[0].Get("properties")
 
-    if exists == false {
-        return nil, errors.New("missinng")
-    }
-
-    user := &User{}
+    user := &models.User{}
     mapstructure.Decode(properties, user)
-    
 
     return user, nil
 
 }
 
-func InsertUserIntoDB(spotifyID string, username string, role string) (*User, error) {
+func InsertUserIntoDB(spotifyID string, username string, role string) (*models.User, error) {
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "MERGE (u:User {spotifyID: $spotifyID, username: $username, role: $role}) return properties(u) as properties",
+    "MERGE (u:User {spotifyID: $spotifyID, username: $username, bio: $bio, role: $role}) return properties(u) as properties",
         map[string]any{
             "spotifyID": spotifyID,
             "username": username,
             "role": role,
+            "bio": "",
         }, neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase("neo4j"),
     )
@@ -77,15 +75,12 @@ func InsertUserIntoDB(spotifyID string, username string, role string) (*User, er
     }
 
     if len(resp.Records) < 1 {
-        return nil, errors.New("no properties")
-    }
-    properties, exists := resp.Records[0].Get("properties")
-
-    if !exists {
-        return nil, nil
+        return nil, errors.New("could not find user in database")
     }
 
-    user := &User{}
+    properties, _ := resp.Records[0].Get("properties")
+
+    user := &models.User{}
     mapstructure.Decode(properties, user)
 
     return user, nil
