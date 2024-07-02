@@ -37,7 +37,7 @@ func GenerateJWT(c *gin.Context) {
     }
 
     if err != nil {
-
+        panic(err)
     }
 
     claims :=  jwt.MapClaims{

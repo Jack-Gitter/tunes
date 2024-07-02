@@ -76,6 +76,9 @@ func InsertUserIntoDB(spotifyID string, username string, role string) (*User, er
         return nil, err
     }
 
+    if len(resp.Records) < 1 {
+        return nil, errors.New("no properties")
+    }
     properties, exists := resp.Records[0].Get("properties")
 
     if !exists {
