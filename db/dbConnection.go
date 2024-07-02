@@ -2,11 +2,10 @@ package db
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	//"github.com/mi"
 )
 
 type dbConnection struct {
@@ -30,9 +29,6 @@ func ConnectToDB() {
     if err != nil {
         panic(err)
     }
-
-    fmt.Println("connection established!")
-    
 }
 
 func GetUserFromDbBySpotifyID(spotifyID string) (*User, error) {
@@ -45,36 +41,52 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*User, error) {
     )
 
     if err != nil {
-        return nil, nil
+        return nil, err
     }
 
+    if len(res.Records) < 1 {
+        return nil, errors.New("err")
+    } 
     properties, exists := res.Records[0].Get("properties")
+
+    if exists == false {
+        return nil, errors.New("missinng")
+    }
 
     user := &User{}
     mapstructure.Decode(properties, user)
     
-    if exists == false {
-        return nil, nil
-    }
 
     return user, nil
 
 }
 
-func InsertUserIntoDB(spotifyID string, username string) {
-    neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-   "MERGE (p:Person {spotifyID: $spotifyID, username: $username})",
+func InsertUserIntoDB(spotifyID string, username string, role string) (*User, error) {
+    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    "MERGE (u:User {spotifyID: $spotifyID, username: $username, role: $role}) return properties(u) as properties",
         map[string]any{
             "spotifyID": spotifyID,
             "username": username,
+            "role": role,
         }, neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase("neo4j"),
     )
+
+    if err != nil {
+        return nil, err
+    }
+
+    properties, exists := resp.Records[0].Get("properties")
+
+    if !exists {
+        return nil, nil
+    }
+
+    user := &User{}
+    mapstructure.Decode(properties, user)
+
+    return user, nil
 }
 
 
 
-type User struct {
-    Username string
-    SpotifyID string
-}

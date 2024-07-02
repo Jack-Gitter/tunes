@@ -30,10 +30,14 @@ func GenerateJWT(c *gin.Context) {
     accessTokenResponse := spotifyHelpers.RetrieveAccessToken(c.Query("code"))
     userProfileResponse := spotifyHelpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
-    user, _ := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
+    user, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
-    if user == nil {
-        db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name)
+    if err != nil {
+        user, err = db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name, "user")
+    }
+
+    if err != nil {
+
     }
 
     claims :=  jwt.MapClaims{
@@ -43,8 +47,7 @@ func GenerateJWT(c *gin.Context) {
         "accessToken": accessTokenResponse.Access_token,
         "refreshToken": accessTokenResponse.Refresh_token,
         "accessTokenExpiresAt": accessTokenResponse.Expires_in,
-        //"userRole": user.Role,
-        "userRole": "user",
+        "userRole": user.Role,
     }        
 
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
