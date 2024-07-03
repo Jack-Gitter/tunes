@@ -98,16 +98,28 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
     _, e := helpers.ValidateRefreshToken(refreshToken)
 
     if e != nil {
-        c.JSON(http.StatusUnauthorized, "the refresh token has expired. Please log out and log back in again")
+        if errors.Is(e, jwt.ErrTokenExpired) {
+            c.JSON(http.StatusUnauthorized, "your refresh token has expired, please log back in")
+        } else {
+            c.JSON(http.StatusUnauthorized, "do not tamper with the refresh token either :) ")
+        }
     }
 
     accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(refreshToken)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, "error retreving a new spotify access token for the user")
+    }
 
     if accessTokenResponseBody.Refresh_token == "" {
         accessTokenResponseBody.Refresh_token = spotifyRefreshToken
     }
 
     accessTokenJWT, err := helpers.CreateAccessJWT(spotifyID, accessTokenResponseBody.Access_token, accessTokenResponseBody.Refresh_token, accessTokenResponseBody.Expires_in)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, "error creating a JWT for the user")
+    }
 
     c.SetCookie("JWT", accessTokenJWT, 3600, "/", "localhost", false, true)
     //c.Next() ideally we just run this here and continue on with the user request, and then since we set the cookie they get it eventually
