@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/Jack-Gitter/tunes/server/auth/helpers"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func Login(c *gin.Context) {
@@ -22,37 +24,46 @@ func Login(c *gin.Context) {
     c.Redirect(http.StatusMovedPermanently, endpoint) 
 }
 
-func GenerateJWT(c *gin.Context) {
+func LoginCallback(c *gin.Context) {
 
-    accessTokenResponse := helpers.RetrieveInitialAccessToken(c.Query("code"))
-    userProfileResponse := helpers.RetrieveUserProfile(accessTokenResponse.Access_token)
+    accessTokenResponse, err := helpers.RetrieveInitialAccessToken(c.Query("code"))
 
-    _, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, "unable to fetch the access token for the user from spotify")
+    }
+
+    userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponse.Access_token)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, "unable to fetch the profile for the user")
+    }
+
+    _, err = db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if err != nil {
         err = db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name, "user")
     }
 
     if err != nil {
-        panic(err)
+        c.JSON(http.StatusInternalServerError, "unable to create the new user")
     }
 
     tokenString, err := helpers.CreateAccessJWT(userProfileResponse.Id, accessTokenResponse.Access_token, accessTokenResponse.Refresh_token, accessTokenResponse.Expires_in)
 
     if err != nil {
-        panic(err)
+        c.JSON(http.StatusInternalServerError, "unable to create a JWT access token for the user")
     }
 
     refreshString, err := helpers.CreateRefreshJWT()
 
     if err != nil {
-        panic(err)
+        c.JSON(http.StatusInternalServerError, "unable to create a JWT refresh token for the user")
     }
 
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
     c.SetCookie("REFRESH_JWT", refreshString, 3600, "/", "localhost", false, true)
 
-    c.Status(http.StatusOK)
+    c.JSON(http.StatusOK, "login success")
 }
 
 func ValidateUserJWT(c *gin.Context) {
@@ -60,16 +71,19 @@ func ValidateUserJWT(c *gin.Context) {
     jwtCookie, err := c.Cookie("JWT")
 
     if err != nil {
-        panic(err)
+        c.JSON(http.StatusBadRequest, "no JWT access token provided. Please sign in before accessing this endpoint") 
     }
 
     token, err := helpers.ValidateAccessToken(jwtCookie)
 
     if err != nil {
-        // here check for specific error?
-        spotifyID := token.Claims.(*models.JWTClaims).SpotifyID
-        spotifyRefreshToken := token.Claims.(*models.JWTClaims).RefreshToken
-        refreshJWT(c, spotifyID, spotifyRefreshToken)
+        if errors.Is(err, jwt.ErrTokenExpired) {
+            spotifyID := token.Claims.(*models.JWTClaims).SpotifyID
+            spotifyRefreshToken := token.Claims.(*models.JWTClaims).RefreshToken
+            refreshJWT(c, spotifyID, spotifyRefreshToken)
+        } else {
+            c.JSON(http.StatusBadRequest, "nice try kid, don't fuck with the JWT")
+        }
     }
 }
 

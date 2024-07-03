@@ -12,7 +12,7 @@ import (
 	"github.com/Jack-Gitter/tunes/models"
 )
 
-func RetrieveInitialAccessToken(authorizationCode string) *models.AccessTokenResponnse {
+func RetrieveInitialAccessToken(authorizationCode string) (*models.AccessTokenResponnse, error) {
 
     queryParamsMap := url.Values{}
     queryParamsMap.Add("grant_type", "authorization_code")
@@ -28,27 +28,35 @@ func RetrieveInitialAccessToken(authorizationCode string) *models.AccessTokenRes
     accessTokenRequest.Header.Set("Authorization", fmt.Sprintf("Basic %s", encodedBasicAuthToken))
 
     client := &http.Client{}
-    resp, _ := client.Do(accessTokenRequest) 
+    resp, err := client.Do(accessTokenRequest) 
+
+    if err != nil {
+        return nil, err
+    }
 
     accessTokenResponseBody := &models.AccessTokenResponnse{}
     json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
 
-    return accessTokenResponseBody
+    return accessTokenResponseBody, nil
 }
 
-func RetrieveUserProfile(accessToken string) *models.ProfileResponse {
+func RetrieveUserProfile(accessToken string) (*models.ProfileResponse, error) {
 
     nReq, _ := http.NewRequest(http.MethodGet, "https://api.spotify.com/v1/me", &bytes.Buffer{})
     nReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
     
     client := &http.Client{}
-    nResp, _ := client.Do(nReq)
+    nResp, err := client.Do(nReq)
+
+    if err != nil {
+        return nil, err
+    }
 
     respJson2 := &models.ProfileResponse{}
 
     json.NewDecoder(nResp.Body).Decode(respJson2)
 
-    return respJson2
+    return respJson2, nil
 
 }
 
