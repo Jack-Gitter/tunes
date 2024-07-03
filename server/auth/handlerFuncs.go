@@ -83,6 +83,7 @@ func ValidateUserJWT(c *gin.Context) {
     token, err := helpers.ValidateAccessToken(jwtCookie)
 
     if err != nil {
+        fmt.Println(err.Error())
         if errors.Is(err, jwt.ErrTokenExpired) {
             spotifyID := token.Claims.(*models.JWTClaims).SpotifyID
             spotifyRefreshToken := token.Claims.(*models.JWTClaims).RefreshToken
@@ -105,10 +106,10 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
 
     if e != nil {
         if errors.Is(e, jwt.ErrTokenExpired) {
-            c.JSON(http.StatusUnauthorized, "your refresh token has expired, please log back in")
+            c.AbortWithStatusJSON(http.StatusUnauthorized, "your refresh token has expired, please log back in")
             return
         } else {
-            c.JSON(http.StatusUnauthorized, "do not tamper with the refresh token either :) ")
+            c.AbortWithStatusJSON(http.StatusUnauthorized, "do not tamper with the refresh token either :) ")
             return
         }
     }
@@ -116,7 +117,7 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
     accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(refreshToken)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "error retreving a new spotify access token for the user")
+        c.AbortWithStatusJSON(http.StatusInternalServerError, "error retreiving a new spotify access token for the user")
         return
     }
 
@@ -127,11 +128,10 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
     accessTokenJWT, err := helpers.CreateAccessJWT(spotifyID, accessTokenResponseBody.Access_token, accessTokenResponseBody.Refresh_token, accessTokenResponseBody.Expires_in)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "error creating a JWT for the user")
+        c.AbortWithStatusJSON(http.StatusInternalServerError, "error creating a JWT for the user")
         return
     }
 
     c.SetCookie("JWT", accessTokenJWT, 3600, "/", "localhost", false, true)
-    //c.Next() ideally we just run this here and continue on with the user request, and then since we set the cookie they get it eventually
-    c.JSON(http.StatusUnauthorized, "please make the request again, I have refreshed the token!!!")
+    c.Next() 
 }
