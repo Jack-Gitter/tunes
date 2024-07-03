@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/Jack-Gitter/tunes/server/auth"
-	middlware "github.com/Jack-Gitter/tunes/server/middleware"
+	"github.com/Jack-Gitter/tunes/server/middleware"
 	"github.com/Jack-Gitter/tunes/server/posts"
 	"github.com/gin-gonic/gin"
 )
