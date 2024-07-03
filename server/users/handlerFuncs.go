@@ -2,6 +2,7 @@ package users
 
 import (
 	"net/http"
+
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/gin-gonic/gin"
 )
@@ -23,4 +24,22 @@ func GetUserById(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, user) 
+}
+
+func GetCurrentUser(c *gin.Context) {
+
+    spotifyID, e1 := c.Get("spotifyID")
+
+    if !e1 {
+        panic("forgot spotify ID in the previous middleware")
+    }
+
+    user, err := db.GetUserFromDbBySpotifyID(spotifyID.(string))
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, "unable to fetch the current user from the database")
+        return
+    }
+
+    c.JSON(http.StatusOK, user)
 }

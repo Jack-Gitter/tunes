@@ -12,6 +12,7 @@ func InitializeHttpServer() *gin.Engine {
     r.GET("/loginCallback", auth.LoginCallback)
     //r.GET("/validate", auth.ValidateUserJWT) // needs to be a middleware on endpoints
     r.GET("/user", auth.ValidateUserJWT, users.GetUserById)
+    r.GET("/currentUser", auth.ValidateUserJWT, users.GetCurrentUser)
     return r
 }
 

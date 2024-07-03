@@ -88,10 +88,14 @@ func ValidateUserJWT(c *gin.Context) {
             spotifyID := token.Claims.(*models.JWTClaims).SpotifyID
             spotifyRefreshToken := token.Claims.(*models.JWTClaims).RefreshToken
             refreshJWT(c, spotifyID, spotifyRefreshToken)
+            return
         } else {
             c.JSON(http.StatusBadRequest, "nice try kid, don't fuck with the JWT")
         }
     }
+    c.Set("spotifyID", token.Claims.(*models.JWTClaims).SpotifyID)
+    c.Set("spotifyAccessToken", token.Claims.(*models.JWTClaims).AccessToken)
+    c.Next()
 }
 
 func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
@@ -133,5 +137,7 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
     }
 
     c.SetCookie("JWT", accessTokenJWT, 3600, "/", "localhost", false, true)
+    c.Set("spotifyID", spotifyID)
+    c.Set("spotifyAccessToken", accessTokenResponseBody.Access_token)
     c.Next() 
 }
