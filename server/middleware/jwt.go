@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Jack-Gitter/tunes/server/auth"
-	"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
+	//"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -25,7 +25,9 @@ func ValidateUserJWT(c *gin.Context) {
 
     if err != nil {
         spotifyID := token.Claims.(*auth.JWTClaims).SpotifyID
+        refreshToken := token.Claims.(*auth.JWTClaims).RefreshToken
         fmt.Println(spotifyID)
+        fmt.Println(refreshToken)
         // send a request to refreshJWT which refreshes the JWT and sends it back to the user. Send the spotify ID there
         c.JSON(http.StatusBadRequest, err.Error())
     }
@@ -39,6 +41,10 @@ func refreshJWT(c *gin.Context) {
 
     refreshToken, err := c.Cookie("REFRESH_JWT")
     spotifyID := c.Query("spotifyID")
+    spotifyRefreshToken := c.Query("refreshToken")
+    fmt.Println(spotifyID)
+    fmt.Println(spotifyRefreshToken)
+
 
     if err != nil {
         panic(err)
@@ -53,8 +59,7 @@ func refreshJWT(c *gin.Context) {
         c.JSON(http.StatusUnauthorized, "the refresh token has expired. Please log out and log back in again")
     }
 
-    accessTokenResponse := spotifyHelpers.RetrieveAccessToken(spotifyID)
-    userProfileResponse := spotifyHelpers.RetrieveUserProfile(accessTokenResponse.Access_token)
+    // generate a new spotify access token, refresh token, and expires at and put them below
 
     claims := &auth.JWTClaims{
         RegisteredClaims: jwt.RegisteredClaims{
@@ -78,9 +83,4 @@ func refreshJWT(c *gin.Context) {
 
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
     c.Status(http.StatusOK)
-}
-    // get the query parameter of the 
-    // here we have to get the spotifyID, and then make a request to our database to get the user object, and re-populate the JWT
-    // how do we get the spotifyID though if the normal JWT has expired?
-
 }
