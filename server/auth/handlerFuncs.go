@@ -90,7 +90,7 @@ func ValidateUserJWT(c *gin.Context) {
             refreshJWT(c, spotifyID, spotifyRefreshToken)
             return
         } else {
-            c.JSON(http.StatusBadRequest, "nice try kid, don't fuck with the JWT")
+            c.AbortWithStatusJSON(http.StatusBadRequest, "nice try kid, don't fuck with the JWT")
         }
     }
     c.Set("spotifyID", token.Claims.(*models.JWTClaims).SpotifyID)
