@@ -2,6 +2,8 @@ package db
 
 import (
 	"errors"
+	"os"
+
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -23,7 +25,7 @@ func CreatePost(post *models.Post, spotifyID string) error {
             "spotifyID": spotifyID,
         }, 
         neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase("neo4j"),
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
     )
 
     if err != nil {

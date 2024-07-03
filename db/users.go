@@ -2,6 +2,8 @@ package db
 
 import (
 	"errors"
+	"os"
+
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -13,7 +15,7 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
         map[string]any{
             "spotifyID": spotifyID,
         }, neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase("neo4j"),
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
     )
 
     if err != nil {
@@ -46,7 +48,7 @@ func InsertUserIntoDB(spotifyID string, username string, role string) error {
             "role": role,
             "bio": "",
         }, neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase("neo4j"),
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
     )
 
     return err
