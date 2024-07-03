@@ -56,10 +56,25 @@ func GenerateJWT(c *gin.Context) {
         UserRole: "user",
     }
 
+    claimsForRefresh := &jwt.RegisteredClaims{
+           Issuer: "tunes", 
+           Subject: "bitch",
+           Audience: []string{"another bitch"},
+           ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24)},
+           NotBefore: &jwt.NumericDate{Time: time.Now()},
+           IssuedAt: &jwt.NumericDate{Time: time.Now()},
+           ID: "garbage for now",
+    }
+
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
     tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
+    refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsForRefresh)
+    refreshString, _ := refreshToken.SignedString([]byte(os.Getenv("JWT_SECRET")))
+
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
+    c.SetCookie("REFRESH_JWT", refreshString, 3600, "/", "localhost", false, true)
+
     c.Status(http.StatusOK)
 }
 
