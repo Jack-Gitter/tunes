@@ -10,22 +10,24 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func testValidator() func(*jwt.Parser) {
-    return func(parser *jwt.Parser) {
-        
-    }
-}
-func validateUserJWT(c *gin.Context) {
+func ValidateUserJWT(c *gin.Context) {
 
-    token, err := jwt.ParseWithClaims("token", &auth.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+    
+    jwtCookie, err := c.Cookie("JWT")
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(jwtCookie)
+
+    token, err := jwt.ParseWithClaims(jwtCookie, &auth.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
         return []byte(os.Getenv("JWT_SECRET")), nil
     })
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, "jwt has been tampered with!")
+        c.JSON(http.StatusBadRequest, err)
     }
     
-    userClaims := token.Claims.(auth.JWTClaims)
+    userClaims := token.Claims.(*auth.JWTClaims)
 
     fmt.Println(userClaims)
 
