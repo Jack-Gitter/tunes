@@ -44,7 +44,7 @@ func GenerateJWT(c *gin.Context) {
            Issuer: "tunes", 
            Subject: "bitch",
            Audience: []string{"another bitch"},
-           ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour)},
+           ExpiresAt: &jwt.NumericDate{Time: time.Now()},
            NotBefore: &jwt.NumericDate{Time: time.Now()},
            IssuedAt: &jwt.NumericDate{Time: time.Now()},
            ID: "garbage for now",

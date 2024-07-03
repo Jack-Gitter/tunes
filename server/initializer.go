@@ -13,6 +13,7 @@ func InitializeHttpServer() *gin.Engine {
     r.GET("/generateJWT", auth.GenerateJWT)
     r.POST("/post", posts.CreatePost)
     r.GET("/validate", middlware.ValidateUserJWT)
+    r.GET("/refreshJWT")
     return r
 }
 
