@@ -18,3 +18,19 @@ type RefreshTokenResponse struct {
     Expires_in int
     Refresh_token string
 }
+
+type SongResponse struct {
+    Id string
+    Name string
+    Album AlbumResponse
+}
+
+type AlbumResponse struct {
+    Id string
+    Name string
+    Images []Images
+}
+
+type Images struct {
+    Url string
+}
