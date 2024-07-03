@@ -1,12 +1,18 @@
 package middlware
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/server/auth"
+	"github.com/go-playground/locales/ur"
+
 	//"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -60,6 +66,23 @@ func refreshJWT(c *gin.Context) {
     }
 
     // generate a new spotify access token, refresh token, and expires at and put them below
+    queryParamsMap := url.Values{}
+    queryParamsMap.Add("grant_type", "refresh_token")
+    queryParamsMap.Add("refresh_token", refreshToken)
+    queryParams := queryParamsMap.Encode()
+
+    basicAuthToken := fmt.Sprintf("%s:%s", os.Getenv("CLIENT_ID"), os.Getenv("CLIENT_SECRET"))
+    encodedBasicAuthToken := base64.StdEncoding.EncodeToString([]byte(basicAuthToken))
+
+    accessTokenRefreshRequest, _ := http.NewRequest(http.MethodPost, "https://accounts.spotify.com/api/token", bytes.NewBuffer([]byte(queryParams)))
+    accessTokenRefreshRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+    accessTokenRefreshRequest.Header.Set("Authorization", fmt.Sprintf("Basic %s", encodedBasicAuthToken))
+
+    client := &http.Client{}
+    resp, _ := client.Do(accessTokenRefreshRequest) 
+
+    accessTokenResponseBody := &RefreshTokenResponse{}
+    json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
 
     claims := &auth.JWTClaims{
         RegisteredClaims: jwt.RegisteredClaims{
@@ -71,10 +94,10 @@ func refreshJWT(c *gin.Context) {
            IssuedAt: &jwt.NumericDate{Time: time.Now()},
            ID: "garbage for now",
         },
-        SpotifyID: userProfileResponse.Id,
-        AccessToken: accessTokenResponse.Access_token,
-        RefreshToken: accessTokenResponse.Refresh_token,
-        AccessTokenExpiresAt: accessTokenResponse.Expires_in,
+        SpotifyID: spotifyID,
+        AccessToken: accessTokenResponseBody.Access_token,
+        RefreshToken: accessTokenResponseBody.Refresh_token,
+        AccessTokenExpiresAt: accessTokenResponseBody.Expires_in,
         UserRole: "user",
     }
 
@@ -83,4 +106,12 @@ func refreshJWT(c *gin.Context) {
 
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
     c.Status(http.StatusOK)
+}
+
+type RefreshTokenResponse struct {
+    Access_token string
+    Expires_in int
+    Refresh_token string
+
+
 }
