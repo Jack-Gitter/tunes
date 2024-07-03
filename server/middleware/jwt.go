@@ -23,7 +23,8 @@ func ValidateUserJWT(c *gin.Context) {
     })
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, err)
+        // check if the token is expired. if it is, return an unauthorized error which means the frontend has to route them back to the login screen haha
+        c.JSON(http.StatusBadRequest, err.Error())
     }
     
     userClaims := token.Claims.(*auth.JWTClaims)
