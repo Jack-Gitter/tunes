@@ -31,7 +31,8 @@ func GetCurrentUser(c *gin.Context) {
     spotifyID, e1 := c.Get("spotifyID")
 
     if !e1 {
-        panic("forgot spotify ID in the previous middleware")
+        c.JSON(http.StatusUnauthorized, "please log in again. no JWT found")
+        return
     }
 
     user, err := db.GetUserFromDbBySpotifyID(spotifyID.(string))

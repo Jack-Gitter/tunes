@@ -9,6 +9,7 @@ import (
 )
 
 func CreatePost(post *models.Post, spotifyID string) error {
+    // do we need to validate in here whether or not the songname, etc are real?
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) 
      MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text})
