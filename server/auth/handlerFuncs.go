@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
 	"github.com/gin-gonic/gin"
@@ -27,25 +28,32 @@ func GenerateJWT(c *gin.Context) {
     accessTokenResponse := spotifyHelpers.RetrieveAccessToken(c.Query("code"))
     userProfileResponse := spotifyHelpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
-    user, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
+    _, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if err != nil {
-        user, err = db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name, "user")
+        err = db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name, "user")
     }
 
     if err != nil {
         panic(err)
     }
 
-    claims :=  jwt.MapClaims{
-		"exp": time.Now().Add(time.Hour).Unix(), 
-		"iat": time.Now().Unix(),
-        "spotifyID": userProfileResponse.Id,
-        "accessToken": accessTokenResponse.Access_token,
-        "refreshToken": accessTokenResponse.Refresh_token,
-        "accessTokenExpiresAt": accessTokenResponse.Expires_in,
-        "userRole": user.Role,
-    }        
+    claims := &JWTClaims{
+        RegisteredClaims: jwt.RegisteredClaims{
+           Issuer: "tunes", 
+           Subject: "bitch",
+           Audience: []string{"another bitch"},
+           ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour)},
+           NotBefore: &jwt.NumericDate{Time: time.Now()},
+           IssuedAt: &jwt.NumericDate{Time: time.Now()},
+           ID: "garbage for now",
+        },
+        SpotifyID: userProfileResponse.Id,
+        AccessToken: accessTokenResponse.Access_token,
+        RefreshToken: accessTokenResponse.Refresh_token,
+        AccessTokenExpiresAt: accessTokenResponse.Expires_in,
+        UserRole: "user",
+    }
 
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
     tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
@@ -54,3 +62,11 @@ func GenerateJWT(c *gin.Context) {
     c.Status(http.StatusOK)
 }
 
+type JWTClaims struct {
+    SpotifyID string
+    AccessToken string
+    RefreshToken string
+    AccessTokenExpiresAt int
+    UserRole string
+    jwt.RegisteredClaims
+}

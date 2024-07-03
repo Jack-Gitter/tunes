@@ -16,13 +16,13 @@ type User struct {
 }
 
 type Post struct {
-    songID string
-    songName string
-    albumName string
-    albumArtURI string
-    albumID string
-    rating int
-    text string
+    SongID string
+    SongName string
+    AlbumName string
+    AlbumArtURI string
+    AlbumID string
+    Rating int
+    Text string
 }
 
 type Comment struct {

@@ -32,7 +32,7 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
 
 }
 
-func InsertUserIntoDB(spotifyID string, username string, role string) (*models.User, error) {
+func InsertUserIntoDB(spotifyID string, username string, role string) error {
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MERGE (u:User {spotifyID: $spotifyID, username: $username, bio: $bio, role: $role}) return properties(u) as properties",
         map[string]any{
@@ -45,17 +45,12 @@ func InsertUserIntoDB(spotifyID string, username string, role string) (*models.U
     )
 
     if err != nil {
-        return nil, err
+        return err
     }
 
     if len(resp.Records) < 1 {
-        return nil, errors.New("could not find user in database")
+        return errors.New("could not find user in database")
     }
 
-    properties, _ := resp.Records[0].Get("properties")
-
-    user := &models.User{}
-    mapstructure.Decode(properties, user)
-
-    return user, nil
+    return nil
 }
