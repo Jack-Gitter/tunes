@@ -8,9 +8,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"github.com/Jack-Gitter/tunes/models"
 )
 
-func RetrieveAccessToken(authorizationCode string) *AccessTokenResponnse {
+func RetrieveAccessToken(authorizationCode string) *models.AccessTokenResponnse {
 
     queryParamsMap := url.Values{}
     queryParamsMap.Add("grant_type", "authorization_code")
@@ -28,13 +29,13 @@ func RetrieveAccessToken(authorizationCode string) *AccessTokenResponnse {
     client := &http.Client{}
     resp, _ := client.Do(accessTokenRequest) 
 
-    accessTokenResponseBody := &AccessTokenResponnse{}
+    accessTokenResponseBody := &models.AccessTokenResponnse{}
     json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
 
     return accessTokenResponseBody
 }
 
-func RetrieveUserProfile(accessToken string) *ProfileResponse {
+func RetrieveUserProfile(accessToken string) *models.ProfileResponse {
 
     nReq, _ := http.NewRequest(http.MethodGet, "https://api.spotify.com/v1/me", &bytes.Buffer{})
     nReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
@@ -42,7 +43,7 @@ func RetrieveUserProfile(accessToken string) *ProfileResponse {
     client := &http.Client{}
     nResp, _ := client.Do(nReq)
 
-    respJson2 := &ProfileResponse{}
+    respJson2 := &models.ProfileResponse{}
 
     json.NewDecoder(nResp.Body).Decode(respJson2)
 

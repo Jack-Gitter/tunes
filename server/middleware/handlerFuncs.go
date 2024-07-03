@@ -9,10 +9,8 @@ import (
 	"net/url"
 	"os"
 	"time"
-
+	"github.com/Jack-Gitter/tunes/models"
 	"github.com/Jack-Gitter/tunes/server/auth"
-
-	//"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -70,7 +68,7 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
     resp, _ := client.Do(accessTokenRefreshRequest) 
 
 
-    accessTokenResponseBody := &RefreshTokenResponse{}
+    accessTokenResponseBody := &models.RefreshTokenResponse{}
     json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
 
     if accessTokenResponseBody.Refresh_token == "" {
@@ -100,10 +98,4 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
     //c.Next() ideally we just run this here and continue on with the user request, and then since we set the cookie they get it eventually
     c.JSON(http.StatusUnauthorized, "please make the request again, I have refreshed the token!!!")
-}
-
-type RefreshTokenResponse struct {
-    Access_token string
-    Expires_in int
-    Refresh_token string
 }

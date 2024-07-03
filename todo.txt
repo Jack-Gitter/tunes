@@ -1,4 +1,1 @@
-complete the refresh token method for JWT. All I have to do is every time we want to refresh the JWT, make a call to spotify api. Get new access token/refresh token and whatnot.
-Then we are going to just fill out the new JWT, set the cookie, and respond to the user from the middleware. Then the user just simply has to make another request to their desired endpoint 
-
 if the refresh token is expired, then we just need to send 401 uauthorized request or something. Otherwise can we just send a redirect from the server back to the client for the same webpage with a set-cookie? not sure
