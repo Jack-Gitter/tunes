@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/Jack-Gitter/tunes/server/auth"
-	"github.com/go-playground/locales/ur"
 
 	//"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
 	"github.com/gin-gonic/gin"
@@ -31,26 +30,15 @@ func ValidateUserJWT(c *gin.Context) {
 
     if err != nil {
         spotifyID := token.Claims.(*auth.JWTClaims).SpotifyID
-        refreshToken := token.Claims.(*auth.JWTClaims).RefreshToken
-        fmt.Println(spotifyID)
-        fmt.Println(refreshToken)
-        // send a request to refreshJWT which refreshes the JWT and sends it back to the user. Send the spotify ID there
-        c.JSON(http.StatusBadRequest, err.Error())
+        spotifyRefreshToken := token.Claims.(*auth.JWTClaims).RefreshToken
+        refreshJWT(c, spotifyID, spotifyRefreshToken)
     }
-    
-    //userClaims := token.Claims.(*auth.JWTClaims)
-
-
 }
 
-func refreshJWT(c *gin.Context) {
+func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
 
     refreshToken, err := c.Cookie("REFRESH_JWT")
-    spotifyID := c.Query("spotifyID")
-    spotifyRefreshToken := c.Query("refreshToken")
     fmt.Println(spotifyID)
-    fmt.Println(spotifyRefreshToken)
-
 
     if err != nil {
         panic(err)
@@ -68,7 +56,7 @@ func refreshJWT(c *gin.Context) {
     // generate a new spotify access token, refresh token, and expires at and put them below
     queryParamsMap := url.Values{}
     queryParamsMap.Add("grant_type", "refresh_token")
-    queryParamsMap.Add("refresh_token", refreshToken)
+    queryParamsMap.Add("refresh_token", spotifyRefreshToken)
     queryParams := queryParamsMap.Encode()
 
     basicAuthToken := fmt.Sprintf("%s:%s", os.Getenv("CLIENT_ID"), os.Getenv("CLIENT_SECRET"))
@@ -81,8 +69,13 @@ func refreshJWT(c *gin.Context) {
     client := &http.Client{}
     resp, _ := client.Do(accessTokenRefreshRequest) 
 
+
     accessTokenResponseBody := &RefreshTokenResponse{}
     json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
+
+    if accessTokenResponseBody.Refresh_token == "" {
+        accessTokenResponseBody.Refresh_token = spotifyRefreshToken
+    }
 
     claims := &auth.JWTClaims{
         RegisteredClaims: jwt.RegisteredClaims{
@@ -105,13 +98,11 @@ func refreshJWT(c *gin.Context) {
     tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
-    c.Status(http.StatusOK)
+    c.JSON(http.StatusUnauthorized, "please make the request again, I have refreshed the token!!!")
 }
 
 type RefreshTokenResponse struct {
     Access_token string
     Expires_in int
     Refresh_token string
-
-
 }
