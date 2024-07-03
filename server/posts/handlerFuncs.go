@@ -22,14 +22,14 @@ func CreatePostForCurrentUser(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(post)
 
     if err != nil {
-        panic(err)
+        c.JSON(http.StatusBadRequest, "bad request body")
+        return
     }
 
     if !spotifyIDExists || !spotifyAccessTokenExists {
         c.JSON(http.StatusUnauthorized, "user is not signed in (did i forget to pass the JWT in the middleware?)")
         return
     }
-
 
     url := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", post.SongID)
     songRequest, _ := http.NewRequest(http.MethodGet, url, nil)
@@ -48,16 +48,17 @@ func CreatePostForCurrentUser(c *gin.Context) {
     json.Unmarshal(bodyString, spotifySongResponse)
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, "invalid post request body for request 'post'")
+        c.JSON(http.StatusBadRequest, "could not parse response from spotify API for get song")
         return
     }
 
     post.AlbumID = spotifySongResponse.Album.Id
+    post.SongName = spotifySongResponse.Name
+    post.AlbumName = spotifySongResponse.Album.Name
+
     if len(spotifySongResponse.Album.Images) > 0 {
         post.AlbumArtURI = spotifySongResponse.Album.Images[0].Url
     }
-    post.SongName = spotifySongResponse.Name
-    post.AlbumName = spotifySongResponse.Album.Name
 
     err = db.CreatePost(post, spotifyID.(string))
 
