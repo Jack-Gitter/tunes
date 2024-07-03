@@ -22,3 +22,8 @@ func (c JWTClaims) Validate() error {
     }
     return nil
 }
+
+func createNewJWT() (JWTClaims, error) {
+
+    return JWTClaims{}, nil
+}
