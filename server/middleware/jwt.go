@@ -98,6 +98,7 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
     tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
+    //c.Next() ideally we just run this here and continue on with the user request, and then since we set the cookie they get it eventually
     c.JSON(http.StatusUnauthorized, "please make the request again, I have refreshed the token!!!")
 }
 
