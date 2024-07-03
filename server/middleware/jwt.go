@@ -11,7 +11,6 @@ import (
 )
 
 func ValidateUserJWT(c *gin.Context) {
-
     
     jwtCookie, err := c.Cookie("JWT")
     if err != nil {
