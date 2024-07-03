@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
-	"github.com/Jack-Gitter/tunes/server/auth/spotifyHelpers"
+	"github.com/Jack-Gitter/tunes/server/auth/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -26,8 +26,8 @@ func Login(c *gin.Context) {
 
 func GenerateJWT(c *gin.Context) {
 
-    accessTokenResponse := spotifyHelpers.RetrieveAccessToken(c.Query("code"))
-    userProfileResponse := spotifyHelpers.RetrieveUserProfile(accessTokenResponse.Access_token)
+    accessTokenResponse := helpers.RetrieveAccessToken(c.Query("code"))
+    userProfileResponse := helpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
     _, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 

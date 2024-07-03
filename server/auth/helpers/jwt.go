@@ -1,4 +1,4 @@
-package spotifyHelpers
+package helpers
 
 import (
 	"bytes"

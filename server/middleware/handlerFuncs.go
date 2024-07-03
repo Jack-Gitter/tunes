@@ -10,7 +10,6 @@ import (
 	"os"
 	"time"
 	"github.com/Jack-Gitter/tunes/models"
-	"github.com/Jack-Gitter/tunes/server/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -22,13 +21,13 @@ func ValidateUserJWT(c *gin.Context) {
         panic(err)
     }
 
-    token, err := jwt.ParseWithClaims(jwtCookie, &auth.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+    token, err := jwt.ParseWithClaims(jwtCookie, &models.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
         return []byte(os.Getenv("JWT_SECRET")), nil
     })
 
     if err != nil {
-        spotifyID := token.Claims.(*auth.JWTClaims).SpotifyID
-        spotifyRefreshToken := token.Claims.(*auth.JWTClaims).RefreshToken
+        spotifyID := token.Claims.(*models.JWTClaims).SpotifyID
+        spotifyRefreshToken := token.Claims.(*models.JWTClaims).RefreshToken
         refreshJWT(c, spotifyID, spotifyRefreshToken)
     }
 }
@@ -75,7 +74,7 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
         accessTokenResponseBody.Refresh_token = spotifyRefreshToken
     }
 
-    claims := &auth.JWTClaims{
+    claims := &models.JWTClaims{
         RegisteredClaims: jwt.RegisteredClaims{
            Issuer: "tunes", 
            Subject: "bitch",
