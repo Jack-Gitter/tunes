@@ -30,12 +30,14 @@ func LoginCallback(c *gin.Context) {
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, "unable to fetch the access token for the user from spotify")
+        return
     }
 
     userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, "unable to fetch the profile for the user")
+        return
     }
 
     _, err = db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
@@ -46,18 +48,21 @@ func LoginCallback(c *gin.Context) {
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, "unable to create the new user")
+        return
     }
 
     tokenString, err := helpers.CreateAccessJWT(userProfileResponse.Id, accessTokenResponse.Access_token, accessTokenResponse.Refresh_token, accessTokenResponse.Expires_in)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, "unable to create a JWT access token for the user")
+        return
     }
 
     refreshString, err := helpers.CreateRefreshJWT()
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, "unable to create a JWT refresh token for the user")
+        return
     }
 
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
@@ -72,6 +77,7 @@ func ValidateUserJWT(c *gin.Context) {
 
     if err != nil {
         c.JSON(http.StatusBadRequest, "no JWT access token provided. Please sign in before accessing this endpoint") 
+        return
     }
 
     token, err := helpers.ValidateAccessToken(jwtCookie)
@@ -100,8 +106,10 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
     if e != nil {
         if errors.Is(e, jwt.ErrTokenExpired) {
             c.JSON(http.StatusUnauthorized, "your refresh token has expired, please log back in")
+            return
         } else {
             c.JSON(http.StatusUnauthorized, "do not tamper with the refresh token either :) ")
+            return
         }
     }
 
@@ -109,6 +117,7 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, "error retreving a new spotify access token for the user")
+        return
     }
 
     if accessTokenResponseBody.Refresh_token == "" {
@@ -119,6 +128,7 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, "error creating a JWT for the user")
+        return
     }
 
     c.SetCookie("JWT", accessTokenJWT, 3600, "/", "localhost", false, true)
