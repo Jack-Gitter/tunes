@@ -9,7 +9,9 @@ import (
 	"net/url"
 	"os"
 	"time"
+
 	"github.com/Jack-Gitter/tunes/models"
+	"github.com/Jack-Gitter/tunes/server/auth/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -17,15 +19,15 @@ import (
 func ValidateUserJWT(c *gin.Context) {
     
     jwtCookie, err := c.Cookie("JWT")
+
     if err != nil {
         panic(err)
     }
 
-    token, err := jwt.ParseWithClaims(jwtCookie, &models.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
-        return []byte(os.Getenv("JWT_SECRET")), nil
-    })
+    token, err := helpers.ValidateAccessToken(jwtCookie)
 
     if err != nil {
+        // here check for specific error?
         spotifyID := token.Claims.(*models.JWTClaims).SpotifyID
         spotifyRefreshToken := token.Claims.(*models.JWTClaims).RefreshToken
         refreshJWT(c, spotifyID, spotifyRefreshToken)
@@ -35,15 +37,12 @@ func ValidateUserJWT(c *gin.Context) {
 func refreshJWT(c *gin.Context, spotifyID string, spotifyRefreshToken string) {
 
     refreshToken, err := c.Cookie("REFRESH_JWT")
-    fmt.Println(spotifyID)
 
     if err != nil {
         panic(err)
     }
 
-    _, e := jwt.Parse(refreshToken, func (token *jwt.Token) (interface{}, error) {
-        return []byte(os.Getenv("JWT_SECRET")), nil
-    })
+    _, e := helpers.ValidateRefreshToken(refreshToken)
 
     if e != nil {
         // reroute the user to login screen, because refresh token has expired

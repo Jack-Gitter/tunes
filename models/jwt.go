@@ -21,9 +21,4 @@ func (c JWTClaims) Validate() error {
         return errors.New("if you are seeing this, we still need to implement custom JWT claim validation")
     }
     return nil
-}
-
-func createNewJWT() (JWTClaims, error) {
-
-    return JWTClaims{}, nil
-}
+ }

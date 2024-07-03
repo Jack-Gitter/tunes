@@ -4,13 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
-
 	"github.com/Jack-Gitter/tunes/db"
-	"github.com/Jack-Gitter/tunes/models"
 	"github.com/Jack-Gitter/tunes/server/auth/helpers"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 func Login(c *gin.Context) {
@@ -39,38 +35,17 @@ func GenerateJWT(c *gin.Context) {
         panic(err)
     }
 
-    claims := &models.JWTClaims{
-        RegisteredClaims: jwt.RegisteredClaims{
-           Issuer: "tunes", 
-           Subject: "bitch",
-           Audience: []string{"another bitch"},
-           ExpiresAt: &jwt.NumericDate{Time: time.Now()},
-           NotBefore: &jwt.NumericDate{Time: time.Now()},
-           IssuedAt: &jwt.NumericDate{Time: time.Now()},
-           ID: "garbage for now",
-        },
-        SpotifyID: userProfileResponse.Id,
-        AccessToken: accessTokenResponse.Access_token,
-        RefreshToken: accessTokenResponse.Refresh_token,
-        AccessTokenExpiresAt: accessTokenResponse.Expires_in,
-        UserRole: "user",
+    tokenString, err := helpers.CreateAccessJWT(userProfileResponse.Id, accessTokenResponse.Access_token, accessTokenResponse.Refresh_token, accessTokenResponse.Expires_in)
+
+    if err != nil {
+        panic(err)
     }
 
-    claimsForRefresh := &jwt.RegisteredClaims{
-           Issuer: "tunes", 
-           Subject: "bitch",
-           Audience: []string{"another bitch"},
-           ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24)},
-           NotBefore: &jwt.NumericDate{Time: time.Now()},
-           IssuedAt: &jwt.NumericDate{Time: time.Now()},
-           ID: "garbage for now",
+    refreshString, err := helpers.CreateRefreshJWT()
+
+    if err != nil {
+        panic(err)
     }
-
-    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-    tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
-
-    refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsForRefresh)
-    refreshString, _ := refreshToken.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
     c.SetCookie("REFRESH_JWT", refreshString, 3600, "/", "localhost", false, true)
