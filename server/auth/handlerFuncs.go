@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
+	"github.com/Jack-Gitter/tunes/models"
 	"github.com/Jack-Gitter/tunes/server/auth/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -39,7 +40,7 @@ func GenerateJWT(c *gin.Context) {
         panic(err)
     }
 
-    claims := &JWTClaims{
+    claims := &models.JWTClaims{
         RegisteredClaims: jwt.RegisteredClaims{
            Issuer: "tunes", 
            Subject: "bitch",
@@ -76,21 +77,4 @@ func GenerateJWT(c *gin.Context) {
     c.SetCookie("REFRESH_JWT", refreshString, 3600, "/", "localhost", false, true)
 
     c.Status(http.StatusOK)
-}
-
-type JWTClaims struct {
-    SpotifyID string
-    AccessToken string
-    RefreshToken string
-    AccessTokenExpiresAt int
-    UserRole string
-    jwt.RegisteredClaims
-}
-
-func (c JWTClaims) Validate() error {
-    if c.SpotifyID != "blah" {
-        // here, check if the access token is expeired for the user
-        return errors.New("if you are seeing this, we still need to implement custom JWT claim validation")
-    }
-    return nil
 }
