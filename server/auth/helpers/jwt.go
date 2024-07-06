@@ -9,7 +9,7 @@ import (
 )
 
 
-func CreateAccessJWT(spotifyID string, accessToken string, refreshToken string, accessTokenExpiresAt int) (string, error) {
+func CreateAccessJWT(spotifyID string, username string, accessToken string, refreshToken string, accessTokenExpiresAt int) (string, error) {
 
     claims := &models.JWTClaims{
         RegisteredClaims: jwt.RegisteredClaims{
@@ -26,6 +26,7 @@ func CreateAccessJWT(spotifyID string, accessToken string, refreshToken string, 
         RefreshToken: refreshToken,
         AccessTokenExpiresAt: accessTokenExpiresAt,
         UserRole: "user",
+        Username: username,
     }
 
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

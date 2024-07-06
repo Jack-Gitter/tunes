@@ -12,7 +12,7 @@ type User struct {
     UserIdentifer `mapstructure:",squash"`
     Bio string
     Role Role
-    Posts []PostMetaData
+    Posts []PostPreview
     Followers []UserIdentifer
     Following []UserIdentifer
 }

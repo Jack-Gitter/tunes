@@ -10,5 +10,6 @@ type JWTClaims struct {
     RefreshToken string
     AccessTokenExpiresAt int
     UserRole string
+    Username string
     jwt.RegisteredClaims
 }

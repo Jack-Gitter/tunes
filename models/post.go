@@ -1,12 +1,12 @@
 package models
 
 type Post struct {
-    PostMetaData
-    UserIdentifer
+    PostPreview
     // []Comments Comments
 }
 
-type PostMetaData struct {
+type PostPreview struct {
+    UserIdentifer `mapstructure:",squash"`
     SongID string
     SongName string
     AlbumName string

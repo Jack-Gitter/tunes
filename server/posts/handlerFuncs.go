@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	//"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/gin-gonic/gin"
@@ -16,6 +14,7 @@ import (
 func CreatePostForCurrentUser(c *gin.Context) {
 
     spotifyID, spotifyIDExists := c.Get("spotifyID")
+    spotifyUsername, spotifyUsernameExists := c.Get("spotifyUsername")
     spotifyAccessToken, spotifyAccessTokenExists := c.Get("spotifyAccessToken")
 
     post := &models.Post{}
@@ -27,7 +26,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
         return
     }
 
-    if !spotifyIDExists || !spotifyAccessTokenExists {
+    if !spotifyIDExists || !spotifyAccessTokenExists || !spotifyUsernameExists {
         c.JSON(http.StatusUnauthorized, "user is not signed in (did i forget to pass the JWT in the middleware?)")
         return
     }
@@ -58,6 +57,11 @@ func CreatePostForCurrentUser(c *gin.Context) {
     post.AlbumID = spotifySongResponse.Album.Id
     post.SongName = spotifySongResponse.Name
     post.AlbumName = spotifySongResponse.Album.Name
+    post.SpotifyID = spotifyID.(string)
+    post.Username = spotifyUsername.(string)
+
+    fmt.Println(spotifyUsername)
+
 
     if len(spotifySongResponse.Album.Images) > 0 {
         post.AlbumArtURI = spotifySongResponse.Album.Images[0].Url

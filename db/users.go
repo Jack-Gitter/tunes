@@ -27,18 +27,21 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
         return nil, errors.New("could not find user in database")
     } 
 
-    posts := []models.PostMetaData{}
+    user := &models.User{}
+    mapstructure.Decode(userResponse, user)
+
+    posts := []models.PostPreview{}
 
     for _, record := range res.Records {
         postResponse, _ := record.Get("post")
         if postResponse == nil { continue }
-        post := &models.PostMetaData{}
+        post := &models.PostPreview{}
         mapstructure.Decode(postResponse, post)
+        post.UserIdentifer.SpotifyID = user.SpotifyID
+        post.UserIdentifer.Username = user.Username
         posts = append(posts, (*post))
     }
 
-    user := &models.User{}
-    mapstructure.Decode(userResponse, user)
     user.Posts = posts
 
     return user, nil
