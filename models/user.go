@@ -9,8 +9,16 @@ const (
 )
 
 type User struct {
-    Username string
-    SpotifyID string
+    UserIdentifer
     Bio string
     Role Role
+    Posts []PostInformationForUser
+    Followers []UserIdentifer
+    Following []UserIdentifer
 }
+
+type UserIdentifer struct {
+    Username string
+    SpotifyID string
+}
+
