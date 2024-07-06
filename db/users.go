@@ -2,9 +2,7 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"os"
-
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -23,23 +21,17 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
         return nil, err
     }
 
-    b, l := res.Records[0].Get("user")
-    if len(res.Records) < 1 || b == nil || !l {
+    userResponse, _ := res.Records[0].Get("user")
+
+    if userResponse == nil {
         return nil, errors.New("could not find user in database")
     } 
-
-    userResponse, found := res.Records[0].Get("user")
-
-    if !found {
-        return nil, errors.New("no properties for inserted user in the database")
-    }
 
     posts := []models.PostMetaData{}
 
     for _, record := range res.Records {
-        postResponse, exists := record.Get("post")
-        if !exists || postResponse == nil { continue }
-        fmt.Println(postResponse)
+        postResponse, _ := record.Get("post")
+        if postResponse == nil { continue }
         post := &models.PostMetaData{}
         mapstructure.Decode(postResponse, post)
         posts = append(posts, (*post))
