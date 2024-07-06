@@ -12,7 +12,7 @@ import (
 
 func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "OPTIONAL MATCH (u:User {spotifyID: $spotifyID}) OPTIONAL MATCH (u)-[:Posted]->(p) return properties(p) as posts, properties(u) as user",
+    "OPTIONAL MATCH (u:User {spotifyID: $spotifyID}) OPTIONAL MATCH (u)-[:Posted]->(p) return properties(p) as post, properties(u) as user",
         map[string]any{
             "spotifyID": spotifyID,
         }, neo4j.EagerResultTransformer,
@@ -23,7 +23,8 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
         return nil, err
     }
 
-    if len(res.Records) < 1 {
+    b, l := res.Records[0].Get("user")
+    if len(res.Records) < 1 || b == nil || !l {
         return nil, errors.New("could not find user in database")
     } 
 
@@ -36,8 +37,9 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
     posts := []models.PostMetaData{}
 
     for _, record := range res.Records {
-        postResponse, exists := record.Get("posts")
-        if !exists { continue }
+        postResponse, exists := record.Get("post")
+        if !exists || postResponse == nil { continue }
+        fmt.Println(postResponse)
         post := &models.PostMetaData{}
         mapstructure.Decode(postResponse, post)
         posts = append(posts, (*post))
@@ -45,7 +47,7 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
 
     user := &models.User{}
     mapstructure.Decode(userResponse, user)
-    //user.Posts = posts
+    user.Posts = posts
 
     return user, nil
 
