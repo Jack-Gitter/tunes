@@ -2,9 +2,7 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"os"
-
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -12,7 +10,6 @@ import (
 
 func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-   //"MATCH (u:User {spotifyID: $spotifyID}) return properties(u) as properties",
    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) return properties(p) as posts, properties(u) as user",
         map[string]any{
             "spotifyID": spotifyID,
@@ -40,9 +37,7 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
     for _, record := range res.Records {
         postResponse, _ := record.Get("posts")
         post := &models.PostInformationForUser{}
-        fmt.Println(postResponse)
         mapstructure.Decode(postResponse, post)
-        fmt.Println(post)
         posts = append(posts, (*post))
     }
 
