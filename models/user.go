@@ -1,18 +1,18 @@
 package models
 
-type Role int
+type Role string
 
 const (
-    BASIC_USER Role = iota
+    BASIC_USER Role = "1"
     MODERATOR
     ADMIN
 )
 
 type User struct {
-    UserIdentifer
+    UserIdentifer `mapstructure:",squash"`
     Bio string
     Role Role
-    Posts []PostInformationForUser
+    Posts []PostMetaData
     Followers []UserIdentifer
     Following []UserIdentifer
 }

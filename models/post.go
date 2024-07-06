@@ -1,12 +1,12 @@
 package models
 
 type Post struct {
-    PostInformationForUser
+    PostMetaData
     UserIdentifer
     // []Comments Comments
 }
 
-type PostInformationForUser struct {
+type PostMetaData struct {
     SongID string
     SongName string
     AlbumName string
