@@ -14,4 +14,6 @@ type PostMetaData struct {
     AlbumID string
     Rating int
     Text string
+    Likes []UserIdentifer
+    Dislikes []UserIdentifer
 }
