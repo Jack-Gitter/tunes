@@ -8,6 +8,8 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
+// make it so that there are seperate queries for user properties, user posts, user followers, user following
+
 func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "OPTIONAL MATCH (u:User {spotifyID: $spotifyID}) OPTIONAL MATCH (u)-[:Posted]->(p) return properties(p) as post, properties(u) as user",
