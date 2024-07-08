@@ -26,7 +26,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(post)
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, "bad request body")
+        c.JSON(http.StatusBadRequest, "bad request body");
         return
     }
 
@@ -35,6 +35,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, "bad http request to get a song from spotify")
+        return
     }
 
     songRequest.Header.Set("Authorization", fmt.Sprintf("Bearer %s", spotifyAccessToken))
