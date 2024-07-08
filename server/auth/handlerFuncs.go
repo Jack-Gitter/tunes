@@ -90,6 +90,12 @@ func ValidateUserJWT(c *gin.Context) {
     c.Set("spotifyUsername", spotifyUsername)
     c.Set("spotifyAccessToken", spotifyAccessToken)
 
+    fmt.Println(spotifyID)
+    fmt.Println(spotifyUsername)
+    fmt.Println(spotifyAccessToken)
+    
+    fmt.Println(err.Error())
+
     if err != nil {
         if errors.Is(err, jwt.ErrTokenExpired) {
             refreshJWT(c, spotifyID, spotifyUsername, spotifyRefreshToken) // here, i think we should return the new stuff
@@ -121,7 +127,8 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyUsername string, spotif
         }
     }
 
-    accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(refreshToken)
+    accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken)
+    fmt.Println(accessTokenResponseBody)
 
     if err != nil {
         c.AbortWithStatusJSON(http.StatusInternalServerError, "error retreiving a new spotify access token for the user")
@@ -141,4 +148,5 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyUsername string, spotif
 
     c.SetCookie("JWT", accessTokenJWT, 3600, "/", "localhost", false, true)
     c.Set("spotifyAccessToken", accessTokenResponseBody.Access_token)
+    fmt.Println(accessTokenResponseBody.Access_token)
 }
