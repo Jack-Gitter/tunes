@@ -28,9 +28,9 @@ func GetUserById(c *gin.Context) {
 
 func GetCurrentUser(c *gin.Context) {
 
-    spotifyID, e1 := c.Get("spotifyID")
+    spotifyID, spotifyIdExists := c.Get("spotifyID")
 
-    if !e1 {
+    if !spotifyIdExists {
         c.JSON(http.StatusUnauthorized, "please log in again. no JWT found")
         return
     }

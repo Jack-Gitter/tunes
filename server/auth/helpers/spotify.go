@@ -23,7 +23,12 @@ func RetrieveInitialAccessToken(authorizationCode string) (*models.AccessTokenRe
     basicAuthToken := fmt.Sprintf("%s:%s", os.Getenv("CLIENT_ID"), os.Getenv("CLIENT_SECRET"))
     encodedBasicAuthToken := base64.StdEncoding.EncodeToString([]byte(basicAuthToken))
 
-    accessTokenRequest, _ := http.NewRequest(http.MethodPost, "https://accounts.spotify.com/api/token", bytes.NewBuffer([]byte(queryParams)))
+    accessTokenRequest, err := http.NewRequest(http.MethodPost, "https://accounts.spotify.com/api/token", bytes.NewBuffer([]byte(queryParams)))
+
+    if err != nil {
+        return nil, err
+    }
+
     accessTokenRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded")
     accessTokenRequest.Header.Set("Authorization", fmt.Sprintf("Basic %s", encodedBasicAuthToken))
 
@@ -42,7 +47,12 @@ func RetrieveInitialAccessToken(authorizationCode string) (*models.AccessTokenRe
 
 func RetrieveUserProfile(accessToken string) (*models.ProfileResponse, error) {
 
-    nReq, _ := http.NewRequest(http.MethodGet, "https://api.spotify.com/v1/me", &bytes.Buffer{})
+    nReq, err := http.NewRequest(http.MethodGet, "https://api.spotify.com/v1/me", &bytes.Buffer{})
+
+    if err != nil {
+        return nil, err
+    }
+
     nReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
     
     client := &http.Client{}

@@ -17,6 +17,11 @@ func CreatePostForCurrentUser(c *gin.Context) {
     spotifyUsername, spotifyUsernameExists := c.Get("spotifyUsername")
     spotifyAccessToken, spotifyAccessTokenExists := c.Get("spotifyAccessToken")
 
+    if !spotifyIDExists || !spotifyAccessTokenExists || !spotifyUsernameExists {
+        c.JSON(http.StatusUnauthorized, "user is not signed in (did i forget to pass the JWT in the middleware?)")
+        return
+    }
+
     post := &models.Post{}
     err := c.ShouldBindBodyWithJSON(post)
 
@@ -25,20 +30,21 @@ func CreatePostForCurrentUser(c *gin.Context) {
         return
     }
 
-    if !spotifyIDExists || !spotifyAccessTokenExists || !spotifyUsernameExists {
-        c.JSON(http.StatusUnauthorized, "user is not signed in (did i forget to pass the JWT in the middleware?)")
-        return
+    url := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", post.SongID)
+    songRequest, err := http.NewRequest(http.MethodGet, url, nil)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, "bad http request to get a song from spotify")
     }
 
-    url := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", post.SongID)
-    songRequest, _ := http.NewRequest(http.MethodGet, url, nil)
     songRequest.Header.Set("Authorization", fmt.Sprintf("Bearer %s", spotifyAccessToken))
 
     client := &http.Client{}
     resp, err := client.Do(songRequest) 
     
     if resp.StatusCode != 200 {
-        c.JSON(http.StatusBadRequest, "invalid spotify song ID")
+        respBodyBytes, _ := io.ReadAll(resp.Body)
+        c.JSON(http.StatusBadRequest, string(respBodyBytes))
         return
     }
 
