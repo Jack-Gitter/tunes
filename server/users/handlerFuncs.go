@@ -1,7 +1,6 @@
 package users
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Jack-Gitter/tunes/db"
@@ -20,7 +19,6 @@ func GetUserById(c *gin.Context) {
     user, err := db.GetUserFromDbBySpotifyID(spotifyID)
     
     if err != nil {
-        fmt.Println(err)
         c.JSON(http.StatusInternalServerError, "unable to fetch the user from the database fml")
         return
     }
@@ -40,7 +38,6 @@ func GetCurrentUser(c *gin.Context) {
     user, err := db.GetUserFromDbBySpotifyID(spotifyID.(string))
 
     if err != nil {
-        fmt.Println(err.Error())
         c.JSON(http.StatusInternalServerError, "unable to fetch the current user from the database")
         return
     }

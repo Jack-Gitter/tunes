@@ -81,23 +81,21 @@ func ValidateUserJWT(c *gin.Context) {
 
     token, err := helpers.ValidateAccessToken(jwtCookie)
 
-    spotifyID := token.Claims.(*models.JWTClaims).SpotifyID
-    spotifyRefreshToken := token.Claims.(*models.JWTClaims).RefreshToken
-    spotifyUsername := token.Claims.(*models.JWTClaims).Username
-    spotifyAccessToken := token.Claims.(*models.JWTClaims).AccessToken
-
-    c.Set("spotifyID", spotifyID)
-    c.Set("spotifyUsername", spotifyUsername)
-    c.Set("spotifyAccessToken", spotifyAccessToken)
-
     if err != nil {
         if errors.Is(err, jwt.ErrTokenExpired) {
+            spotifyID := token.Claims.(*models.JWTClaims).SpotifyID
+            spotifyRefreshToken := token.Claims.(*models.JWTClaims).RefreshToken
+            spotifyUsername := token.Claims.(*models.JWTClaims).Username
             refreshJWT(c, spotifyID, spotifyUsername, spotifyRefreshToken) // here, i think we should return the new stuff
         } else {
             c.AbortWithStatusJSON(http.StatusBadRequest, "nice try kid, don't fuck with the JWT")
             return
         }
-    } 
+    } else {
+        c.Set("spotifyID", token.Claims.(*models.JWTClaims).SpotifyID)
+        c.Set("spotifyAccessToken", token.Claims.(*models.JWTClaims).AccessToken)
+        c.Set("spotifyUsername", token.Claims.(*models.JWTClaims).Username)
+    }
     c.Next()
 }
 
@@ -140,5 +138,7 @@ func refreshJWT(c *gin.Context, spotifyID string, spotifyUsername string, spotif
     }
 
     c.SetCookie("JWT", accessTokenJWT, 3600, "/", "localhost", false, true)
+    c.Set("spotifyID", spotifyID)
     c.Set("spotifyAccessToken", accessTokenResponseBody.Access_token)
+    c.Set("spotifyUsername", spotifyUsername)
 }

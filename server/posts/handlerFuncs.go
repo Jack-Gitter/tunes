@@ -19,7 +19,6 @@ func CreatePostForCurrentUser(c *gin.Context) {
 
     post := &models.Post{}
     err := c.ShouldBindBodyWithJSON(post)
-    fmt.Println(post)
 
     if err != nil {
         c.JSON(http.StatusBadRequest, "bad request body")
@@ -39,8 +38,6 @@ func CreatePostForCurrentUser(c *gin.Context) {
     resp, err := client.Do(songRequest) 
     
     if resp.StatusCode != 200 {
-        s, _ := io.ReadAll(resp.Body)
-        fmt.Println(string(s))
         c.JSON(http.StatusBadRequest, "invalid spotify song ID")
         return
     }
@@ -59,9 +56,6 @@ func CreatePostForCurrentUser(c *gin.Context) {
     post.AlbumName = spotifySongResponse.Album.Name
     post.SpotifyID = spotifyID.(string)
     post.Username = spotifyUsername.(string)
-
-    fmt.Println(spotifyUsername)
-
 
     if len(spotifySongResponse.Album.Images) > 0 {
         post.AlbumArtURI = spotifySongResponse.Album.Images[0].Url
