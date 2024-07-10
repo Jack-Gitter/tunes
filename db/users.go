@@ -66,8 +66,10 @@ func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPrevi
         post.UserIdentifer.Username = username
         posts = append(posts, (*post))
     }
+
     return posts, nil
 }
+
 func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
 
     user, err := getUserProperties(spotifyID)
