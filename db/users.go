@@ -88,6 +88,21 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
     return user, nil
 
 }
+
+func InsertUserIntoDB(spotifyID string, username string, role string) error {
+    _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    "MERGE (u:User {spotifyID: $spotifyID, username: $username, bio: $bio, role: $role}) return properties(u) as properties",
+        map[string]any{
+            "spotifyID": spotifyID,
+            "username": username,
+            "role": role,
+            "bio": "",
+        }, neo4j.EagerResultTransformer,
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
+    )
+
+    return err
+}
 /*func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "OPTIONAL MATCH (u:User {spotifyID: $spotifyID}) OPTIONAL MATCH (u)-[:Posted]->(p) return properties(p) as post, properties(u) as user",
@@ -128,17 +143,3 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
 
 }*/
 
-func InsertUserIntoDB(spotifyID string, username string, role string) error {
-    _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "MERGE (u:User {spotifyID: $spotifyID, username: $username, bio: $bio, role: $role}) return properties(u) as properties",
-        map[string]any{
-            "spotifyID": spotifyID,
-            "username": username,
-            "role": role,
-            "bio": "",
-        }, neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
-    )
-
-    return err
-}
