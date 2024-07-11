@@ -1,16 +1,15 @@
 package posts
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
+
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models"
+	"github.com/Jack-Gitter/tunes/server/posts/helpers"
 	"github.com/gin-gonic/gin"
 )
 
-
+// need to prevent the user from posting the same song multiple times
 func CreatePostForCurrentUser(c *gin.Context) {
 
     spotifyID, spotifyIDExists := c.Get("spotifyID")
@@ -26,32 +25,23 @@ func CreatePostForCurrentUser(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(post)
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, "bad request body");
+        c.JSON(http.StatusBadRequest, "bad post body bruh")
         return
     }
 
-    url := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", post.SongID)
-    songRequest, err := http.NewRequest(http.MethodGet, url, nil)
+    hasPostedAlready, err := helpers.UserHasPostedSongAlready(spotifyID.(string), post.SongID)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "bad http request to get a song from spotify")
+        c.JSON(http.StatusInternalServerError, "bad")
         return
     }
 
-    songRequest.Header.Set("Authorization", fmt.Sprintf("Bearer %s", spotifyAccessToken))
-
-    client := &http.Client{}
-    resp, err := client.Do(songRequest) 
-    
-    if resp.StatusCode != 200 {
-        respBodyBytes, _ := io.ReadAll(resp.Body)
-        c.JSON(http.StatusBadRequest, string(respBodyBytes))
+    if hasPostedAlready {
+        c.JSON(http.StatusBadRequest, "you have posted this shit already")
         return
     }
 
-    spotifySongResponse := &models.SongResponse{}
-    bodyString, err := io.ReadAll(resp.Body)
-    json.Unmarshal(bodyString, spotifySongResponse)
+    spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(post.SongID, spotifyAccessToken.(string))
 
     if err != nil {
         c.JSON(http.StatusBadRequest, "could not parse response from spotify API for get song")
