@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Jack-Gitter/tunes/customerrors"
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models"
 )
@@ -43,7 +44,7 @@ func UserHasPostedSongAlready(spotifyID string, songID string) (bool, error) {
 
     _, err := db.GetUserPostById(songID, spotifyID)
 
-    if err != nil && err.Error() == "no song found" {
+    if err != nil && err.(customerrors.TunesError).ErrorType == customerrors.NoDatabaseRecordsFoundError {
         return false, nil
     }
 

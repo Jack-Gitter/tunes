@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/Jack-Gitter/tunes/customerrors"
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -22,11 +23,11 @@ func GetUserPostById(postID string, spotifyID string) (*models.Post, error) {
     )
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.TunesError{ErrorType: customerrors.Neo4jDatabaseRequestError, Err: err}
     }
 
     if len(resp.Records) < 1 {
-        return nil, errors.New("no song found")
+        return nil, customerrors.TunesError{ErrorType: customerrors.NoDatabaseRecordsFoundError, Err: errors.New("no song found")}
     }
 
     post := &models.Post{}
