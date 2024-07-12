@@ -44,8 +44,11 @@ func UserHasPostedSongAlready(spotifyID string, songID string) (bool, error) {
 
     _, err := db.GetUserPostById(songID, spotifyID)
 
-    if err != nil && err.(customerrors.TunesError).ErrorType == customerrors.NoDatabaseRecordsFoundError {
-        return false, nil
+    if err != nil {
+        if customError, ok := err.(customerrors.TunesError); ok && customError.ErrorType == customerrors.NoDatabaseRecordsFoundError {
+            return false, nil
+        } 
+        return false, err
     }
 
     return true, nil

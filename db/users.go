@@ -2,9 +2,9 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
+	"github.com/Jack-Gitter/tunes/customerrors"
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -26,13 +26,13 @@ func getUserProperties(spotifyID string) (*models.User, error) {
     }
 
     if len(res.Records) < 1 {
-        return nil, errors.New("could not find user with that ID in the DB")
+        return nil, customerrors.TunesError{ErrorType: customerrors.NoDatabaseRecordsFoundError, Err: errors.New("could not find user with given ID in database")}
     }
 
     userResponse, found := res.Records[0].Get("userProperties")
 
     if !found {
-        return nil, errors.New("user has no properties in the DB, wtf?")
+        return nil, customerrors.TunesError{ErrorType: customerrors.Neo4jDatabaseRequestError, Err: errors.New("user within the database has no properties")}
     }
 
     user := &models.User{}
@@ -81,7 +81,6 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
     posts, err := getUserPostsPreviews(spotifyID, user.Username)
 
     if err != nil {
-        fmt.Println("second")
         return nil, err
     }
 

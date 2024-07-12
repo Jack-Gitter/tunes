@@ -27,7 +27,7 @@ func GetUserPostById(postID string, spotifyID string) (*models.Post, error) {
     }
 
     if len(resp.Records) < 1 {
-        return nil, customerrors.TunesError{ErrorType: customerrors.NoDatabaseRecordsFoundError, Err: errors.New("no song found")}
+        return nil, customerrors.TunesError{ErrorType: customerrors.NoDatabaseRecordsFoundError, Err: errors.New("either user does not exist, or user has not posted song with that id")}
     }
 
     post := &models.Post{}
@@ -38,7 +38,6 @@ func GetUserPostById(postID string, spotifyID string) (*models.Post, error) {
 }
 
 func CreatePost(post *models.Post, spotifyID string) error {
-    // do we need to validate in here whether or not the songname, etc are real?
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) 
      MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text})
@@ -63,7 +62,7 @@ func CreatePost(post *models.Post, spotifyID string) error {
     }
 
     if len(resp.Records) < 1 {
-        return errors.New("could not find user in database")
+        return customerrors.TunesError{ErrorType: customerrors.Neo4jDatabaseRequestError, Err: errors.New("could not find user in database")}
     }
 
     return nil

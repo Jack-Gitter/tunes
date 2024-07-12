@@ -3,6 +3,7 @@ package users
 import (
 	"net/http"
 
+	"github.com/Jack-Gitter/tunes/customerrors"
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/gin-gonic/gin"
 )
@@ -19,8 +20,15 @@ func GetUserById(c *gin.Context) {
     user, err := db.GetUserFromDbBySpotifyID(spotifyID)
     
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "unable to fetch the user from the database fml")
-        return
+        if tunesError, ok := err.(customerrors.TunesError); ok {
+            if tunesError.ErrorType == customerrors.NoDatabaseRecordsFoundError {
+                c.JSON(http.StatusBadRequest, err.Error())
+                return
+            } else if tunesError.ErrorType == customerrors.Neo4jDatabaseRequestError {
+                c.JSON(http.StatusInternalServerError, err.Error())
+                return
+            }
+        } 
     }
 
     c.JSON(http.StatusOK, user) 
@@ -38,8 +46,15 @@ func GetCurrentUser(c *gin.Context) {
     user, err := db.GetUserFromDbBySpotifyID(spotifyID.(string))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "unable to fetch the current user from the database")
-        return
+        if tunesError, ok := err.(customerrors.TunesError); ok {
+            if tunesError.ErrorType == customerrors.NoDatabaseRecordsFoundError {
+                c.JSON(http.StatusBadRequest, err.Error())
+                return
+            } else if tunesError.ErrorType == customerrors.Neo4jDatabaseRequestError {
+                c.JSON(http.StatusInternalServerError, err.Error())
+                return
+            }
+        } 
     }
 
     c.JSON(http.StatusOK, user)

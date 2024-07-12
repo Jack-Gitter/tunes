@@ -3,6 +3,7 @@ package posts
 import (
 	"net/http"
 
+	"github.com/Jack-Gitter/tunes/customerrors"
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/Jack-Gitter/tunes/server/posts/helpers"
@@ -17,7 +18,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
     spotifyAccessToken, spotifyAccessTokenExists := c.Get("spotifyAccessToken")
 
     if !spotifyIDExists || !spotifyAccessTokenExists || !spotifyUsernameExists {
-        c.JSON(http.StatusUnauthorized, "user is not signed in (did i forget to pass the JWT in the middleware?)")
+        c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
         return
     }
 
@@ -25,26 +26,26 @@ func CreatePostForCurrentUser(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(post)
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, "bad post body bruh")
+        c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
     hasPostedAlready, err := helpers.UserHasPostedSongAlready(spotifyID.(string), post.SongID)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "bad")
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
     if hasPostedAlready {
-        c.JSON(http.StatusBadRequest, "you have posted this shit already")
+        c.JSON(http.StatusBadRequest, "post with songID is already found for user")
         return
     }
 
     spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(post.SongID, spotifyAccessToken.(string))
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, "could not parse response from spotify API for get song")
+        c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
@@ -61,8 +62,10 @@ func CreatePostForCurrentUser(c *gin.Context) {
     err = db.CreatePost(post, spotifyID.(string))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "failed to put post into db for some reason")
-        return
+        if tunesError, ok := err.(customerrors.TunesError); ok && tunesError.ErrorType == customerrors.Neo4jDatabaseRequestError {
+            c.JSON(http.StatusInternalServerError, tunesError.Error())
+            return
+        }
     }
 
     c.JSON(http.StatusOK, post)

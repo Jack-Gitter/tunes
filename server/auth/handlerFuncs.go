@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/Jack-Gitter/tunes/customerrors"
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/Jack-Gitter/tunes/server/auth/helpers"
@@ -28,39 +30,43 @@ func LoginCallback(c *gin.Context) {
     accessTokenResponse, err := helpers.RetrieveInitialAccessToken(c.Query("code"))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "unable to fetch the access token for the user from spotify")
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
     userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "unable to fetch the profile for the user")
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
     _, err = db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if err != nil {
-        err = db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name, "user")
+        if tunesError, ok := err.(customerrors.TunesError); ok && tunesError.ErrorType == customerrors.NoDatabaseRecordsFoundError {
+            err = db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name, "user")
+        } else {
+            c.JSON(http.StatusInternalServerError, err.Error())
+        }
     }
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "unable to create the new user")
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
     tokenString, err := helpers.CreateAccessJWT(userProfileResponse.Id, userProfileResponse.Display_name, accessTokenResponse.Access_token, accessTokenResponse.Refresh_token, accessTokenResponse.Expires_in)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "unable to create a JWT access token for the user")
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
     refreshString, err := helpers.CreateRefreshJWT()
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "unable to create a JWT refresh token for the user")
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
