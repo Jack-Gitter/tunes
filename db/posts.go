@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/Jack-Gitter/tunes/models"
@@ -38,7 +37,6 @@ func GetUserPostById(postID string, spotifyID string) (*models.Post, bool, error
 
     post := &models.Post{}
     mapstructure.Decode(postResponse, post)
-    fmt.Println(post)
 
     return post, true, nil
 
