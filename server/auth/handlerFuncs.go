@@ -47,8 +47,13 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
+    user := &models.User{}
+    user.Username = userProfileResponse.Display_name
+    user.SpotifyID = userProfileResponse.Id
+    user.Role = "user"
+
     if !foundUser {
-        err = db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name, "user")
+        err = db.InsertUserIntoDB(user)
     }
 
     if err != nil {
@@ -73,7 +78,7 @@ func LoginCallback(c *gin.Context) {
     c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
     c.SetCookie("REFRESH_JWT", refreshString, 3600, "/", "localhost", false, true)
 
-    c.JSON(http.StatusOK, "login success")
+    c.JSON(http.StatusOK, user)
 }
 
 func ValidateUserJWT(c *gin.Context) {

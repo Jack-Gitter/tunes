@@ -90,13 +90,14 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, bool, error) {
 
 }
 
-func InsertUserIntoDB(spotifyID string, username string, role string) error {
+func InsertUserIntoDB(user *models.User) error {
+    // this should really return a user? or take in the user maybe
     _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "MERGE (u:User {spotifyID: $spotifyID, username: $username, bio: $bio, role: $role}) return properties(u) as properties",
+    "MERGE (u:User {spotifyID: $spotifyID, username: $username, bio: $bio, role: $role})",
         map[string]any{
-            "spotifyID": spotifyID,
-            "username": username,
-            "role": role,
+            "spotifyID": user.SpotifyID,
+            "username": user.Username,
+            "role": user.Role,
             "bio": "",
         }, neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),

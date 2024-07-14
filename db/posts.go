@@ -3,13 +3,11 @@ package db
 import (
 	"errors"
 	"os"
-
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-// return the username and spotifyID of the Post
 func GetUserPostById(postID string, spotifyID string) (*models.Post, bool, error) {
 
     user, found, err := GetUserFromDbBySpotifyID(spotifyID)
