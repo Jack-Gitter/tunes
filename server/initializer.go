@@ -15,6 +15,9 @@ func InitializeHttpServer() *gin.Engine {
 
     r.GET("/users/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.GetUserById)
     r.GET("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.GetCurrentUser)
+    /*r.POST("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.UpdateCurrentUserProperties) // only if you are an admin can you change your own role, otherwise ignore
+    r.POST("/user/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.UpdateUserBySpotifyID)*/
+
 
     r.GET("/posts/:spotifyID/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.GetPostBySpotifyIDAndSongID)
     r.GET("/currentUserPosts/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.GetPostCurrentUserBySongID)
