@@ -1,7 +1,7 @@
 package models
 
 type Post struct {
-    PostPreview
+    PostPreview `mapstructure:",squash"`
     // []Comments Comments
 }
 

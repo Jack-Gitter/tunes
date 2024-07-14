@@ -67,3 +67,24 @@ func CreatePostForCurrentUser(c *gin.Context) {
     c.JSON(http.StatusOK, post)
 
 }
+
+func GetPostBySpotifyIDAndSongID(c *gin.Context) {
+
+
+    spotifyID := c.Param("spotifyID")
+    songID := c.Param("songID")
+
+    post, found, err := db.GetUserPostById(songID, spotifyID)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusNotFound, "could not find post with that userid and songid in the database")
+        return
+    }
+
+    c.JSON(http.StatusOK, post)
+}

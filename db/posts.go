@@ -1,7 +1,10 @@
 package db
 
 import (
+	"errors"
+	"fmt"
 	"os"
+
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -10,7 +13,7 @@ import (
 func GetUserPostById(postID string, spotifyID string) (*models.Post, bool, error) {
 
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p)`,
+    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post`,
         map[string]any{ 
             "spotifyID": spotifyID,
             "postID": postID,
@@ -27,8 +30,15 @@ func GetUserPostById(postID string, spotifyID string) (*models.Post, bool, error
         return nil, false, nil 
     }
 
+    postResponse, found := resp.Records[0].Get("Post")
+
+    if !found {
+        return nil, false, errors.New("post has no properites in DB, something went wrong")
+    }
+
     post := &models.Post{}
-    mapstructure.Decode(resp, post)
+    mapstructure.Decode(postResponse, post)
+    fmt.Println(post)
 
     return post, true, nil
 
