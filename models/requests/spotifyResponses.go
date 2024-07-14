@@ -1,4 +1,4 @@
-package models
+package requests
 
 type AccessTokenResponnse struct {
     Access_token string 

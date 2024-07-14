@@ -7,7 +7,8 @@ import (
 	"os"
 
 	"github.com/Jack-Gitter/tunes/db"
-	"github.com/Jack-Gitter/tunes/models"
+	"github.com/Jack-Gitter/tunes/models/requests"
+	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/auth/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -47,7 +48,7 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
-    user := &models.User{}
+    user := &responses.User{}
     user.Username = userProfileResponse.Display_name
     user.SpotifyID = userProfileResponse.Id
     user.Role = "user"
@@ -92,10 +93,10 @@ func ValidateUserJWT(c *gin.Context) {
 
     token, err := helpers.ValidateAccessToken(jwtCookie)
 
-    spotifyID := token.Claims.(*models.JWTClaims).SpotifyID
-    spotifyRefreshToken := token.Claims.(*models.JWTClaims).RefreshToken
-    spotifyUsername := token.Claims.(*models.JWTClaims).Username
-    spotifyAccessToken := token.Claims.(*models.JWTClaims).AccessToken
+    spotifyID := token.Claims.(*requests.JWTClaims).SpotifyID
+    spotifyRefreshToken := token.Claims.(*requests.JWTClaims).RefreshToken
+    spotifyUsername := token.Claims.(*requests.JWTClaims).Username
+    spotifyAccessToken := token.Claims.(*requests.JWTClaims).AccessToken
 
     c.Set("spotifyID", spotifyID)
     c.Set("spotifyUsername", spotifyUsername)

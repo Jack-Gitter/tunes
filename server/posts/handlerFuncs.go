@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
-	"github.com/Jack-Gitter/tunes/models"
+	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/posts/helpers"
 	"github.com/gin-gonic/gin"
 )
@@ -21,7 +21,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
         return
     }
 
-    post := &models.Post{}
+    post := &responses.Post{}
     err := c.ShouldBindBodyWithJSON(post)
 
     if err != nil {

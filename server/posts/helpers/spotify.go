@@ -6,14 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
 	"github.com/Jack-Gitter/tunes/db"
-	"github.com/Jack-Gitter/tunes/models"
+	"github.com/Jack-Gitter/tunes/models/requests"
 )
 
 
-func GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*models.SongResponse, error) {
-
+func GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*requests.SongResponse, error) {
 
     url := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", songID)
     songRequest, err := http.NewRequest(http.MethodGet, url, nil)
@@ -31,7 +29,7 @@ func GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*model
         return nil, errors.New("spotify request for a song failed without 200")
     }
 
-    spotifySongResponse := &models.SongResponse{}
+    spotifySongResponse := &requests.SongResponse{}
     bodyString, err := io.ReadAll(resp.Body)
     json.Unmarshal(bodyString, spotifySongResponse)
 

@@ -4,14 +4,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/Jack-Gitter/tunes/models"
+	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 
 func CreateAccessJWT(spotifyID string, username string, accessToken string, refreshToken string, accessTokenExpiresAt int) (string, error) {
 
-    claims := &models.JWTClaims{
+    claims := &requests.JWTClaims{
         RegisteredClaims: jwt.RegisteredClaims{
            Issuer: "tunes", 
            Subject: "bitch",
@@ -54,7 +54,7 @@ func CreateRefreshJWT() (string, error) {
 }
 
 func ValidateAccessToken(accessTokenJWT string) (*jwt.Token, error) {
-    token, err := jwt.ParseWithClaims(accessTokenJWT, &models.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+    token, err := jwt.ParseWithClaims(accessTokenJWT, &requests.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
         return []byte(os.Getenv("JWT_SECRET")), nil
     })
     return token, err

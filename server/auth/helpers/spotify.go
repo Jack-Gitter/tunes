@@ -9,10 +9,10 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/Jack-Gitter/tunes/models"
+	"github.com/Jack-Gitter/tunes/models/requests"
 )
 
-func RetrieveInitialAccessToken(authorizationCode string) (*models.AccessTokenResponnse, error) {
+func RetrieveInitialAccessToken(authorizationCode string) (*requests.AccessTokenResponnse, error) {
 
     queryParamsMap := url.Values{}
     queryParamsMap.Add("grant_type", "authorization_code")
@@ -39,13 +39,13 @@ func RetrieveInitialAccessToken(authorizationCode string) (*models.AccessTokenRe
         return nil, err
     }
 
-    accessTokenResponseBody := &models.AccessTokenResponnse{}
+    accessTokenResponseBody := &requests.AccessTokenResponnse{}
     json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
 
     return accessTokenResponseBody, nil
 }
 
-func RetrieveUserProfile(accessToken string) (*models.ProfileResponse, error) {
+func RetrieveUserProfile(accessToken string) (*requests.ProfileResponse, error) {
 
     nReq, err := http.NewRequest(http.MethodGet, "https://api.spotify.com/v1/me", &bytes.Buffer{})
 
@@ -62,7 +62,7 @@ func RetrieveUserProfile(accessToken string) (*models.ProfileResponse, error) {
         return nil, err
     }
 
-    respJson2 := &models.ProfileResponse{}
+    respJson2 := &requests.ProfileResponse{}
 
     json.NewDecoder(nResp.Body).Decode(respJson2)
 
@@ -70,7 +70,7 @@ func RetrieveUserProfile(accessToken string) (*models.ProfileResponse, error) {
 
 }
 
-func RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken string) (*models.RefreshTokenResponse, error) {
+func RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken string) (*requests.RefreshTokenResponse, error) {
 
     queryParamsMap := url.Values{}
     queryParamsMap.Add("grant_type", "refresh_token")
@@ -87,7 +87,7 @@ func RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken string) (*models.Re
     client := &http.Client{}
     resp, _ := client.Do(accessTokenRefreshRequest) 
 
-    accessTokenResponseBody := &models.RefreshTokenResponse{}
+    accessTokenResponseBody := &requests.RefreshTokenResponse{}
     json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
 
     return accessTokenResponseBody, nil

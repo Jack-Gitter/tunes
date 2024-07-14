@@ -3,14 +3,15 @@ package db
 import (
 	"errors"
 	"os"
-	"github.com/Jack-Gitter/tunes/models"
+
+	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 /* ===================== CREATE =====================  */
 
-func CreatePost(post *models.Post, spotifyID string) error {
+func CreatePost(post *responses.Post, spotifyID string) error {
     _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) 
     MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text, timestamp: $timestamp})
@@ -40,7 +41,7 @@ func CreatePost(post *models.Post, spotifyID string) error {
 
 /* ===================== READ =====================  */
 
-func GetUserPostByID(postID string, spotifyID string) (*models.Post, bool, error) {
+func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, error) {
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post`,
         map[string]any{ 
@@ -75,7 +76,7 @@ func GetUserPostByID(postID string, spotifyID string) (*models.Post, bool, error
         return nil, false, nil
     }
 
-    post := &models.Post{}
+    post := &responses.Post{}
     post.SpotifyID = spotifyID
     post.Username = user.Username
     mapstructure.Decode(postResponse, post)
@@ -83,7 +84,7 @@ func GetUserPostByID(postID string, spotifyID string) (*models.Post, bool, error
     return post, true, nil
 }
 
-func GetUserPostsPreviewsByUserID(spotifyID string, username string) ([]models.PostPreview, error) {
+func GetUserPostsPreviewsByUserID(spotifyID string, username string) ([]responses.PostPreview, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) return properties(p) as postProperties",
         map[string]any{
@@ -96,13 +97,13 @@ func GetUserPostsPreviewsByUserID(spotifyID string, username string) ([]models.P
         return nil, err
     }
 
-    posts := []models.PostPreview{}
+    posts := []responses.PostPreview{}
 
     for _, record := range res.Records {
         postResponse, exists := record.Get("postProperties")
         if postResponse == nil { continue }
         if !exists { return nil, errors.New("post has no properties in database") }
-        post := &models.PostPreview{}
+        post := &responses.PostPreview{}
         mapstructure.Decode(postResponse, post)
         post.UserIdentifer.SpotifyID = spotifyID
         post.UserIdentifer.Username = username
@@ -112,7 +113,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, username string) ([]models.P
     return posts, nil
 }
 
-func GetUserPostPreviewByID(songID string, spotifyID string) (*models.PostPreview, bool, error){
+func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, bool, error){
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post`,
         map[string]any{ 
@@ -147,7 +148,7 @@ func GetUserPostPreviewByID(songID string, spotifyID string) (*models.PostPrevie
         return nil, false, nil
     }
 
-    post := &models.PostPreview{}
+    post := &responses.PostPreview{}
     post.SpotifyID = spotifyID
     post.Username = user.Username
     mapstructure.Decode(postResponse, post)
@@ -182,4 +183,4 @@ func DeletePost(songID string, spotifyID string) (bool, bool, error) {
 
 
 /* PROPERTY UPDATES */
-func UpdatePostPropertiesByID() {}
+func UpdatePost(text string, rating int) {}

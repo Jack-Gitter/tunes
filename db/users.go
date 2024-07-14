@@ -3,14 +3,15 @@ package db
 import (
 	"errors"
 	"os"
-	"github.com/Jack-Gitter/tunes/models"
+
+	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 /* =================== CREATE ================== */
 
-func InsertUserIntoDB(user *models.User) error {
+func InsertUserIntoDB(user *responses.User) error {
     _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MERGE (u:User {spotifyID: $spotifyID, username: $username, bio: $bio, role: $role})",
         map[string]any{
@@ -27,7 +28,7 @@ func InsertUserIntoDB(user *models.User) error {
 
 /* =================== READ ================== */
 
-func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, bool, error) {
+func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
 
     user, foundUser, err := getUserProperties(spotifyID)
 
@@ -51,7 +52,7 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, bool, error) {
 
 }
 
-func getUserProperties(spotifyID string) (*models.User, bool, error) {
+func getUserProperties(spotifyID string) (*responses.User, bool, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MATCH (u:User {spotifyID: $spotifyID}) RETURN properties(u) as userProperties",
         map[string]any{
@@ -74,7 +75,7 @@ func getUserProperties(spotifyID string) (*models.User, bool, error) {
         return nil, true, errors.New("user within the database has no properties")
     }
 
-    user := &models.User{}
+    user := &responses.User{}
     mapstructure.Decode(userResponse, user)
 
     return user, true, nil
@@ -82,8 +83,7 @@ func getUserProperties(spotifyID string) (*models.User, bool, error) {
 
 
 /* PROPERTY UPDATES */
-
-func UpdateUserPropertiesBySpotifyID(updatedUser *models.User) (*models.User, bool, error) { return nil, false, nil}
+func UpdateUserPropertiesBySpotifyID(updatedUser *responses.User) (*responses.User, bool, error) { return nil, false, nil}
 
 
 /* RELATIONAL UDPATES */
