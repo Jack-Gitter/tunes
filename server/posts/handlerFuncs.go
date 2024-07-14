@@ -75,7 +75,7 @@ func GetPostBySpotifyIDAndSongID(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")
 
-    post, found, err := db.GetUserPostById(songID, spotifyID)
+    post, found, err := db.GetUserPostByID(songID, spotifyID)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
@@ -101,7 +101,7 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
         return
     }
 
-    post, found, err := db.GetUserPostById(songID, currentUserSpotifyID.(string))
+    post, found, err := db.GetUserPostByID(songID, currentUserSpotifyID.(string))
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
@@ -116,6 +116,7 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
 
     c.JSON(http.StatusOK, post)
 }
+
 func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 
     requestorSpotifyID, found := c.Get("spotifyID")

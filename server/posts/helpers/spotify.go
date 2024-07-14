@@ -41,7 +41,7 @@ func GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*model
 
 func UserHasPostedSongAlready(spotifyID string, songID string) (bool, error) {
 
-    _, foundPost, err := db.GetUserPostById(songID, spotifyID)
+    foundPost, err := db.DoesUserPostExist(songID, spotifyID)
 
     if err != nil {
         return false, err

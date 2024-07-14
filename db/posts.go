@@ -8,7 +8,37 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func GetUserPostById(postID string, spotifyID string) (*models.Post, bool, error) {
+func DoesUserPostExist(postID string, spotifyID string) (bool, error) {
+
+    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post`,
+        map[string]any{ 
+            "spotifyID": spotifyID,
+            "postID": postID,
+        }, 
+        neo4j.EagerResultTransformer,
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
+    )
+
+    if err != nil {
+        return false, err
+    }
+
+    if len(resp.Records) < 1 {
+        return false, err
+    }
+
+    _, found := resp.Records[0].Get("Post")
+
+    if !found {
+        return true, errors.New("post has no properites in DB, something went wrong")
+    }
+
+    return true, nil
+
+}
+
+func GetUserPostByID(postID string, spotifyID string) (*models.Post, bool, error) {
 
     user, found, err := GetUserFromDbBySpotifyID(spotifyID)
 
@@ -83,7 +113,7 @@ func CreatePost(post *models.Post, spotifyID string) error {
 
 func DeletePost(songID string, spotifyID string) (bool, bool, error) {
 
-    _, found, err := GetUserPostById(songID, spotifyID)
+    found, err := DoesUserPostExist(songID, spotifyID)
     if err != nil {
         return false, false, err
     }
