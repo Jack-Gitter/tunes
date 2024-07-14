@@ -1,4 +1,4 @@
-package requests
+package spotifyresponses
 
 type AccessTokenResponnse struct {
     Access_token string 

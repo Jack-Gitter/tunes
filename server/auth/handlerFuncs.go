@@ -8,7 +8,6 @@ import (
 
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
-	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/auth/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -41,14 +40,12 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
-    _, foundUser, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
+    user, foundUser, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
-
-    var user *responses.User = nil
 
     if !foundUser {
         user, err = db.InsertUserIntoDB(userProfileResponse.Display_name, userProfileResponse.Id, "user")
