@@ -8,6 +8,8 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
+/* ===================== CREATE =====================  */
+
 func CreatePost(post *models.Post, spotifyID string) error {
     _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) 
@@ -35,6 +37,8 @@ func CreatePost(post *models.Post, spotifyID string) error {
 
     return nil
 }
+
+/* ===================== READ =====================  */
 
 func GetUserPostByID(postID string, spotifyID string) (*models.Post, bool, error) {
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
@@ -78,6 +82,52 @@ func GetUserPostByID(postID string, spotifyID string) (*models.Post, bool, error
 
     return post, true, nil
 }
+
+func GetUserPostPreviewByID(songID string, spotifyID string) (*models.PostPreview, bool, error){
+    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post`,
+        map[string]any{ 
+            "spotifyID": spotifyID,
+            "postID": songID,
+        }, 
+        neo4j.EagerResultTransformer,
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
+    )
+
+    if err != nil {
+        return nil, false, err
+    }
+
+    if len(resp.Records) < 1 {
+        return nil, false, nil 
+    }
+
+    postResponse, found := resp.Records[0].Get("Post")
+
+    if !found {
+        return nil, false, errors.New("post has no properites in DB, something went wrong")
+    }
+
+    user, found, err := GetUserFromDbBySpotifyID(spotifyID)
+
+    if err != nil {
+        return nil, false, err
+    }
+
+    if !found {
+        return nil, false, nil
+    }
+
+    post := &models.PostPreview{}
+    post.SpotifyID = spotifyID
+    post.Username = user.Username
+    mapstructure.Decode(postResponse, post)
+
+    return post, true, nil
+}
+
+
+/* ===================== DELETE =====================  */
 
 func DeletePost(songID string, spotifyID string) (bool, bool, error) {
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
