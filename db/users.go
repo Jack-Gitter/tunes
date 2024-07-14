@@ -3,8 +3,6 @@ package db
 import (
 	"errors"
 	"os"
-
-	"github.com/Jack-Gitter/tunes/customerrors"
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -12,7 +10,7 @@ import (
 
 // make it so that there are seperate queries for user properties, user posts, user followers, user following
 
-func getUserProperties(spotifyID string) (*models.User, error) {
+func getUserProperties(spotifyID string) (*models.User, bool, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MATCH (u:User {spotifyID: $spotifyID}) RETURN properties(u) as userProperties",
         map[string]any{
@@ -22,26 +20,26 @@ func getUserProperties(spotifyID string) (*models.User, error) {
     )
 
     if err != nil {
-        return nil, err
+        return nil, false, err
     }
 
     if len(res.Records) < 1 {
-        return nil, customerrors.TunesError{ErrorType: customerrors.NoDatabaseRecordsFoundError, Err: errors.New("could not find user with given ID in database")}
+        return nil, false, nil
     }
 
     userResponse, found := res.Records[0].Get("userProperties")
 
     if !found {
-        return nil, customerrors.TunesError{ErrorType: customerrors.Neo4jDatabaseRequestError, Err: errors.New("user within the database has no properties")}
+        return nil, false, errors.New("user within the database has no properties")
     }
 
     user := &models.User{}
     mapstructure.Decode(userResponse, user)
 
-    return user, nil
+    return user, true, nil
 }
 
-func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPreview, error) {
+func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPreview, bool, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) return properties(p) as postProperties",
         map[string]any{
@@ -51,7 +49,7 @@ func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPrevi
     )
 
     if err != nil {
-        return nil, err
+        return nil, false, err
     }
 
     posts := []models.PostPreview{}
@@ -59,7 +57,7 @@ func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPrevi
     for _, record := range res.Records {
         postResponse, exists := record.Get("postProperties")
         if postResponse == nil { continue }
-        if !exists { return nil, errors.New("wtf post has no properties") }
+        if !exists { return nil, true, errors.New("wtf post has no properties") }
         post := &models.PostPreview{}
         mapstructure.Decode(postResponse, post)
         post.UserIdentifer.SpotifyID = spotifyID
@@ -67,26 +65,34 @@ func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPrevi
         posts = append(posts, (*post))
     }
 
-    return posts, nil
+    return posts, true, nil
 }
 
-func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
+func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, bool, error) {
 
-    user, err := getUserProperties(spotifyID)
+    user, foundUser, err := getUserProperties(spotifyID)
 
     if err != nil {
-        return nil, err
+        return nil, false, err
     }
 
-    posts, err := getUserPostsPreviews(spotifyID, user.Username)
+    if !foundUser {
+        return nil, false, nil
+    }
+
+    posts, foundPosts, err := getUserPostsPreviews(spotifyID, user.Username)
 
     if err != nil {
-        return nil, err
+        return nil, false, err
+    }
+
+    if !foundPosts {
+        return nil, false, nil
     }
 
     user.Posts = posts
 
-    return user, nil
+    return user, true, nil
 
 }
 
@@ -104,43 +110,3 @@ func InsertUserIntoDB(spotifyID string, username string, role string) error {
 
     return err
 }
-/*func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, error) {
-    res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "OPTIONAL MATCH (u:User {spotifyID: $spotifyID}) OPTIONAL MATCH (u)-[:Posted]->(p) return properties(p) as post, properties(u) as user",
-        map[string]any{
-            "spotifyID": spotifyID,
-        }, neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
-    )
-
-    if err != nil {
-        return nil, err
-    }
-
-    userResponse, _ := res.Records[0].Get("user")
-
-    if userResponse == nil {
-        return nil, errors.New("could not find user in database")
-    } 
-
-    user := &models.User{}
-    mapstructure.Decode(userResponse, user)
-
-    posts := []models.PostPreview{}
-
-    for _, record := range res.Records {
-        postResponse, _ := record.Get("post")
-        if postResponse == nil { continue }
-        post := &models.PostPreview{}
-        mapstructure.Decode(postResponse, post)
-        post.UserIdentifer.SpotifyID = user.SpotifyID
-        post.UserIdentifer.Username = user.Username
-        posts = append(posts, (*post))
-    }
-
-    user.Posts = posts
-
-    return user, nil
-
-}*/
-

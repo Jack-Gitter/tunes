@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Jack-Gitter/tunes/customerrors"
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/Jack-Gitter/tunes/server/auth/helpers"
@@ -41,14 +40,15 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
-    _, err = db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
+    _, foundUser, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if err != nil {
-        if tunesError, ok := err.(customerrors.TunesError); ok && tunesError.ErrorType == customerrors.NoDatabaseRecordsFoundError {
-            err = db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name, "user")
-        } else {
-            c.JSON(http.StatusInternalServerError, err.Error())
-        }
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !foundUser {
+        err = db.InsertUserIntoDB(userProfileResponse.Id, userProfileResponse.Display_name, "user")
     }
 
     if err != nil {

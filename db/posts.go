@@ -1,16 +1,13 @@
 package db
 
 import (
-	"errors"
 	"os"
-
-	"github.com/Jack-Gitter/tunes/customerrors"
 	"github.com/Jack-Gitter/tunes/models"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func GetUserPostById(postID string, spotifyID string) (*models.Post, error) {
+func GetUserPostById(postID string, spotifyID string) (*models.Post, bool, error) {
 
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p)`,
@@ -23,22 +20,22 @@ func GetUserPostById(postID string, spotifyID string) (*models.Post, error) {
     )
 
     if err != nil {
-        return nil, customerrors.TunesError{ErrorType: customerrors.Neo4jDatabaseRequestError, Err: err}
+        return nil, false, err
     }
 
     if len(resp.Records) < 1 {
-        return nil, customerrors.TunesError{ErrorType: customerrors.NoDatabaseRecordsFoundError, Err: errors.New("either user does not exist, or user has not posted song with that id")}
+        return nil, false, nil 
     }
 
     post := &models.Post{}
     mapstructure.Decode(resp, post)
 
-    return post, nil
+    return post, true, nil
 
 }
 
 func CreatePost(post *models.Post, spotifyID string) error {
-    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) 
      MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text})
      CREATE (u)-[:Posted]->(p)
@@ -59,10 +56,6 @@ func CreatePost(post *models.Post, spotifyID string) error {
 
     if err != nil {
         return err
-    }
-
-    if len(resp.Records) < 1 {
-        return customerrors.TunesError{ErrorType: customerrors.Neo4jDatabaseRequestError, Err: errors.New("could not find user in database")}
     }
 
     return nil

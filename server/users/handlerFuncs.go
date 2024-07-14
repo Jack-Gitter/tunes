@@ -2,8 +2,6 @@ package users
 
 import (
 	"net/http"
-
-	"github.com/Jack-Gitter/tunes/customerrors"
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/gin-gonic/gin"
 )
@@ -17,18 +15,16 @@ func GetUserById(c *gin.Context) {
         return
     }
 
-    user, err := db.GetUserFromDbBySpotifyID(spotifyID)
+    user, foundUser, err := db.GetUserFromDbBySpotifyID(spotifyID)
     
     if err != nil {
-        if tunesError, ok := err.(customerrors.TunesError); ok {
-            if tunesError.ErrorType == customerrors.NoDatabaseRecordsFoundError {
-                c.JSON(http.StatusBadRequest, err.Error())
-                return
-            } else if tunesError.ErrorType == customerrors.Neo4jDatabaseRequestError {
-                c.JSON(http.StatusInternalServerError, err.Error())
-                return
-            }
-        } 
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !foundUser {
+        c.JSON(http.StatusBadRequest, "no user with that ID has been found")
+        return
     }
 
     c.JSON(http.StatusOK, user) 
@@ -43,18 +39,16 @@ func GetCurrentUser(c *gin.Context) {
         return
     }
 
-    user, err := db.GetUserFromDbBySpotifyID(spotifyID.(string))
+    user, foundUser, err := db.GetUserFromDbBySpotifyID(spotifyID.(string))
 
     if err != nil {
-        if tunesError, ok := err.(customerrors.TunesError); ok {
-            if tunesError.ErrorType == customerrors.NoDatabaseRecordsFoundError {
-                c.JSON(http.StatusBadRequest, err.Error())
-                return
-            } else if tunesError.ErrorType == customerrors.Neo4jDatabaseRequestError {
-                c.JSON(http.StatusInternalServerError, err.Error())
-                return
-            }
-        } 
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !foundUser {
+        c.JSON(http.StatusBadRequest, err.Error())
+        return
     }
 
     c.JSON(http.StatusOK, user)
