@@ -26,6 +26,8 @@ func GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*reque
     resp, err := client.Do(songRequest) 
     
     if resp.StatusCode != 200 {
+        bodyBytes, _ := io.ReadAll(resp.Body)
+        fmt.Println(string(bodyBytes))
         return nil, errors.New("spotify request for a song failed without 200")
     }
 

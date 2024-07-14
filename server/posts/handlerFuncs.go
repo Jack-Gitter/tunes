@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
-	"github.com/Jack-Gitter/tunes/models/responses"
+	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/server/posts/helpers"
 	"github.com/gin-gonic/gin"
 )
@@ -21,15 +21,15 @@ func CreatePostForCurrentUser(c *gin.Context) {
         return
     }
 
-    post := &responses.Post{}
-    err := c.ShouldBindBodyWithJSON(post)
+    createPostDTO := &requests.CreatePostDTO{}
+    err := c.ShouldBindBodyWithJSON(createPostDTO)
 
     if err != nil {
         c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
-    hasPostedAlready, err := helpers.UserHasPostedSongAlready(spotifyID.(string), post.SongID)
+    hasPostedAlready, err := helpers.UserHasPostedSongAlready(spotifyID.(string), createPostDTO.SongID)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
@@ -41,25 +41,33 @@ func CreatePostForCurrentUser(c *gin.Context) {
         return
     }
 
-    spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(post.SongID, spotifyAccessToken.(string))
+    spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(createPostDTO.SongID, spotifyAccessToken.(string))
 
     if err != nil {
         c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
-    post.AlbumID = spotifySongResponse.Album.Id
-    post.SongName = spotifySongResponse.Name
-    post.AlbumName = spotifySongResponse.Album.Name
-    post.SpotifyID = spotifyID.(string)
-    post.Username = spotifyUsername.(string)
-    post.Timestamp = time.Now().UTC()
 
+    var albumImage string = ""
     if len(spotifySongResponse.Album.Images) > 0 {
-        post.AlbumArtURI = spotifySongResponse.Album.Images[0].Url
+        albumImage = spotifySongResponse.Album.Images[0].Url
     }
 
-    err = db.CreatePost(post, spotifyID.(string))
+    post, err := db.CreatePost(
+        spotifyID.(string),
+        createPostDTO.SongID,
+        spotifySongResponse.Name, 
+        spotifySongResponse.Album.Id, 
+        spotifySongResponse.Album.Name,
+        albumImage,
+        createPostDTO.Rating,
+        createPostDTO.Text,
+        time.Now().UTC(),
+    )
+
+    post.Username = spotifyUsername.(string)
+    post.SpotifyID = spotifyID.(string)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())

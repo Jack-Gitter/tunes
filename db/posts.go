@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 	"os"
+	"time"
 
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/mitchellh/mapstructure"
@@ -11,32 +12,46 @@ import (
 
 /* ===================== CREATE =====================  */
 
-func CreatePost(post *responses.Post, spotifyID string) error {
-    _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+/*spotifyID.(string),
+  spotifyUsername.(string),
+  spotifySongResponse.Id,
+  spotifySongResponse.Name,
+  spotifySongResponse.Album.Id,
+  spotifySongResponse.Album.Name,
+  albumImage,
+  time.Now().UTC()*/
+
+func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, timestamp time.Time) (*responses.Post, error) {
+    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) 
     MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text, timestamp: $timestamp})
      CREATE (u)-[:Posted]->(p)
-     RETURN properties(p) `,
+     RETURN properties(p) as Post `,
         map[string]any{ 
-            "songID": post.SongID,
-            "songName": post.SongName,
-            "albumName": post.AlbumName,
-            "albumArtURI": post.AlbumArtURI,
-            "albumID": post.AlbumID,
-            "rating": post.Rating,
-            "text": post.Text,
+            "songID": songID,
+            "songName": songName,
+            "albumName": albumName,
+            "albumArtURI": albumImage,
+            "albumID": albumID,
+            "rating": rating,
+            "text": text,
             "spotifyID": spotifyID,
-            "timestamp": post.Timestamp,
+            "timestamp": timestamp,
         }, 
         neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
     )
 
+    postResponse := &responses.Post{}
+
     if err != nil {
-        return err
+        return nil, err
     }
 
-    return nil
+    post, _ := resp.Records[0].Get("Post")
+    mapstructure.Decode(post, postResponse)
+
+    return postResponse, nil
 }
 
 /* ===================== READ =====================  */
