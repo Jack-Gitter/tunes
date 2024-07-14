@@ -47,7 +47,7 @@ func GetCurrentUser(c *gin.Context) {
     }
 
     if !foundUser {
-        c.JSON(http.StatusBadRequest, err.Error())
+        c.JSON(http.StatusBadRequest, "no user with the ID found in the JWT exists in the DB")
         return
     }
 

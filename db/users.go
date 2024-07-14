@@ -8,8 +8,6 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-// make it so that there are seperate queries for user properties, user posts, user followers, user following
-
 func getUserProperties(spotifyID string) (*models.User, bool, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MATCH (u:User {spotifyID: $spotifyID}) RETURN properties(u) as userProperties",
@@ -30,7 +28,7 @@ func getUserProperties(spotifyID string) (*models.User, bool, error) {
     userResponse, found := res.Records[0].Get("userProperties")
 
     if !found {
-        return nil, false, errors.New("user within the database has no properties")
+        return nil, true, errors.New("user within the database has no properties")
     }
 
     user := &models.User{}
@@ -39,7 +37,7 @@ func getUserProperties(spotifyID string) (*models.User, bool, error) {
     return user, true, nil
 }
 
-func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPreview, bool, error) {
+func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPreview, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) return properties(p) as postProperties",
         map[string]any{
@@ -49,7 +47,7 @@ func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPrevi
     )
 
     if err != nil {
-        return nil, false, err
+        return nil, err
     }
 
     posts := []models.PostPreview{}
@@ -57,7 +55,7 @@ func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPrevi
     for _, record := range res.Records {
         postResponse, exists := record.Get("postProperties")
         if postResponse == nil { continue }
-        if !exists { return nil, true, errors.New("wtf post has no properties") }
+        if !exists { return nil, errors.New("post has no properties in database") }
         post := &models.PostPreview{}
         mapstructure.Decode(postResponse, post)
         post.UserIdentifer.SpotifyID = spotifyID
@@ -65,7 +63,7 @@ func getUserPostsPreviews(spotifyID string, username string) ([]models.PostPrevi
         posts = append(posts, (*post))
     }
 
-    return posts, true, nil
+    return posts, nil
 }
 
 func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, bool, error) {
@@ -80,14 +78,10 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*models.User, bool, error) {
         return nil, false, nil
     }
 
-    posts, foundPosts, err := getUserPostsPreviews(spotifyID, user.Username)
+    posts, err := getUserPostsPreviews(spotifyID, user.Username)
 
     if err != nil {
         return nil, false, err
-    }
-
-    if !foundPosts {
-        return nil, false, nil
     }
 
     user.Posts = posts
