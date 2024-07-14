@@ -2,6 +2,7 @@ package posts
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models"
@@ -52,6 +53,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
     post.AlbumName = spotifySongResponse.Album.Name
     post.SpotifyID = spotifyID.(string)
     post.Username = spotifyUsername.(string)
+    post.Timestamp = time.Now().UTC()
 
     if len(spotifySongResponse.Album.Images) > 0 {
         post.AlbumArtURI = spotifySongResponse.Album.Images[0].Url
@@ -70,7 +72,6 @@ func CreatePostForCurrentUser(c *gin.Context) {
 
 func GetPostBySpotifyIDAndSongID(c *gin.Context) {
 
-
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")
 
@@ -85,6 +86,7 @@ func GetPostBySpotifyIDAndSongID(c *gin.Context) {
         c.JSON(http.StatusNotFound, "could not find post with that userid and songid in the database")
         return
     }
+
 
     c.JSON(http.StatusOK, post)
 }

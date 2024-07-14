@@ -9,7 +9,18 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
+// return the username and spotifyID of the Post
 func GetUserPostById(postID string, spotifyID string) (*models.Post, bool, error) {
+
+    user, found, err := GetUserFromDbBySpotifyID(spotifyID)
+
+    if err != nil {
+        return nil, false, err
+    }
+
+    if !found {
+        return nil, false, errors.New("user with that spotifyID could not be found!")
+    }
 
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post`,
@@ -36,6 +47,8 @@ func GetUserPostById(postID string, spotifyID string) (*models.Post, bool, error
     }
 
     post := &models.Post{}
+    post.SpotifyID = spotifyID
+    post.Username = user.Username
     mapstructure.Decode(postResponse, post)
 
     return post, true, nil
@@ -45,7 +58,7 @@ func GetUserPostById(postID string, spotifyID string) (*models.Post, bool, error
 func CreatePost(post *models.Post, spotifyID string) error {
     _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) 
-     MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text})
+    MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text, timestamp: $timestamp})
      CREATE (u)-[:Posted]->(p)
      RETURN properties(p) `,
         map[string]any{ 
@@ -57,6 +70,7 @@ func CreatePost(post *models.Post, spotifyID string) error {
             "rating": post.Rating,
             "text": post.Text,
             "spotifyID": spotifyID,
+            "timestamp": post.Timestamp,
         }, 
         neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),

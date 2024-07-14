@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Post struct {
     PostPreview `mapstructure:",squash"`
     // []Comments Comments
@@ -16,4 +18,5 @@ type PostPreview struct {
     Text string
     Likes []UserIdentifer
     Dislikes []UserIdentifer
+    Timestamp time.Time
 }
