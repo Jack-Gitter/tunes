@@ -90,3 +90,35 @@ func GetPostBySpotifyIDAndSongID(c *gin.Context) {
 
     c.JSON(http.StatusOK, post)
 }
+
+func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
+
+    requestorSpotifyID, found := c.Get("spotifyID")
+
+    if !found {
+        c.JSON(http.StatusInternalServerError, "no spotify ID found for user making request (did I forget to pass it in the middleware?)")
+    }
+    spotifyID := c.Param("spotifyID")
+    songID := c.Param("songID")
+
+    if requestorSpotifyID != spotifyID {
+        c.JSON(http.StatusBadRequest, "cannot delete a post that is not your own! (unless you're admin, tbd)")
+        return
+    }
+
+    _, found, err := db.DeletePost(songID, spotifyID)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, "something went wrong with deletion")
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "post for that user has not been found!")
+        return
+    }
+
+    c.JSON(http.StatusOK, "post deleted")
+
+
+}

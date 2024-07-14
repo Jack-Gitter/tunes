@@ -81,4 +81,32 @@ func CreatePost(post *models.Post, spotifyID string) error {
     return nil
 }
 
+func DeletePost(songID string, spotifyID string) (bool, bool, error) {
 
+    _, found, err := GetUserPostById(songID, spotifyID)
+    if err != nil {
+        return false, false, err
+    }
+
+    if !found {
+        return false, false, nil
+    }
+
+    _, err = neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID DETACH DELETE p`,
+        map[string]any{ 
+            "spotifyID": spotifyID,
+            "postID": songID,
+        }, 
+        neo4j.EagerResultTransformer,
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
+    )
+
+    if err != nil {
+        return false, false, err
+    }
+
+    return true, true, nil
+
+
+}
