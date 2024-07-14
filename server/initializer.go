@@ -13,10 +13,11 @@ func InitializeHttpServer() *gin.Engine {
     r.GET("/login", auth.Login)
     r.GET("/loginCallback", auth.LoginCallback)
 
-    r.GET("/user", auth.ValidateUserJWT, auth.RefreshJWT, users.GetUserById)
+    r.GET("/user/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.GetUserById)
     r.GET("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.GetCurrentUser)
 
     r.POST("/post", auth.ValidateUserJWT, auth.RefreshJWT, posts.CreatePostForCurrentUser)
+    r.GET("/post")
     return r
 }
 

@@ -8,7 +8,7 @@ import (
 
 func GetUserById(c *gin.Context) {
 
-    spotifyID := c.Query("spotifyID")
+    spotifyID := c.Param("spotifyID")
 
     if spotifyID == "" {
         c.JSON(http.StatusBadRequest, "please provide a user ID as a query parameter!")
