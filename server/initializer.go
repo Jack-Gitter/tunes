@@ -16,7 +16,9 @@ func InitializeHttpServer() *gin.Engine {
     r.GET("/users/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.GetUserById)
     r.GET("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.GetCurrentUser)
     /*r.POST("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.UpdateCurrentUserProperties) // only if you are an admin can you change your own role, otherwise ignore
-    r.POST("/user/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.UpdateUserBySpotifyID)*/
+    r.POST("/user/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.UpdateUserBySpotifyID)
+    r.DELETE("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.DeleteCurrentUser)
+    r.DELETE("/user/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.DeleteUserBySpotifyID)*/ // can only do this if you are an admin!
 
 
     r.GET("/posts/:spotifyID/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.GetPostBySpotifyIDAndSongID)
@@ -24,6 +26,9 @@ func InitializeHttpServer() *gin.Engine {
     r.POST("/posts", auth.ValidateUserJWT, auth.RefreshJWT, posts.CreatePostForCurrentUser)
     r.DELETE("/posts/:spotifyID/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.DeletePostBySpotifyIDAndSongID)
     r.DELETE("/currentUserPosts/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.DeletePostForCurrentUserBySongID)
+    /*r.POST("/currentUserPosts/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.UpdateCurrentUserPostByID)
+      r.POST("posts/:spotifyID/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.UpdateUserPostBySpotifyID) // make a seperate middleware to validate that someone is an admin!!!
+    */
     return r
 }
 

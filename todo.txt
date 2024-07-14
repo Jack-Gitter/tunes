@@ -1,1 +1,12 @@
-if the refresh token is expired, then we just need to send 401 uauthorized request or something. Otherwise can we just send a redirect from the server back to the client for the same webpage with a set-cookie? not sure
+make a seperate middleware to check if someone is an admin or not
+
+implement the update methods on user and posts, and the delete methods on user
+
+implement comments (CRUD)
+
+implement caching with redis
+
+implement protobuf
+
+cors
+
