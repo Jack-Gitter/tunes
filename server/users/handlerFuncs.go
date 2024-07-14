@@ -10,11 +10,6 @@ func GetUserById(c *gin.Context) {
 
     spotifyID := c.Param("spotifyID")
 
-    if spotifyID == "" {
-        c.JSON(http.StatusBadRequest, "please provide a user ID as a query parameter!")
-        return
-    }
-
     user, foundUser, err := db.GetUserFromDbBySpotifyID(spotifyID)
     
     if err != nil {
