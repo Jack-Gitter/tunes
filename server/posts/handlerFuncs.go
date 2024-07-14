@@ -158,7 +158,7 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 }
 
 
-func DeletePostForCurrentUserBySongID (c *gin.Context) {
+func DeletePostForCurrentUserBySongID(c *gin.Context) {
 
     
     requestorSpotifyID, found := c.Get("spotifyID")
