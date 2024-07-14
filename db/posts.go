@@ -83,6 +83,35 @@ func GetUserPostByID(postID string, spotifyID string) (*models.Post, bool, error
     return post, true, nil
 }
 
+func GetUserPostsPreviewsByUserID(spotifyID string, username string) ([]models.PostPreview, error) {
+    res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) return properties(p) as postProperties",
+        map[string]any{
+            "spotifyID": spotifyID,
+        }, neo4j.EagerResultTransformer,
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
+    )
+
+    if err != nil {
+        return nil, err
+    }
+
+    posts := []models.PostPreview{}
+
+    for _, record := range res.Records {
+        postResponse, exists := record.Get("postProperties")
+        if postResponse == nil { continue }
+        if !exists { return nil, errors.New("post has no properties in database") }
+        post := &models.PostPreview{}
+        mapstructure.Decode(postResponse, post)
+        post.UserIdentifer.SpotifyID = spotifyID
+        post.UserIdentifer.Username = username
+        posts = append(posts, (*post))
+    }
+
+    return posts, nil
+}
+
 func GetUserPostPreviewByID(songID string, spotifyID string) (*models.PostPreview, bool, error){
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post`,
@@ -150,3 +179,7 @@ func DeletePost(songID string, spotifyID string) (bool, bool, error) {
 
     return true, true, nil
 }
+
+
+/* PROPERTY UPDATES */
+func UpdatePostPropertiesByID() {}
