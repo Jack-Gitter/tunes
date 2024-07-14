@@ -19,7 +19,7 @@ func GetUserPostById(postID string, spotifyID string) (*models.Post, bool, error
     }
 
     if !found {
-        return nil, false, errors.New("user with that spotifyID could not be found!")
+        return nil, false, nil
     }
 
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
