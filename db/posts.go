@@ -12,15 +12,6 @@ import (
 
 /* ===================== CREATE =====================  */
 
-/*spotifyID.(string),
-  spotifyUsername.(string),
-  spotifySongResponse.Id,
-  spotifySongResponse.Name,
-  spotifySongResponse.Album.Id,
-  spotifySongResponse.Album.Name,
-  albumImage,
-  time.Now().UTC()*/
-
 func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, timestamp time.Time) (*responses.Post, error) {
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) 

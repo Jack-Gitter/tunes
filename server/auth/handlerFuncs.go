@@ -48,13 +48,10 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
-    user := &responses.User{}
-    user.Username = userProfileResponse.Display_name
-    user.SpotifyID = userProfileResponse.Id
-    user.Role = "user"
+    var user *responses.User = nil
 
     if !foundUser {
-        err = db.InsertUserIntoDB(user)
+        user, err = db.InsertUserIntoDB(userProfileResponse.Display_name, userProfileResponse.Id, "user")
     }
 
     if err != nil {

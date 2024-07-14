@@ -3,7 +3,6 @@ package db
 import (
 	"errors"
 	"os"
-
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -11,19 +10,26 @@ import (
 
 /* =================== CREATE ================== */
 
-func InsertUserIntoDB(user *responses.User) error {
-    _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "MERGE (u:User {spotifyID: $spotifyID, username: $username, bio: $bio, role: $role})",
+func InsertUserIntoDB(username string, spotifyID string, role string) (*responses.User, error) {
+    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    "MERGE (u:User {spotifyID: $spotifyID, username: $username, bio: $bio, role: $role}) return properties(u) as User",
         map[string]any{
-            "spotifyID": user.SpotifyID,
-            "username": user.Username,
-            "role": user.Role,
+            "spotifyID": spotifyID,
+            "username": username,
+            "role": role,
             "bio": "",
         }, neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
     )
 
-    return err
+    if err != nil {
+        return nil, err
+    }
+
+    userResponse := &responses.User{}
+    user, _ := resp.Records[0].Get("User")
+    mapstructure.Decode(user, userResponse)
+    return userResponse, err
 }
 
 /* =================== READ ================== */
