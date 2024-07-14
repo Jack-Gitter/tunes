@@ -18,7 +18,9 @@ func InitializeHttpServer() *gin.Engine {
 
     r.POST("/post", auth.ValidateUserJWT, auth.RefreshJWT, posts.CreatePostForCurrentUser)
     r.GET("/post/:spotifyID/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.GetPostBySpotifyIDAndSongID)
+    r.GET("/postCU/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.GetPostCurrentUserBySongID)
     r.DELETE("/post/:spotifyID/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.DeletePostBySpotifyIDAndSongID)
+    r.DELETE("/postCU/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.DeletePostForCurrentUserBySongID)
     return r
 }
 
