@@ -1,12 +1,13 @@
 tunes todos:
 
-clean up the passing of the shit in the middleware -- spotify username we don't need that on the backend right???
 
 make getUser a cypher transaction — needs to happen
 
 close http request bodies
 
 close cypher transactions/connection
+
+clean up the passing of the shit in the middleware -- spotify username we don't need that on the backend right???
 
 user
      update

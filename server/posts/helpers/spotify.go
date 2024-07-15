@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/spotifyResponses"
 )
@@ -25,10 +24,14 @@ func GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*spoti
 
     client := &http.Client{}
     resp, err := client.Do(songRequest) 
+
+    if err != nil {
+        return nil, err
+    }
+
+    defer resp.Body.Close()
     
     if resp.StatusCode != 200 {
-        bodyBytes, _ := io.ReadAll(resp.Body)
-        fmt.Println(string(bodyBytes))
         return nil, errors.New("spotify request for a song failed without 200")
     }
 

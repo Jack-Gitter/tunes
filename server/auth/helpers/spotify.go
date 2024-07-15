@@ -38,6 +38,7 @@ func RetrieveInitialAccessToken(authorizationCode string) (*spotifyresponses.Acc
         return nil, err
     }
 
+    defer resp.Body.Close()
     accessTokenResponseBody := &spotifyresponses.AccessTokenResponnse{}
     json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
 
@@ -61,6 +62,7 @@ func RetrieveUserProfile(accessToken string) (*spotifyresponses.ProfileResponse,
         return nil, err
     }
 
+    defer nResp.Body.Close()
     respJson2 := &spotifyresponses.ProfileResponse{}
 
     json.NewDecoder(nResp.Body).Decode(respJson2)
@@ -84,7 +86,14 @@ func RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken string) (*spotifyre
     accessTokenRefreshRequest.Header.Set("Authorization", fmt.Sprintf("Basic %s", encodedBasicAuthToken))
 
     client := &http.Client{}
-    resp, _ := client.Do(accessTokenRefreshRequest) 
+    resp, err := client.Do(accessTokenRefreshRequest) 
+
+    if err != nil {
+        return nil, err
+    }
+
+    defer resp.Body.Close()
+
 
     accessTokenResponseBody := &spotifyresponses.RefreshTokenResponse{}
     json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
