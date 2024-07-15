@@ -1,9 +1,8 @@
 tunes todos:
 
-make getUser a cypher transaction — needs to happen
+clean up the passing of the shit in the middleware -- spotify username we don't need that on the backend right???
 
-check all places we are getting username and see if it can be cleaner see below
-check all post http returns and see where username comes from — we can ALWAYS get from query. We dont need two seperate queries for that
+make getUser a cypher transaction — needs to happen
 
 close http request bodies
 
