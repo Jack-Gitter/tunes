@@ -13,10 +13,9 @@ import (
 func CreatePostForCurrentUser(c *gin.Context) {
 
     spotifyID, spotifyIDExists := c.Get("spotifyID")
-    spotifyUsername, spotifyUsernameExists := c.Get("spotifyUsername")
     spotifyAccessToken, spotifyAccessTokenExists := c.Get("spotifyAccessToken")
 
-    if !spotifyIDExists || !spotifyAccessTokenExists || !spotifyUsernameExists {
+    if !spotifyIDExists || !spotifyAccessTokenExists {
         c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
         return
     }
@@ -65,9 +64,6 @@ func CreatePostForCurrentUser(c *gin.Context) {
         createPostDTO.Text,
         time.Now().UTC(),
     )
-
-    post.Username = spotifyUsername.(string)
-    post.SpotifyID = spotifyID.(string)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())

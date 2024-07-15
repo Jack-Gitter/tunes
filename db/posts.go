@@ -17,7 +17,7 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
     `MATCH (u:User {spotifyID: $spotifyID}) 
     MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text, timestamp: $timestamp})
      CREATE (u)-[:Posted]->(p)
-     RETURN properties(p) as Post `,
+     RETURN properties(p) as Post, u.username as Username`,
         map[string]any{ 
             "songID": songID,
             "songName": songName,
@@ -40,7 +40,10 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
     }
 
     post, _ := resp.Records[0].Get("Post")
+    username, _ := resp.Records[0].Get("Username")
     mapstructure.Decode(post, postResponse)
+    postResponse.Username = username.(string)
+    postResponse.SpotifyID = spotifyID
 
     return postResponse, nil
 }
