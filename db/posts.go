@@ -49,7 +49,7 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
 
 func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, error) {
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post`,
+    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post, u.username as Username`,
         map[string]any{ 
             "spotifyID": spotifyID,
             "postID": postID,
@@ -66,25 +66,16 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
         return nil, false, nil 
     }
 
-    postResponse, found := resp.Records[0].Get("Post")
+    postResponse, foundPost := resp.Records[0].Get("Post")
+    usernameResponse, foundUsername := resp.Records[0].Get("Username")
 
-    if !found {
-        return nil, false, errors.New("post has no properites in DB, something went wrong")
-    }
-
-    user, found, err := GetUserFromDbBySpotifyID(spotifyID)
-
-    if err != nil {
-        return nil, false, err
-    }
-
-    if !found {
-        return nil, false, nil
+    if !foundPost || !foundUsername {
+        return nil, false, errors.New("post or username has no properites in DB, something went wrong")
     }
 
     post := &responses.Post{}
     post.SpotifyID = spotifyID
-    post.Username = user.Username
+    post.Username = usernameResponse.(string)
     mapstructure.Decode(postResponse, post)
 
     return post, true, nil
@@ -121,7 +112,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, username string) ([]response
 
 func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, bool, error){
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post`,
+    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post, u.username as Username`,
         map[string]any{ 
             "spotifyID": spotifyID,
             "postID": songID,
@@ -139,24 +130,16 @@ func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPre
     }
 
     postResponse, found := resp.Records[0].Get("Post")
+    usernameResponse, ufound := resp.Records[0].Get("Username")
 
-    if !found {
-        return nil, false, errors.New("post has no properites in DB, something went wrong")
+    if !found || !ufound {
+        return nil, false, errors.New("post or username has no properites in DB, something went wrong")
     }
 
-    user, found, err := GetUserFromDbBySpotifyID(spotifyID)
-
-    if err != nil {
-        return nil, false, err
-    }
-
-    if !found {
-        return nil, false, nil
-    }
 
     post := &responses.PostPreview{}
     post.SpotifyID = spotifyID
-    post.Username = user.Username
+    post.Username = usernameResponse.(string)
     mapstructure.Decode(postResponse, post)
 
     return post, true, nil

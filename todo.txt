@@ -1,12 +1,26 @@
-make a seperate middleware to check if someone is an admin or not
+tunes todos:
 
-implement the update methods on user and posts, and the delete methods on user
+make getUser a cypher transaction — needs to happen
 
-implement comments (CRUD)
+check all places we are getting username and see if it can be cleaner see below
+check all post http returns and see where username comes from — we can ALWAYS get from query. We dont need two seperate queries for that
 
-implement caching with redis
+close http request bodies
 
-implement protobuf
+close cypher transactions/connection
+
+user
+     update
+     delete
+
+posts
+    update
+
+comments w pagination
+    crud operations
+
+caching with redis — read up on caching techniques!! — lazyload vs other
+
+protobuf?
 
 cors
-
