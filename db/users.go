@@ -46,7 +46,7 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
         return nil, false, nil
     }
 
-    posts, err := GetUserPostsPreviewsByUserID(spotifyID, user.Username)
+    posts, err := GetUserPostsPreviewsByUserID(spotifyID)
 
     if err != nil {
         return nil, false, err

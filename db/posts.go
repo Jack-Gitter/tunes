@@ -81,9 +81,9 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
     return post, true, nil
 }
 
-func GetUserPostsPreviewsByUserID(spotifyID string, username string) ([]responses.PostPreview, error) {
+func GetUserPostsPreviewsByUserID(spotifyID string) ([]responses.PostPreview, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) return properties(p) as postProperties",
+    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) return properties(p) as postProperties, u.username as Username",
         map[string]any{
             "spotifyID": spotifyID,
         }, neo4j.EagerResultTransformer,
@@ -98,12 +98,12 @@ func GetUserPostsPreviewsByUserID(spotifyID string, username string) ([]response
 
     for _, record := range res.Records {
         postResponse, exists := record.Get("postProperties")
-        if postResponse == nil { continue }
-        if !exists { return nil, errors.New("post has no properties in database") }
+        usernameResponse, uexists := record.Get("Username")
+        if !exists || !uexists { return nil, errors.New("post has no properties in database") }
         post := &responses.PostPreview{}
         mapstructure.Decode(postResponse, post)
         post.UserIdentifer.SpotifyID = spotifyID
-        post.UserIdentifer.Username = username
+        post.UserIdentifer.Username = usernameResponse.(string)
         posts = append(posts, (*post))
     }
 
