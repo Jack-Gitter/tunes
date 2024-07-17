@@ -2,9 +2,6 @@ tunes todos:
 
 data integrity:
     protobuf?
-
-general: 
-    make a parsing module for patch body requests
     
 endpoints: 
     user
