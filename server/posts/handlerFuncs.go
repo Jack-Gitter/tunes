@@ -2,6 +2,7 @@ package posts
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
@@ -77,15 +78,32 @@ func CreatePostForCurrentUser(c *gin.Context) {
 func GetAllPostsForUserByID(c *gin.Context) {
 
     spotifyID := c.Param("spotifyID")
+
     offset := c.Query("offset")
     limit := c.Query("limit")
+
+    if offset == "" { offset = "0" }
+    if limit == "" { limit = "25" }
+
+    offset_int, err := strconv.Atoi(offset)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, "please give a valid number as offset")
+        return
+    }
+
+    limit_int, err := strconv.Atoi(limit)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, "plesae give a valid number as limit")
+    }
 
     if spotifyID == "" {
         c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
         return
     }
 
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, offset, limit)
+    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, offset_int, limit_int)
 
     if err != nil {
         c.JSON(http.StatusUnauthorized, "issue getting data for user")
@@ -97,15 +115,32 @@ func GetAllPostsForUserByID(c *gin.Context) {
 
 func GetAllPostsForCurrentUser(c *gin.Context) {
     spotifyID, spotifyIDExists := c.Get("spotifyID")
+
     offset := c.Query("offset")
     limit := c.Query("limit")
+
+    if offset == "" { offset = "0" }
+    if limit == "" { limit = "25" }
+
+    offset_int, err := strconv.Atoi(offset)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, err.Error())
+        return
+    }
+
+    limit_int, err := strconv.Atoi(limit)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, "plesae give a valid number as limit")
+    }
 
     if !spotifyIDExists {
         c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
         return
     }
 
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID.(string), offset, limit)
+    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID.(string), offset_int, limit_int)
 
     if err != nil {
         c.JSON(http.StatusUnauthorized, "issue getting data for user")

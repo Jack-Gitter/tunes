@@ -85,12 +85,10 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
 }
 
 // make this method get the posts with id offset -> offset+limit-1
-func GetUserPostsPreviewsByUserID(spotifyID string, offset string, limit string) ([]responses.PostPreview, error) {
-    if offset == "" { offset = "0" }
-    if limit == "" { limit = "25" }
+func GetUserPostsPreviewsByUserID(spotifyID string, offset int, limit int) ([]responses.PostPreview, error) {
 
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) WHERE elementID(p) >= $offset AND elementID(p) < $limit return properties(p) as postProperties, u.username as Username",
+    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) return properties(p) as postProperties, u.username as Username SKIP $offset LIMIT $limit",
         map[string]any{
             "spotifyID": spotifyID,
             "offset": offset,
