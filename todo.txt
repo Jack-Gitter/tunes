@@ -5,7 +5,7 @@ data integrity:
 
 endpoints: 
     middlewares: 
-        create a jwt middleware to see if a user is an admin, this is going to come after the refresh token
+        create a jwt middleware to see if a user is an admin, this is going to come after the refresh token middleware
     user
         update
         delete

@@ -97,8 +97,10 @@ func ValidateUserJWT(c *gin.Context) {
     spotifyID := token.Claims.(*requests.JWTClaims).SpotifyID
     spotifyRefreshToken := token.Claims.(*requests.JWTClaims).RefreshToken
     spotifyAccessToken := token.Claims.(*requests.JWTClaims).AccessToken
+    role := token.Claims.(*requests.JWTClaims).UserRole
 
     c.Set("spotifyID", spotifyID)
+    c.Set("userRole", role)
     c.Set("spotifyAccessToken", spotifyAccessToken)
     c.Set("spotifyRefreshToken", spotifyRefreshToken)
     
@@ -160,13 +162,25 @@ func RefreshJWT(c *gin.Context) {
         return
     }
 
+    userDBResponse, found, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
+
+    if err != nil {
+        c.AbortWithStatusJSON(http.StatusInternalServerError, "unable to get user from db")
+        return
+    }
+
+    if !found {
+        c.AbortWithStatusJSON(http.StatusInternalServerError, "user does not exist in DB")
+        return
+    }
+
     accessTokenJWT, err := helpers.CreateAccessJWT(
         userProfileResponse.Id, 
         userProfileResponse.Display_name, 
         accessTokenResponseBody.Access_token, 
         accessTokenResponseBody.Refresh_token, 
         accessTokenResponseBody.Expires_in,
-        responses.BASIC_USER,
+        userDBResponse.Role,
     )
 
     if err != nil {
@@ -176,6 +190,24 @@ func RefreshJWT(c *gin.Context) {
 
     c.SetCookie("JWT", accessTokenJWT, 3600, "/", "localhost", false, true)
     c.Set("spotifyID", userProfileResponse.Id)
+    c.Set("userRole", userDBResponse.Role)
     c.Set("spotifyAccessToken", accessTokenResponseBody.Access_token)
     c.Next()
+}
+
+func ValidateAdminUser(c *gin.Context) {
+
+    role, found := c.Get("userRole")
+
+    if !found {
+        c.AbortWithStatusJSON(http.StatusInternalServerError, "could not get role for the current user!")
+    }
+
+    if role == responses.ADMIN {
+        c.Next()
+    }
+
+    c.AbortWithStatusJSON(http.StatusBadRequest, "cannot access this endpoint if your not admin dummy!")
+    return
+
 }
