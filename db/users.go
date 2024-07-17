@@ -68,8 +68,41 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
 
 /* PROPERTY UPDATES */
 func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, bool, error) { 
+    query := "MATCH (u:User {spotifyID: $spotifyID}) SET "
+    if updatedUser.Bio != nil {
+        query += "u.Bio = $Bio "
+    }
+    if updatedUser.Role != nil {
+        query += "u.Role = $Role "
+    }
+    query += "return properties(u) as userProperties"
 
-    return nil, false, nil
+    res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    query,
+        map[string]any{
+            "spotifyID": spotifyID,
+        }, neo4j.EagerResultTransformer,
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
+    )
+
+    if err != nil {
+        return nil, false, err
+    }
+
+    if len(res.Records) < 1 {
+        return nil, false, nil
+    }
+
+    userResponse, found := res.Records[0].Get("userProperties")
+
+    if !found {
+        return nil, true, errors.New("user within the database has no properties")
+    }
+
+    user := &responses.User{}
+    mapstructure.Decode(userResponse, user)
+
+    return user, true, nil
 
 }
 

@@ -57,6 +57,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     
     userUpdateRequest := &requests.UpdateUserRequestDTO{}
     userRole, found := c.Get("userRole")
+    spotifyID, spotifyIdExists := c.Get("spotifyID")
 
     if !found {
         c.JSON(http.StatusInternalServerError, "no role found for user")
@@ -75,7 +76,18 @@ func UpdateCurrentUserProperties(c *gin.Context) {
         return
     }
 
-    // do update here
+    user, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID.(string), userUpdateRequest)
 
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "could not find user in db")
+        return
+    }
+
+    c.JSON(http.StatusOK, user)
 
 }
