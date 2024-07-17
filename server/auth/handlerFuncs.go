@@ -8,6 +8,7 @@ import (
 
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
+	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/auth/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -48,7 +49,7 @@ func LoginCallback(c *gin.Context) {
     }
 
     if !foundUser {
-        user, err = db.InsertUserIntoDB(userProfileResponse.Display_name, userProfileResponse.Id, "user")
+        user, err = db.InsertUserIntoDB(userProfileResponse.Display_name, userProfileResponse.Id, responses.BASIC_USER)
     }
 
     if err != nil {
@@ -56,7 +57,13 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
-    tokenString, err := helpers.CreateAccessJWT(userProfileResponse.Id, userProfileResponse.Display_name, accessTokenResponse.Access_token, accessTokenResponse.Refresh_token, accessTokenResponse.Expires_in)
+    tokenString, err := helpers.CreateAccessJWT(
+        userProfileResponse.Id, 
+        userProfileResponse.Display_name, 
+        accessTokenResponse.Access_token, 
+        accessTokenResponse.Refresh_token, 
+        accessTokenResponse.Expires_in, 
+        responses.BASIC_USER)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
@@ -158,7 +165,9 @@ func RefreshJWT(c *gin.Context) {
         userProfileResponse.Display_name, 
         accessTokenResponseBody.Access_token, 
         accessTokenResponseBody.Refresh_token, 
-        accessTokenResponseBody.Expires_in)
+        accessTokenResponseBody.Expires_in,
+        responses.BASIC_USER,
+    )
 
     if err != nil {
         c.AbortWithStatusJSON(http.StatusInternalServerError, "error creating a JWT for the user")

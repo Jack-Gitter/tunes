@@ -5,11 +5,12 @@ import (
 	"time"
 
 	"github.com/Jack-Gitter/tunes/models/requests"
+	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 
-func CreateAccessJWT(spotifyID string, username string, accessToken string, refreshToken string, accessTokenExpiresAt int) (string, error) {
+func CreateAccessJWT(spotifyID string, username string, accessToken string, refreshToken string, accessTokenExpiresAt int, role responses.Role) (string, error) {
 
     claims := &requests.JWTClaims{
         RegisteredClaims: jwt.RegisteredClaims{
@@ -25,7 +26,7 @@ func CreateAccessJWT(spotifyID string, username string, accessToken string, refr
         AccessToken: accessToken,
         RefreshToken: refreshToken,
         AccessTokenExpiresAt: accessTokenExpiresAt,
-        UserRole: "user",
+        UserRole: role,
         Username: username,
     }
 
