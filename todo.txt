@@ -1,7 +1,7 @@
 tunes todos:
 
 
-make getUser a cypher transaction — needs to happen
+make getUser a cypher transaction — (maybe? -- what do we do about helper functions and reuse?)
 
 clean up the passing of the shit in the middleware -- spotify username we don't need that on the backend right???
 

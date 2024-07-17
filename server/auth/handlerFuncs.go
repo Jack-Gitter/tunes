@@ -89,11 +89,9 @@ func ValidateUserJWT(c *gin.Context) {
 
     spotifyID := token.Claims.(*requests.JWTClaims).SpotifyID
     spotifyRefreshToken := token.Claims.(*requests.JWTClaims).RefreshToken
-    spotifyUsername := token.Claims.(*requests.JWTClaims).Username
     spotifyAccessToken := token.Claims.(*requests.JWTClaims).AccessToken
 
     c.Set("spotifyID", spotifyID)
-    c.Set("spotifyUsername", spotifyUsername)
     c.Set("spotifyAccessToken", spotifyAccessToken)
     c.Set("spotifyRefreshToken", spotifyRefreshToken)
     
@@ -116,8 +114,6 @@ func RefreshJWT(c *gin.Context) {
         c.Next()
     }
 
-    spotifyID, _ := c.Get("spotifyID")
-    spotifyUsername, _ := c.Get("spotifyUsername")
     spotifyRefreshToken, _ := c.Get("spotifyRefreshToken")
 
 
@@ -150,7 +146,19 @@ func RefreshJWT(c *gin.Context) {
         accessTokenResponseBody.Refresh_token = spotifyRefreshToken.(string)
     }
 
-    accessTokenJWT, err := helpers.CreateAccessJWT(spotifyID.(string), spotifyUsername.(string), accessTokenResponseBody.Access_token, accessTokenResponseBody.Refresh_token, accessTokenResponseBody.Expires_in)
+    userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponseBody.Access_token)
+
+    if err != nil {
+        c.AbortWithStatusJSON(http.StatusInternalServerError, "unable to get user profile from spotify")
+        return
+    }
+
+    accessTokenJWT, err := helpers.CreateAccessJWT(
+        userProfileResponse.Id, 
+        userProfileResponse.Display_name, 
+        accessTokenResponseBody.Access_token, 
+        accessTokenResponseBody.Refresh_token, 
+        accessTokenResponseBody.Expires_in)
 
     if err != nil {
         c.AbortWithStatusJSON(http.StatusInternalServerError, "error creating a JWT for the user")
@@ -158,7 +166,7 @@ func RefreshJWT(c *gin.Context) {
     }
 
     c.SetCookie("JWT", accessTokenJWT, 3600, "/", "localhost", false, true)
-    c.Set("spotifyUsername", spotifyUsername)
+    c.Set("spotifyID", userProfileResponse.Id)
     c.Set("spotifyAccessToken", accessTokenResponseBody.Access_token)
     c.Next()
 }
