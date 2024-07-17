@@ -3,10 +3,6 @@ tunes todos:
 
 make getUser a cypher transaction — (maybe? -- what do we do about helper functions and reuse?)
 
-clean up the passing of the shit in the middleware -- spotify username we don't need that on the backend right???
-
-in the refresh middleware -- make sure that I'm refreshing the user data in the JWT as well, need to request their spotify profile and refill the JWT fields. Don't just use the old ones?
-
 user
      update
      delete
