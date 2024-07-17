@@ -1,6 +1,5 @@
 tunes todos:
 
-
 data integrity:
     make GetUserFromDbBySpotifyID a cypher transaction so that if we fetch a user and delete a user at the same time, the user is not returned with no posts
     protobuf?
@@ -27,7 +26,6 @@ dockerize:
 
 admin: 
     cors
-
 
 
 caching questions: 
