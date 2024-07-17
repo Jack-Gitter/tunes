@@ -59,7 +59,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     userRole, found := c.Get("userRole")
     spotifyID, spotifyIdExists := c.Get("spotifyID")
 
-    if !found {
+    if !found || !spotifyIdExists {
         c.JSON(http.StatusInternalServerError, "no role found for user")
         return
     }
@@ -67,12 +67,18 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(userUpdateRequest)
 
     if err != nil {
+        fmt.Println(err.Error())
         c.JSON(http.StatusBadRequest, "invalid json body for updating a user!")
         return
     }
 
     if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
         c.JSON(http.StatusUnauthorized, "cannot change your role if you're not admin!")
+        return
+    }
+
+    if !responses.IsValidRole(string(*userUpdateRequest.Role)) {
+        c.JSON(http.StatusBadRequest, "invalid user role")
         return
     }
 

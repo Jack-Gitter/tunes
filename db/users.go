@@ -70,17 +70,19 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
 func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, bool, error) { 
     query := "MATCH (u:User {spotifyID: $spotifyID}) SET "
     if updatedUser.Bio != nil {
-        query += "u.Bio = $Bio "
+        query += "u.Bio = $Bio"
     }
     if updatedUser.Role != nil {
-        query += "u.Role = $Role "
+        query += ", u.Role = $Role"
     }
-    query += "return properties(u) as userProperties"
+    query += " return properties(u) as userProperties"
 
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     query,
         map[string]any{
             "spotifyID": spotifyID,
+            "Bio": *updatedUser.Bio,
+            "Role": *updatedUser.Role,
         }, neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
     )

@@ -63,7 +63,7 @@ func LoginCallback(c *gin.Context) {
         accessTokenResponse.Access_token, 
         accessTokenResponse.Refresh_token, 
         accessTokenResponse.Expires_in, 
-        responses.BASIC_USER)
+        user.Role) 
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
