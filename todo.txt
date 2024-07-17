@@ -4,12 +4,14 @@ data integrity:
     protobuf?
     
 endpoints: 
+    general: 
+        make helper methods to reduce code duplication between endpoints that are for currentUser and spotifyID user
     user
         update
         delete
     posts
-        paginate the get posts for specific user endpoint
-        paginate the get posts for current user 
+        paginate the get posts for specific user endpoint -- get all user posts, sort them by id, and then return a subset of them
+        paginate the get posts for current user -- see above
         update
     comments
         create

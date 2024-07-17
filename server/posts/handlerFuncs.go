@@ -77,13 +77,15 @@ func CreatePostForCurrentUser(c *gin.Context) {
 func GetAllPostsForUserByID(c *gin.Context) {
 
     spotifyID := c.Param("spotifyID")
+    offset := c.Query("offset")
+    limit := c.Query("limit")
 
     if spotifyID == "" {
         c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
         return
     }
 
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID)
+    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, offset, limit)
 
     if err != nil {
         c.JSON(http.StatusUnauthorized, "issue getting data for user")
@@ -95,13 +97,15 @@ func GetAllPostsForUserByID(c *gin.Context) {
 
 func GetAllPostsForCurrentUser(c *gin.Context) {
     spotifyID, spotifyIDExists := c.Get("spotifyID")
+    offset := c.Query("offset")
+    limit := c.Query("limit")
 
     if !spotifyIDExists {
         c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
         return
     }
 
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID.(string))
+    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID.(string), offset, limit)
 
     if err != nil {
         c.JSON(http.StatusUnauthorized, "issue getting data for user")
