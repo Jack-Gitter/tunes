@@ -12,9 +12,6 @@ type User struct {
     UserIdentifer `mapstructure:",squash"`
     Bio string
     Role Role
-    Posts []PostPreview
-    Followers []UserIdentifer
-    Following []UserIdentifer
 }
 
 type UserIdentifer struct {

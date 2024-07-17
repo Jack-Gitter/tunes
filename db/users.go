@@ -35,30 +35,6 @@ func InsertUserIntoDB(username string, spotifyID string, role string) (*response
 /* =================== READ ================== */
 
 func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
-
-    user, foundUser, err := getUserProperties(spotifyID)
-
-    if err != nil {
-        return nil, false, err
-    }
-
-    if !foundUser {
-        return nil, false, nil
-    }
-
-    posts, err := GetUserPostsPreviewsByUserID(spotifyID)
-
-    if err != nil {
-        return nil, false, err
-    }
-
-    user.Posts = posts
-
-    return user, true, nil
-
-}
-
-func getUserProperties(spotifyID string) (*responses.User, bool, error) {
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MATCH (u:User {spotifyID: $spotifyID}) RETURN properties(u) as userProperties",
         map[string]any{
