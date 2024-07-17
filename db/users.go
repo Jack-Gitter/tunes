@@ -81,8 +81,8 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
     query,
         map[string]any{
             "spotifyID": spotifyID,
-            "Bio": *updatedUser.Bio,
-            "Role": *updatedUser.Role,
+            "Bio": updatedUser.Bio,
+            "Role": updatedUser.Role,
         }, neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
     )

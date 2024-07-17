@@ -53,6 +53,50 @@ func GetCurrentUser(c *gin.Context) {
     c.JSON(http.StatusOK, user)
 }
 
+func UpdateUserBySpotifyID(c *gin.Context) {
+
+    userUpdateRequest := &requests.UpdateUserRequestDTO{}
+    userRole, found := c.Get("userRole")
+    spotifyID := c.Param("spotifyID")
+
+    if !found || spotifyID == "" {
+        c.JSON(http.StatusInternalServerError, "no role found for user")
+        return
+    }
+
+    err := c.ShouldBindBodyWithJSON(userUpdateRequest)
+
+    if err != nil {
+        fmt.Println(err.Error())
+        c.JSON(http.StatusBadRequest, "invalid json body for updating a user!")
+        return
+    }
+
+    if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
+        c.JSON(http.StatusUnauthorized, "cannot change your role if you're not admin!")
+        return
+    }
+
+    if userUpdateRequest.Role != nil && !responses.IsValidRole(string(*userUpdateRequest.Role)) {
+        c.JSON(http.StatusBadRequest, "invalid user role")
+        return
+    }
+
+    user, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "could not find user in db")
+        return
+    }
+
+    c.JSON(http.StatusOK, user)
+}
+
 func UpdateCurrentUserProperties(c *gin.Context) {
     
     userUpdateRequest := &requests.UpdateUserRequestDTO{}
@@ -77,7 +121,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
         return
     }
 
-    if !responses.IsValidRole(string(*userUpdateRequest.Role)) {
+    if userUpdateRequest.Role != nil && !responses.IsValidRole(string(*userUpdateRequest.Role)) {
         c.JSON(http.StatusBadRequest, "invalid user role")
         return
     }
