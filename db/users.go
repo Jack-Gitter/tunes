@@ -3,6 +3,8 @@ package db
 import (
 	"errors"
 	"os"
+
+	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -65,7 +67,11 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
 
 
 /* PROPERTY UPDATES */
-func UpdateUserPropertiesBySpotifyID(updatedUser *responses.User) (*responses.User, bool, error) { return nil, false, nil}
+func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, bool, error) { 
+
+    return nil, false, nil
+
+}
 
 
 /* RELATIONAL UDPATES */

@@ -48,3 +48,7 @@ func GetCurrentUser(c *gin.Context) {
 
     c.JSON(http.StatusOK, user)
 }
+
+func UpdateCurrentUserProperties(c *gin.Context) {
+
+}
