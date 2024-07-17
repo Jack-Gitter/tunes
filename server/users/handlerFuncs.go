@@ -1,8 +1,12 @@
 package users
 
 import (
+	"fmt"
 	"net/http"
+
 	"github.com/Jack-Gitter/tunes/db"
+	"github.com/Jack-Gitter/tunes/models/requests"
+	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/gin-gonic/gin"
 )
 
@@ -50,5 +54,28 @@ func GetCurrentUser(c *gin.Context) {
 }
 
 func UpdateCurrentUserProperties(c *gin.Context) {
+    
+    userUpdateRequest := &requests.UpdateUserRequestDTO{}
+    userRole, found := c.Get("userRole")
+
+    if !found {
+        c.JSON(http.StatusInternalServerError, "no role found for user")
+        return
+    }
+
+    err := c.ShouldBindBodyWithJSON(userUpdateRequest)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, "invalid json body for updating a user!")
+        return
+    }
+
+    if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
+        c.JSON(http.StatusUnauthorized, "cannot change your role if you're not admin!")
+        return
+    }
+
+    // do update here
+
 
 }

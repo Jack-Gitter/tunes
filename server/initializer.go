@@ -15,8 +15,8 @@ func InitializeHttpServer() *gin.Engine {
 
     r.GET("/users/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.GetUserById)
     r.GET("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.GetCurrentUser)
-    /*r.POST("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.UpdateCurrentUserProperties) // only if you are an admin can you change your own role, otherwise ignore (admin middleware)
-    r.POST("/user/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.UpdateUserBySpotifyID)
+    r.PATCH("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.UpdateCurrentUserProperties) // only if you are an admin can you change your own role, otherwise ignore (admin middleware)
+    /*r.POST("/user/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.UpdateUserBySpotifyID)
     r.DELETE("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.DeleteCurrentUser) // need to invalidate the JWT
     r.DELETE("/user/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.DeleteUserBySpotifyID)*/ // can only do this if you are an admin!
 
