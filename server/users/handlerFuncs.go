@@ -74,6 +74,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
     c.JSON(http.StatusOK, user)
 }
 
+
 func UpdateCurrentUserProperties(c *gin.Context) {
     
     userUpdateRequest := &requests.UpdateUserRequestDTO{}

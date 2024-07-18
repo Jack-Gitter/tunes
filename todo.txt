@@ -8,10 +8,7 @@ testing:
     implement a git workflow to run tests on push
 
 endpoints: 
-    general: 
-        make helper methods for post handlers to reduce code between spotifyID and currentUser endpoints
     user
-        update
         delete
     posts
         update
