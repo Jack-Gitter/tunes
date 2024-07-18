@@ -66,7 +66,7 @@ func GetFollowers(c *gin.Context) {
     }
 
     if paginationKey == "" {
-        paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaa"
+        paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
     }
 
     followersPaginated, found, err := db.GetFollowers(spotifyID.(string), paginationKey)
