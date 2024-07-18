@@ -77,9 +77,9 @@ func CreatePostForCurrentUser(c *gin.Context) {
 func GetAllPostsForUserByID(c *gin.Context) {
 
     spotifyID := c.Param("spotifyID")
-    timestamp := c.Query("timestamp")
+    createdAt := c.Query("createdAt")
 
-    posts, err := getAllPosts(spotifyID, timestamp)
+    posts, err := getAllPosts(spotifyID, createdAt)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
@@ -91,14 +91,14 @@ func GetAllPostsForUserByID(c *gin.Context) {
 
 func GetAllPostsForCurrentUser(c *gin.Context) {
     spotifyID, spotifyIDExists := c.Get("spotifyID")
-    timestamp := c.Query("timestamp")
+    createdAt := c.Query("createdAt")
 
     if !spotifyIDExists {
         c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
         return
     }
 
-    posts, err := getAllPosts(spotifyID.(string), timestamp)
+    posts, err := getAllPosts(spotifyID.(string), createdAt)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
@@ -214,12 +214,12 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
 
 }
 
-func getAllPosts(spotifyID string, timestamp string) (*responses.PaginationResponse[[]responses.PostPreview], error) {
+func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview], error) {
     var t time.Time 
-    if timestamp == "" {
+    if createdAt == "" {
         t = time.Now().UTC()
     } else {
-        t, _ = time.Parse(time.RFC3339, timestamp)
+        t, _ = time.Parse(time.RFC3339, createdAt)
     }
 
     posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, t)

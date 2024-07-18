@@ -12,10 +12,10 @@ import (
 
 /* ===================== CREATE =====================  */
 
-func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, timestamp time.Time) (*responses.Post, error) {
+func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time) (*responses.Post, error) {
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) 
-    MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text, timestamp: $timestamp})
+    MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text, createdAt: $createdAt, updatedAt: $updatedAt})
      CREATE (u)-[:Posted]->(p)
      RETURN properties(p) as Post, u.username as Username`,
         map[string]any{ 
@@ -27,7 +27,8 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
             "rating": rating,
             "text": text,
             "spotifyID": spotifyID,
-            "timestamp": timestamp,
+            "createdAt": createdAt,
+            "updatedAt": time.Now().UTC(),
         }, 
         neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
@@ -85,13 +86,13 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
 }
 
 // make this method get the posts with id offset -> offset+limit-1
-func GetUserPostsPreviewsByUserID(spotifyID string, timestamp time.Time) (*responses.PaginationResponse[[]responses.PostPreview], error) {
+func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview], error) {
 
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) WHERE datetime(p.timestamp) < datetime($time) RETURN properties(p) as postProperties, u.username as Username ORDER BY p.timestamp DESC LIMIT 25",
+    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) WHERE datetime(p.createdAt) < datetime($time) RETURN properties(p) as postProperties, u.username as Username ORDER BY p.createdAt DESC LIMIT 25",
         map[string]any{
             "spotifyID": spotifyID,
-            "time": timestamp,
+            "time": createdAt,
         }, neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
     )
@@ -116,7 +117,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, timestamp time.Time) (*respo
     paginationResponse := &responses.PaginationResponse[[]responses.PostPreview]{}
     paginationResponse.DataResponse = posts
     if len(posts) > 0 {
-        paginationResponse.PaginationKey = posts[len(posts)-1].Timestamp
+        paginationResponse.PaginationKey = posts[len(posts)-1].CreatedAt
     } else {
         paginationResponse.PaginationKey = time.Time{}
     }

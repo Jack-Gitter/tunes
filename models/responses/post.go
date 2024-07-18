@@ -18,5 +18,6 @@ type PostPreview struct {
     Text string
     Likes []UserIdentifer
     Dislikes []UserIdentifer
-    Timestamp time.Time
+    CreatedAt time.Time
+    UpdatedAt time.Time
 }
