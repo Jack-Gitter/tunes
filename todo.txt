@@ -10,6 +10,9 @@ testing:
 general: 
     rework file structure into users all in one section, posts all in one folder etc
 
+errors:
+    the errors are a mess, think about them and fix!
+
 endpoints: 
     general: 
         make the createPost endpoint either into a transaction OR just add a constraint on the database so that PK and trackID have to be unique
@@ -18,7 +21,6 @@ endpoints:
         follow another user
         unfollow another user
     posts
-        update
         like another post
         unlike a post
     comments
