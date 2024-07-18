@@ -1,9 +1,7 @@
 package posts
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
