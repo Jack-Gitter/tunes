@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -148,6 +149,7 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
         return nil, false, nil
     }
 
+    fmt.Println(resp.Records[0].Get("User"))
     users := []responses.User{}
 
     for _, record := range resp.Records {
@@ -161,7 +163,7 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
     }
     paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
     paginationResponse.DataResponse = users
-    paginationResponse.PaginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+    paginationResponse.PaginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
     if len(users) > 0 {
         paginationResponse.PaginationKey = users[len(users)-1].SpotifyID
     }
