@@ -25,6 +25,11 @@ func CreatePostForCurrentUser(c *gin.Context) {
     createPostDTO := &requests.CreatePostDTO{}
     err := c.ShouldBindBodyWithJSON(createPostDTO)
 
+    if createPostDTO.Rating < 0 || createPostDTO.Rating > 5 {
+        c.JSON(http.StatusBadRequest, "please rate from 0-5!")
+        return
+    }
+
     if err != nil {
         c.JSON(http.StatusBadRequest, err.Error())
         return

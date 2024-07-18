@@ -200,6 +200,9 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
     r := -1 
     if rating != nil {
         r = *rating
+        if r < 0 || r > 5 {
+            return nil, false, errors.New("please rate 0 to 5!")
+        }
         query += ", p.rating = $rating"
     }
 
