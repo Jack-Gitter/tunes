@@ -9,7 +9,6 @@ testing:
 
 endpoints: 
     user
-        delete
         follow another user
         unfollow another user
     posts
