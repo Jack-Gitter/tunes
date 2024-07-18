@@ -55,6 +55,30 @@ func UnFollowUser(c *gin.Context) {
 
 }
 
+func GetFollowersByID(c *gin.Context) {
+    spotifyID := c.Param("spotifyID")
+    paginationKey := c.Query("spotifyID")
+
+    if paginationKey == "" {
+        paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+
+    followersPaginated, found, err := db.GetFollowers(spotifyID, paginationKey)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "user not found")
+        return
+    }
+
+    c.JSON(http.StatusOK, followersPaginated)
+
+}
+
 func GetFollowers(c *gin.Context) {
 
     spotifyID, found := c.Get("spotifyID")

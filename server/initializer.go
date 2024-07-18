@@ -16,6 +16,7 @@ func InitializeHttpServer() *gin.Engine {
     r.GET("/users/:spotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.GetUserById)
     r.GET("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.GetCurrentUser)
     r.GET("/currentUser/followers", auth.ValidateUserJWT, auth.RefreshJWT, users.GetFollowers)
+    r.GET("/users/:spotifyID/followers/", auth.ValidateUserJWT, auth.RefreshJWT, users.GetFollowersByID)
     r.POST("/currentUser/follow/:otherUserSpotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.FollowerUser)
     r.POST("/currentUser/unfollow/:otherUserSpotifyID", auth.ValidateUserJWT, auth.RefreshJWT, users.UnFollowUser)
     r.PATCH("/currentUser", auth.ValidateUserJWT, auth.RefreshJWT, users.UpdateCurrentUserProperties) // only if you are an admin can you change your own role, otherwise ignore (admin middleware)
