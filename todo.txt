@@ -20,6 +20,7 @@ endpoints:
         make logging in a transaction -- the whole user creation part of it maybe
     user
         getFollowers pagniated
+        getFollowersByID paginated
     posts
         like another post
         unlike a post

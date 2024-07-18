@@ -1,8 +1,6 @@
 package responses
 
-import "time"
-
-type PaginationResponse[T any] struct {
-    PaginationKey time.Time
+type PaginationResponse[T any, U any] struct {
+    PaginationKey U 
     DataResponse T
 }

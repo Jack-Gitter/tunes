@@ -22,4 +22,3 @@ type UserIdentifer struct {
     Username string
     SpotifyID string
 }
-

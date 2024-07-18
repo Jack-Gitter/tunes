@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -127,6 +128,47 @@ func DeleteUserByID(spotifyID string) (bool, error) {
 
     return true, nil
 
+}
+
+func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], bool, error) {
+    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    `MATCH (u1:User {spotifyID: $spotifyID}) return properties(u1) as User UNION
+     MATCH (u2)-[f:Follows]->(u1) WHERE normalize(u2.spotifyID) < normalize($paginationKey) return properties(u2) as User ORDER BY u2.spotifyID DESC LIMIT 25`,
+        map[string]any{
+            "spotifyID": spotifyID,
+            "paginationKey": paginationKey,
+        }, neo4j.EagerResultTransformer,
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
+    )
+
+    if err != nil {
+        return nil, false, err
+    }
+
+    if len(resp.Records) < 1 {
+        return nil, false, nil
+    }
+
+    users := []responses.User{}
+
+    for _, record := range resp.Records {
+        userResponse, exists := record.Get("User")
+        if !exists { return nil, false, errors.New("post has no properties in database") }
+        user := &responses.User{}
+        mapstructure.Decode(userResponse, user)
+        if user.SpotifyID != spotifyID {
+            users = append(users, (*user))
+        }
+    }
+
+    paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
+    paginationResponse.DataResponse = users
+    paginationResponse.PaginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaa"
+    if len(users) > 0 {
+        paginationResponse.PaginationKey = users[len(users)-1].SpotifyID
+    }
+
+    return paginationResponse, true, nil
 }
 
 func UnfollowUser(spotifyID string, otherUserSpotifyID string) (bool, error)  {

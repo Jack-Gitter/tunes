@@ -255,7 +255,7 @@ func UpdateCurrentUserPost(c *gin.Context) {
     c.JSON(http.StatusOK, preview)
 }
 
-func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview], error) {
+func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
     var t time.Time 
     if createdAt == "" {
         t = time.Now().UTC()

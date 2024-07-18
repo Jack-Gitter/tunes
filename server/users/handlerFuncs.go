@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -53,6 +52,37 @@ func UnFollowUser(c *gin.Context) {
     }
 
     c.Status(http.StatusOK)
+
+}
+
+func GetFollowers(c *gin.Context) {
+
+    spotifyID, found := c.Get("spotifyID")
+    paginationKey := c.Query("spotifyID")
+
+    if !found {
+        c.JSON(http.StatusInternalServerError, "no jwt")
+        return
+    }
+
+    if paginationKey == "" {
+        paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+
+    followersPaginated, found, err := db.GetFollowers(spotifyID.(string), paginationKey)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "user not found")
+        return
+    }
+
+    c.JSON(http.StatusOK, followersPaginated)
+
 
 }
 

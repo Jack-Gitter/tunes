@@ -86,7 +86,7 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
 }
 
 // make this method get the posts with id offset -> offset+limit-1
-func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview], error) {
+func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
 
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) WHERE datetime(p.createdAt) < datetime($time) RETURN properties(p) as postProperties, u.username as Username ORDER BY p.createdAt DESC LIMIT 25",
@@ -114,7 +114,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
         posts = append(posts, (*post))
     }
 
-    paginationResponse := &responses.PaginationResponse[[]responses.PostPreview]{}
+    paginationResponse := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{}
     paginationResponse.DataResponse = posts
     if len(posts) > 0 {
         paginationResponse.PaginationKey = posts[len(posts)-1].CreatedAt
