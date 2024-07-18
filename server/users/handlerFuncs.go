@@ -105,6 +105,47 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 
 }
 
+func DeleteCurrentUser(c *gin.Context) {
+    spotifyID, spotifyIdExists := c.Get("spotifyID")
+    if !spotifyIdExists {
+        c.JSON(http.StatusBadRequest, "no spotify id found")
+        return
+    }
+
+    found, err := db.DeleteUserByID(spotifyID.(string))
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "could not find user")
+        return
+    }
+
+    c.Status(http.StatusOK)
+}
+
+func DeleteUserBySpotifyID(c *gin.Context) {
+
+    spotifyID := c.Param("spotifyID")
+
+    found, err := db.DeleteUserByID(spotifyID)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "no user with that id found")
+        return
+    }
+
+    c.Status(http.StatusOK)
+}
+
 func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, error) {
 
     if userUpdateRequest.Role != nil && userRole != responses.ADMIN {

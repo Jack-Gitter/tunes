@@ -10,8 +10,12 @@ testing:
 endpoints: 
     user
         delete
+        follow another user
+        unfollow another user
     posts
         update
+        like another post
+        unlike a post
     comments
         create
         read (paginated)
