@@ -19,7 +19,6 @@ endpoints:
         make the createPost endpoint either into a transaction OR just add a constraint on the database so that PK and trackID have to be unique
         make logging in a transaction -- the whole user creation part of it maybe
     user
-        follow another user
         unfollow another user
         getFollowers pagniated
     posts

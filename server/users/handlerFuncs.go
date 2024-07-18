@@ -25,6 +25,37 @@ func GetUserById(c *gin.Context) {
     c.JSON(http.StatusOK, user) 
 }
 
+func UnFollowUser(c *gin.Context) {
+
+    otherUserSpotifyID := c.Param("otherUserSpotifyID")
+    spotifyID, found := c.Get("spotifyID")
+
+    if otherUserSpotifyID == spotifyID {
+        c.JSON(http.StatusBadRequest, "cannot unfollow yourself!")
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "no jwt")
+        return
+    }
+
+    found, err := db.UnfollowUser(spotifyID.(string), otherUserSpotifyID)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "one user couldn't be fond!")
+        return
+    }
+
+    c.Status(http.StatusOK)
+
+}
+
 func FollowerUser(c *gin.Context) {
     otherUserSpotifyID := c.Param("otherUserSpotifyID")
     spotifyID, found := c.Get("spotifyID")
