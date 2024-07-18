@@ -8,6 +8,8 @@ testing:
     implement a git workflow to run tests on push
 
 endpoints: 
+    general: 
+        make the createPost endpoint either into a transaction OR just add a constraint on the database so that PK and trackID have to be unique
     user
         follow another user
         unfollow another user

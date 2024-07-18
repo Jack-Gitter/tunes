@@ -214,6 +214,39 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
 
 }
 
+func UpdateCurrentUserPost(c *gin.Context) {
+
+    spotifyID, exists := c.Get("spotifyID")
+    songID := c.Param("songID")
+    updatePostReq := requests.UpdatePostRequestDTO{}
+    err := c.ShouldBindBodyWithJSON(updatePostReq)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, "bad json body")
+        return
+    }
+
+    if !exists {
+        c.JSON(http.StatusBadRequest, "need jwt")
+        return
+    }
+
+
+    preview, found, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "could not find post or user")
+        return
+    }
+
+    c.JSON(http.StatusOK, preview)
+}
+
 func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview], error) {
     var t time.Time 
     if createdAt == "" {
