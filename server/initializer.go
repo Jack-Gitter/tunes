@@ -28,8 +28,8 @@ func InitializeHttpServer() *gin.Engine {
     r.POST("/posts", auth.ValidateUserJWT, auth.RefreshJWT, posts.CreatePostForCurrentUser)
     r.DELETE("/posts/:spotifyID/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.DeletePostBySpotifyIDAndSongID)
     r.DELETE("/currentUserPosts/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.DeletePostForCurrentUserBySongID)
-    /*r.POST("/currentUserPosts/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.UpdateCurrentUserPostByID)
-      r.POST("posts/:spotifyID/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.UpdateUserPostBySpotifyID) // make a seperate middleware to validate that someone is an admin!!!
+    r.POST("/currentUserPosts/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.UpdateCurrentUserPost)
+      /*r.POST("posts/:spotifyID/:songID", auth.ValidateUserJWT, auth.RefreshJWT, posts.UpdateUserPostBySpotifyID) // make a seperate middleware to validate that someone is an admin!!!
     */
     return r
 }

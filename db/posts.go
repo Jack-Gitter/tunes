@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Jack-Gitter/tunes/models/responses"
-	"github.com/go-playground/locales/wae"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -190,7 +189,7 @@ func DeletePost(songID string, spotifyID string) (bool, bool, error) {
 /* PROPERTY UPDATES */
 func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*responses.PostPreview, bool, error) {
     
-    query := "MATCH (u:User {spotifyID: $spotifyID}) (u)-[:Posted]->(p) WHERE p.songID = $songID"
+    query := "MATCH (u:User {spotifyID: $spotifyID}), (u)-[:Posted]->(p) WHERE p.songID = $songID"
 
     t := ""
     if text != nil {
@@ -204,7 +203,7 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
         query += ", p.rating = $rating"
     }
 
-    query += " RETURN properties(p) as postProperties"
+    query += ", p.updatedAt = $updatedAt RETURN properties(p) as postProperties, u.username as username"
 
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     query,
@@ -213,6 +212,7 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
             "songID": songID,
             "text": t,
             "rating": r,
+            "updatedAt": time.Now().UTC(),
         }, 
         neo4j.EagerResultTransformer,
         neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
@@ -228,12 +228,15 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
 
     postPreview := &responses.PostPreview{}
     props, found := resp.Records[0].Get("postProperties")
+    username, foundu := resp.Records[0].Get("username")
     
-    if !found {
+    if !found || !foundu {
         return nil, false, nil
     }
 
     mapstructure.Decode(props, postPreview)
+    postPreview.Username = username.(string)
+    postPreview.SpotifyID = spotifyID
 
     return postPreview, true, nil
 

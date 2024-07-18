@@ -1,8 +1,10 @@
 package posts
 
 import (
+	"fmt"
 	"net/http"
 	"time"
+
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -218,10 +220,12 @@ func UpdateCurrentUserPost(c *gin.Context) {
 
     spotifyID, exists := c.Get("spotifyID")
     songID := c.Param("songID")
-    updatePostReq := requests.UpdatePostRequestDTO{}
+    updatePostReq := &requests.UpdatePostRequestDTO{}
+
     err := c.ShouldBindBodyWithJSON(updatePostReq)
 
     if err != nil {
+        fmt.Println(err.Error())
         c.JSON(http.StatusBadRequest, "bad json body")
         return
     }
