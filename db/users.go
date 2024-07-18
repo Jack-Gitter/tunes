@@ -160,7 +160,6 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
             users = append(users, (*user))
         }
     }
-
     paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
     paginationResponse.DataResponse = users
     paginationResponse.PaginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
