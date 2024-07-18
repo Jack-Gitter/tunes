@@ -3,7 +3,6 @@ package posts
 import (
 	"net/http"
 	"time"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -90,23 +89,6 @@ func GetAllPostsForUserByID(c *gin.Context) {
     c.JSON(http.StatusOK, posts)
 }
 
-func getAllPosts(spotifyID string, timestamp string) (*responses.PaginationResponse[[]responses.PostPreview], error) {
-    var t time.Time 
-    if timestamp == "" {
-        t = time.Now().UTC()
-    } else {
-        t, _ = time.Parse(time.RFC3339, timestamp)
-    }
-
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, t)
-
-    if err != nil {
-        return nil, err
-    }
-
-    return posts, nil
-
-}
 func GetAllPostsForCurrentUser(c *gin.Context) {
     spotifyID, spotifyIDExists := c.Get("spotifyID")
     timestamp := c.Query("timestamp")
@@ -229,5 +211,23 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, "post deleted")
+
+}
+
+func getAllPosts(spotifyID string, timestamp string) (*responses.PaginationResponse[[]responses.PostPreview], error) {
+    var t time.Time 
+    if timestamp == "" {
+        t = time.Now().UTC()
+    } else {
+        t, _ = time.Parse(time.RFC3339, timestamp)
+    }
+
+    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, t)
+
+    if err != nil {
+        return nil, err
+    }
+
+    return posts, nil
 
 }
