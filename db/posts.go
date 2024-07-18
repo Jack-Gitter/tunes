@@ -117,7 +117,13 @@ func GetUserPostsPreviewsByUserID(spotifyID string, offset int, limit int, times
 
     paginationResponse := &responses.PaginationResponse[[]responses.PostPreview]{}
     paginationResponse.DataResponse = posts
-    paginationResponse.PaginationKey = posts[len(posts)-1].Timestamp
+    if len(posts) > 0 {
+        paginationResponse.PaginationKey = posts[len(posts)-1].Timestamp
+        paginationResponse.More = true
+    } else {
+        paginationResponse.PaginationKey = time.Time{}
+        paginationResponse.More = false
+    }
 
     return paginationResponse, nil
 }

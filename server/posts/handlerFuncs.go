@@ -128,10 +128,10 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
     if offset == "" { offset = "0" }
     if limit == "" { limit = "25" }
     fmt.Println(timestamp)
+    // parsing timestamp is bog
     if timestamp == "" {timestamp = time.Now().UTC().String()}
-    layout := "2006-01-02 15:04:05 -0700 UTC"
+    layout := "2006-01-02 15:04:05.999999999 -0700 MST"
     time, err := time.Parse(layout, timestamp)
-    fmt.Println(err.Error())
     fmt.Println(time)
 
     offset_int, err := strconv.Atoi(offset)
