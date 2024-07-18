@@ -3,6 +3,10 @@ tunes todos:
 data integrity:
     protobuf?
     
+testing:
+    implement tests
+    implement a git workflow to run tests on push
+
 endpoints: 
     general: 
         make helper methods to reduce code duplication between endpoints that are for currentUser and spotifyID user
@@ -10,8 +14,6 @@ endpoints:
         update
         delete
     posts
-        paginate the get posts for specific user endpoint -- get all user posts, sort them by id, and then return a subset of them
-        paginate the get posts for current user -- see above
         update
     comments
         create

@@ -3,7 +3,6 @@ package users
 import (
 	"fmt"
 	"net/http"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -14,20 +13,16 @@ func GetUserById(c *gin.Context) {
 
     spotifyID := c.Param("spotifyID")
 
-    user, foundUser, err := db.GetUserFromDbBySpotifyID(spotifyID)
-    
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
+    user, err := getUser(spotifyID)
 
-    if !foundUser {
-        c.JSON(http.StatusBadRequest, "no user with that ID has been found")
+    if err != nil {
+        c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
     c.JSON(http.StatusOK, user) 
 }
+
 
 func GetCurrentUser(c *gin.Context) {
 
@@ -38,15 +33,10 @@ func GetCurrentUser(c *gin.Context) {
         return
     }
 
-    user, foundUser, err := db.GetUserFromDbBySpotifyID(spotifyID.(string))
+    user, err := getUser(spotifyID.(string))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if !foundUser {
-        c.JSON(http.StatusBadRequest, "no user with the ID found in the JWT exists in the DB")
+        c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
@@ -139,5 +129,21 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, user)
+
+}
+
+func getUser(spotifyID string) (*responses.User, error) {
+
+    user, foundUser, err := db.GetUserFromDbBySpotifyID(spotifyID)
+
+    if err != nil {
+        return nil, err
+    }
+
+    if !foundUser {
+        return nil, err
+    }
+
+    return user, nil
 
 }
