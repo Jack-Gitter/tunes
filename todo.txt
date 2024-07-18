@@ -14,7 +14,6 @@ endpoints:
         update
         delete
     posts
-        postPreviewByID --> make it keyset pagination instead. It is much better!
         update
     comments
         create

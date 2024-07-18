@@ -6,6 +6,7 @@ import (
 
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
+	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/posts/helpers"
 	"github.com/gin-gonic/gin"
 )
@@ -79,33 +80,17 @@ func GetAllPostsForUserByID(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
     timestamp := c.Query("timestamp")
 
-    var t time.Time 
-
-    if timestamp == "" {
-        t = time.Now().UTC()
-    } else {
-        t, _ = time.Parse(time.RFC3339, timestamp)
-    }
-
-    if spotifyID == "" {
-        c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
-        return
-    }
-
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, t)
+    posts, err := getAllPosts(spotifyID, timestamp)
 
     if err != nil {
-        c.JSON(http.StatusUnauthorized, "issue getting data for user")
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
     c.JSON(http.StatusOK, posts)
 }
 
-func GetAllPostsForCurrentUser(c *gin.Context) {
-    spotifyID, spotifyIDExists := c.Get("spotifyID")
-    timestamp := c.Query("timestamp")
-
+func getAllPosts(spotifyID string, timestamp string) (*responses.PaginationResponse[[]responses.PostPreview], error) {
     var t time.Time 
     if timestamp == "" {
         t = time.Now().UTC()
@@ -113,15 +98,28 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
         t, _ = time.Parse(time.RFC3339, timestamp)
     }
 
+    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, t)
+
+    if err != nil {
+        return nil, err
+    }
+
+    return posts, nil
+
+}
+func GetAllPostsForCurrentUser(c *gin.Context) {
+    spotifyID, spotifyIDExists := c.Get("spotifyID")
+    timestamp := c.Query("timestamp")
+
     if !spotifyIDExists {
         c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
         return
     }
 
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID.(string), t)
+    posts, err := getAllPosts(spotifyID.(string), timestamp)
 
     if err != nil {
-        c.JSON(http.StatusUnauthorized, "issue getting data for user")
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
