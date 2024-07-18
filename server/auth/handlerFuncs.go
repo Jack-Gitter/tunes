@@ -201,6 +201,7 @@ func ValidateAdminUser(c *gin.Context) {
 
     if !found {
         c.AbortWithStatusJSON(http.StatusInternalServerError, "could not get role for the current user!")
+        return
     }
 
     if role == responses.ADMIN {

@@ -1,8 +1,10 @@
 package users
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -62,31 +64,40 @@ func UpdateUserBySpotifyID(c *gin.Context) {
         return
     }
 
-    if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
-        c.JSON(http.StatusUnauthorized, "cannot change your role if you're not admin!")
-        return
-    }
-
-    if userUpdateRequest.Role != nil && !responses.IsValidRole(string(*userUpdateRequest.Role)) {
-        c.JSON(http.StatusBadRequest, "invalid user role")
-        return
-    }
-
-    user, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
+    user, err := updateUser(spotifyID, userUpdateRequest, userRole.(responses.Role))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if !found {
-        c.JSON(http.StatusBadRequest, "could not find user in db")
+        c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
     c.JSON(http.StatusOK, user)
 }
 
+func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, error) {
+
+    if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
+        return nil, errors.New("cannot change your role if you're not an admin")
+    }
+
+    if userUpdateRequest.Role != nil && !responses.IsValidRole(string(*userUpdateRequest.Role)) {
+        return nil, errors.New("invalid user role")
+    }
+
+    user, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
+
+    if err != nil {
+        return nil, err
+    }
+
+    if !found {
+        return nil, errors.New("could not find user in db")
+    }
+
+    return user, nil
+
+
+}
 func UpdateCurrentUserProperties(c *gin.Context) {
     
     userUpdateRequest := &requests.UpdateUserRequestDTO{}
@@ -106,25 +117,10 @@ func UpdateCurrentUserProperties(c *gin.Context) {
         return
     }
 
-    if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
-        c.JSON(http.StatusUnauthorized, "cannot change your role if you're not admin!")
-        return
-    }
-
-    if userUpdateRequest.Role != nil && !responses.IsValidRole(string(*userUpdateRequest.Role)) {
-        c.JSON(http.StatusBadRequest, "invalid user role")
-        return
-    }
-
-    user, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID.(string), userUpdateRequest)
+    user, err := updateUser(spotifyID.(string), userUpdateRequest, userRole.(responses.Role))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if !found {
-        c.JSON(http.StatusBadRequest, "could not find user in db")
+        c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
