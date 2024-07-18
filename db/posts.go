@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"time"
 
@@ -99,7 +98,6 @@ func GetUserPostsPreviewsByUserID(spotifyID string, offset int, limit int) ([]re
     )
 
     if err != nil {
-        fmt.Println(err.Error())
         return nil, err
     }
 
