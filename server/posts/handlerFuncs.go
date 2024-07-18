@@ -79,28 +79,14 @@ func CreatePostForCurrentUser(c *gin.Context) {
 func GetAllPostsForUserByID(c *gin.Context) {
 
     spotifyID := c.Param("spotifyID")
-
-    offset := c.Query("offset")
-    limit := c.Query("limit")
     timestamp := c.Query("timestamp")
-    if timestamp == "" {timestamp = time.Now().UTC().String()}
-    fmt.Println(timestamp)
-    time, err := time.Parse(time.Now().UTC().Format(timestamp), timestamp)
 
-    if offset == "" { offset = "0" }
-    if limit == "" { limit = "25" }
+    var t time.Time 
 
-    offset_int, err := strconv.Atoi(offset)
-
-    if err != nil {
-        c.JSON(http.StatusBadRequest, "please give a valid number as offset")
-        return
-    }
-
-    limit_int, err := strconv.Atoi(limit)
-
-    if err != nil {
-        c.JSON(http.StatusBadRequest, "plesae give a valid number as limit")
+    if timestamp == "" {
+        t = time.Now().UTC()
+    } else {
+        t, _ = time.Parse(time.RFC3339, timestamp)
     }
 
     if spotifyID == "" {
@@ -108,7 +94,7 @@ func GetAllPostsForUserByID(c *gin.Context) {
         return
     }
 
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, offset_int, limit_int, time)
+    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, t)
 
     if err != nil {
         c.JSON(http.StatusUnauthorized, "issue getting data for user")
@@ -122,29 +108,11 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
     spotifyID, spotifyIDExists := c.Get("spotifyID")
     timestamp := c.Query("timestamp")
 
-    offset := c.Query("offset")
-    limit := c.Query("limit")
-
-    if offset == "" { offset = "0" }
-    if limit == "" { limit = "25" }
-    fmt.Println(timestamp)
-    // parsing timestamp is bog
-    if timestamp == "" {timestamp = time.Now().UTC().String()}
-    layout := "2006-01-02 15:04:05.999999999 -0700 MST"
-    time, err := time.Parse(layout, timestamp)
-    fmt.Println(time)
-
-    offset_int, err := strconv.Atoi(offset)
-
-    if err != nil {
-        c.JSON(http.StatusBadRequest, err.Error())
-        return
-    }
-
-    limit_int, err := strconv.Atoi(limit)
-
-    if err != nil {
-        c.JSON(http.StatusBadRequest, "plesae give a valid number as limit")
+    var t time.Time 
+    if timestamp == "" {
+        t = time.Now().UTC()
+    } else {
+        t, _ = time.Parse(time.RFC3339, timestamp)
     }
 
     if !spotifyIDExists {
@@ -152,7 +120,7 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
         return
     }
 
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID.(string), offset_int, limit_int, time)
+    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID.(string), t)
 
     if err != nil {
         c.JSON(http.StatusUnauthorized, "issue getting data for user")
