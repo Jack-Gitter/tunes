@@ -1,6 +1,7 @@
 package posts
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -140,6 +141,7 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
         return
     }
 
+    fmt.Println("Here")
     posts, err := db.GetUserPostsPreviewsByUserID(spotifyID.(string), offset_int, limit_int)
 
     if err != nil {

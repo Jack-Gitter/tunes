@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -88,7 +89,7 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
 func GetUserPostsPreviewsByUserID(spotifyID string, offset int, limit int) ([]responses.PostPreview, error) {
 
     res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) return properties(p) as postProperties, u.username as Username ORDER BY DESC p.timestamp SKIP $offset LIMIT $limit",
+    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) return properties(p) as postProperties, u.username as Username ORDER BY p.timestamp DESC SKIP $offset LIMIT $limit",
         map[string]any{
             "spotifyID": spotifyID,
             "offset": offset,
@@ -98,6 +99,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, offset int, limit int) ([]re
     )
 
     if err != nil {
+        fmt.Println(err.Error())
         return nil, err
     }
 
