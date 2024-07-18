@@ -74,30 +74,6 @@ func UpdateUserBySpotifyID(c *gin.Context) {
     c.JSON(http.StatusOK, user)
 }
 
-func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, error) {
-
-    if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
-        return nil, errors.New("cannot change your role if you're not an admin")
-    }
-
-    if userUpdateRequest.Role != nil && !responses.IsValidRole(string(*userUpdateRequest.Role)) {
-        return nil, errors.New("invalid user role")
-    }
-
-    user, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
-
-    if err != nil {
-        return nil, err
-    }
-
-    if !found {
-        return nil, errors.New("could not find user in db")
-    }
-
-    return user, nil
-
-
-}
 func UpdateCurrentUserProperties(c *gin.Context) {
     
     userUpdateRequest := &requests.UpdateUserRequestDTO{}
@@ -125,6 +101,30 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, user)
+
+}
+
+func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, error) {
+
+    if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
+        return nil, errors.New("cannot change your role if you're not an admin")
+    }
+
+    if userUpdateRequest.Role != nil && !responses.IsValidRole(string(*userUpdateRequest.Role)) {
+        return nil, errors.New("invalid user role")
+    }
+
+    user, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
+
+    if err != nil {
+        return nil, err
+    }
+
+    if !found {
+        return nil, errors.New("could not find user in db")
+    }
+
+    return user, nil
 
 }
 

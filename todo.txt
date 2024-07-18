@@ -9,11 +9,12 @@ testing:
 
 endpoints: 
     general: 
-        make helper methods to reduce code duplication between endpoints that are for currentUser and spotifyID user
+        make helper methods for post handlers to reduce code between spotifyID and currentUser endpoints
     user
         update
         delete
     posts
+        postPreviewByID --> make it keyset pagination instead. It is much better!
         update
     comments
         create
