@@ -8,6 +8,7 @@ testing:
     implement a git workflow to run tests on push
 
 general: 
+    swagger?
     rework file structure into users all in one section, posts all in one folder etc
 
 errors:
@@ -20,6 +21,7 @@ endpoints:
     user
         follow another user
         unfollow another user
+        getFollowers pagniated
     posts
         like another post
         unlike a post

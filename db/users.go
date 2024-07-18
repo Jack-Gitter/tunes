@@ -130,5 +130,35 @@ func DeleteUserByID(spotifyID string) (bool, error) {
 }
 
 /* RELATIONAL UDPATES */
-func FollowUserBySpotifyID() {}
+func FollowUser(spotifyID string, otherUserSpotifyID string) (bool, error) {
+    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    "MATCH (u1:User {spotifyID: $spotifyID}) MATCH (u2:User {spotifyID: $otherUserSpotifyID}) MERGE (u1)-[:Follows]->(u2) return properties(u1) as user1, properties(u2) as user2",
+        map[string]any{
+            "spotifyID": spotifyID,
+            "otherUserSpotifyID": otherUserSpotifyID,
+        }, neo4j.EagerResultTransformer,
+        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
+    )
+
+    if err != nil {
+        return false, err
+    }
+
+    if len(resp.Records) < 1 {
+        return false, nil
+    }
+
+    _, foundU1 := resp.Records[0].Get("user1")
+    _, foundU2 := resp.Records[0].Get("user2")
+
+    if !foundU1 || !foundU2 {
+        return false, nil
+    }
+    
+    return true, nil
+}
+
+
+
+
 func UnFollowUserBySpotifyID(){}
