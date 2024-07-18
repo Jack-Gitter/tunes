@@ -1,6 +1,7 @@
 package posts
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -81,6 +82,10 @@ func GetAllPostsForUserByID(c *gin.Context) {
 
     offset := c.Query("offset")
     limit := c.Query("limit")
+    timestamp := c.Query("timestamp")
+    if timestamp == "" {timestamp = time.Now().UTC().String()}
+    fmt.Println(timestamp)
+    time, err := time.Parse(time.Now().UTC().Format(timestamp), timestamp)
 
     if offset == "" { offset = "0" }
     if limit == "" { limit = "25" }
@@ -103,7 +108,7 @@ func GetAllPostsForUserByID(c *gin.Context) {
         return
     }
 
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, offset_int, limit_int)
+    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, offset_int, limit_int, time)
 
     if err != nil {
         c.JSON(http.StatusUnauthorized, "issue getting data for user")
@@ -115,12 +120,19 @@ func GetAllPostsForUserByID(c *gin.Context) {
 
 func GetAllPostsForCurrentUser(c *gin.Context) {
     spotifyID, spotifyIDExists := c.Get("spotifyID")
+    timestamp := c.Query("timestamp")
 
     offset := c.Query("offset")
     limit := c.Query("limit")
 
     if offset == "" { offset = "0" }
     if limit == "" { limit = "25" }
+    fmt.Println(timestamp)
+    if timestamp == "" {timestamp = time.Now().UTC().String()}
+    layout := "2006-01-02 15:04:05 -0700 UTC"
+    time, err := time.Parse(layout, timestamp)
+    fmt.Println(err.Error())
+    fmt.Println(time)
 
     offset_int, err := strconv.Atoi(offset)
 
@@ -140,7 +152,7 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
         return
     }
 
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID.(string), offset_int, limit_int)
+    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID.(string), offset_int, limit_int, time)
 
     if err != nil {
         c.JSON(http.StatusUnauthorized, "issue getting data for user")
