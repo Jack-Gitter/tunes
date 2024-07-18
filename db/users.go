@@ -109,7 +109,7 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
 }
 
 func DeleteUserByID(spotifyID string) (bool, error) {
-    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
+    _, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) DETACH DELETE u, p RETURN properties(u)",
         map[string]any{
             "spotifyID": spotifyID,
@@ -119,10 +119,6 @@ func DeleteUserByID(spotifyID string) (bool, error) {
 
     if err != nil {
         return false, err
-    }
-
-    if len(resp.Records) < 1 {
-        return false, nil
     }
 
     return true, nil

@@ -106,6 +106,7 @@ func ValidateUserJWT(c *gin.Context) {
     
     if err != nil {
         if errors.Is(err, jwt.ErrTokenExpired) {
+            fmt.Println("here")
             c.Set("JWT_EXPIRED", true)
         } else {
             c.AbortWithStatusJSON(http.StatusBadRequest, "nice try kid, don't fuck with the JWT")
@@ -121,6 +122,7 @@ func RefreshJWT(c *gin.Context) {
 
     if !exists {
         c.Next()
+        return
     }
 
     spotifyRefreshToken, _ := c.Get("spotifyRefreshToken")
