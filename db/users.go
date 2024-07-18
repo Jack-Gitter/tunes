@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/Jack-Gitter/tunes/models/requests"
