@@ -82,7 +82,6 @@ func CreatePostForCurrentUser(c *gin.Context) {
 }
 
 func LikePost(c *gin.Context) {
-
     /*currentUserSpotifyID, found := c.Get("spotifyID")
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")
