@@ -2,11 +2,8 @@ package db
 
 import (
 	"errors"
-	"net/http"
 	"os"
 	"time"
-
-	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -37,13 +34,7 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
     )
 
     if err != nil {
-        neoError := err.(*neo4j.Neo4jError)
-        code := http.StatusInternalServerError
-        switch neoError.Code {
-        case customerrors.NEO_CONSTRAINT_ERROR: 
-            code = http.StatusBadRequest
-        }
-        return nil, customerrors.CustomError{Code: code, E: err}
+        return nil, err
     }
 
     postResponse := &responses.Post{}

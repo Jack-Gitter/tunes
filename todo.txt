@@ -1,20 +1,7 @@
 tunes todos:
 
-today!!!
-    
-testing:
-    implement tests
-    implement a git workflow to run tests on push
-
-general: 
-    swagger?
-    rework file structure?
-    stop returning properties(p) everywhere, we probably don't need to return all of the data always -- think!
-
 errors:
-    the errors are a mess, think about them and fix! -- add a custom error type, we'll probably be able to get rid of "found" everywhere -- if we want
-    make an error that has an error type, then make a function to handle error types and pass in a gin context. if the error is of specific type, do c.json(specificstatuscode)
-    check the error type responded by neo4j, then error or do something accordingly. We need to 
+    rework errors on the DB level. check to see what type of neo4j error is thrown, wrap 
 
 endpoints: 
     general: 
@@ -41,7 +28,14 @@ dockerize:
 admin: 
     cors
 
-
 caching questions: 
     i validate cadhe on every data change — what about data race with get and data change where data change clears cache but get reaches db first and caches data?
     also updating cache after db writes — we have one post then another which changes a value. A hits db first then b, but b writes to cache first then a. how to prevent?
+
+testing:
+    implement tests
+    implement a git workflow to run tests on push
+
+general: 
+    swagger?
+    rework file structure?

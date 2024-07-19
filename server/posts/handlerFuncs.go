@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
-	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/posts/helpers"
 	"github.com/gin-gonic/gin"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func CreatePostForCurrentUser(c *gin.Context) {
@@ -61,12 +61,18 @@ func CreatePostForCurrentUser(c *gin.Context) {
     )
 
     if err != nil {
-        resp := responses.ReponseError{}
-        resp.Error = err.Error()
-        if erro, ok := err.(customerrors.CustomError); ok {
-            c.JSON(erro.Code, resp)
+        neoErr, ok := err.(*neo4j.Neo4jError); 
+
+        if ok {
+            code := http.StatusInternalServerError
+            switch neoErr.Code {
+                case "Neo.ClientError.Schema.ConstraintValidationFailed": 
+                    code = http.StatusBadRequest
+            }
+            c.JSON(code, map[string]string{"Error":neoErr.Error()})
             return
         }
+       
         c.JSON(http.StatusInternalServerError, "bad")
         return
     }
