@@ -201,7 +201,11 @@ func RefreshJWT(c *gin.Context) {
         return
     }
 
-    c.JSON(http.StatusOK, accessTokenJWT)
+    resp := map[string]string{
+        "AccessToken": accessTokenJWT,
+    }
+
+    c.JSON(http.StatusOK, resp)
 }
 
 func ValidateAdminUser(c *gin.Context) {
