@@ -189,7 +189,7 @@ func DeletePost(songID string, spotifyID string) (bool, bool, error) {
 /* PROPERTY UPDATES */
 func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*responses.PostPreview, bool, error) {
     
-    query := "MATCH (u:User {spotifyID: $spotifyID}), (u)-[:Posted]->(p) WHERE p.songID = $songID"
+    query := "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) WHERE p.songID = $songID"
 
     t := ""
     if text != nil {
@@ -203,7 +203,7 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
         if r < 0 || r > 5 {
             return nil, false, errors.New("please rate 0 to 5!")
         }
-        query += ", p.rating = $rating"
+        query += " SET p.rating = $rating"
     }
 
     query += ", p.updatedAt = $updatedAt RETURN properties(p) as postProperties, u.username as username"
