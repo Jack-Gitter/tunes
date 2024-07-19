@@ -13,7 +13,7 @@ import (
 
 /* =================== CREATE ================== */
 
-func InsertUserIntoDB(username string, spotifyID string, role responses.Role) (*responses.User, error) {
+func InsertUserIntoDBIfNeeded(username string, spotifyID string, role responses.Role) (*responses.User, error) {
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     "MERGE (u:User {spotifyID: $spotifyID, username: $username, bio: $bio, role: $role}) return properties(u) as User",
         map[string]any{

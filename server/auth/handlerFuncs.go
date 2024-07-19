@@ -42,16 +42,7 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
-    user, foundUser, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
-
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if !foundUser {
-        user, err = db.InsertUserIntoDB(userProfileResponse.Display_name, userProfileResponse.Id, responses.BASIC_USER)
-    }
+    user, err := db.InsertUserIntoDBIfNeeded(userProfileResponse.Display_name, userProfileResponse.Id, responses.BASIC_USER)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
