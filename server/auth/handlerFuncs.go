@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -77,22 +78,40 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
-    c.SetCookie("JWT", tokenString, 3600, "/", "localhost", false, true)
-    c.SetCookie("REFRESH_JWT", refreshString, 3600, "/", "localhost", false, true)
+    resp := responses.AuthResponse{}
+    resp.AccessToken = tokenString
+    resp.RefreshToken = refreshString
+    resp.Data = user
 
-    c.JSON(http.StatusOK, user)
+    c.JSON(http.StatusOK, resp)
 }
 
 func ValidateUserJWT(c *gin.Context) {
     
-    jwtCookie, err := c.Cookie("JWT")
-
-    if err != nil {
-        c.AbortWithStatusJSON(http.StatusBadRequest, "no JWT access token provided. Please sign in before accessing this endpoint") 
+    header := strings.Split(c.GetHeader("Authorization"), " ")
+    if len(header) < 2 {
+        c.AbortWithStatusJSON(http.StatusBadRequest, "invalid auth header!")
         return
     }
 
-    token, err := helpers.ValidateAccessToken(jwtCookie)
+    if strings.ToLower(header[0]) != "bearer" {
+        c.AbortWithStatusJSON(http.StatusBadRequest, "invalid auth type!")
+        return
+    }
+
+    jwtTokenString := header[1]
+
+    token, err := helpers.ValidateAccessToken(jwtTokenString)
+
+    if err != nil {
+        if errors.Is(err, jwt.ErrTokenExpired) {
+            c.AbortWithStatusJSON(http.StatusUnauthorized, "please refresh your JWT with the provided refresh token!")
+            return
+        } else {
+            c.AbortWithStatusJSON(http.StatusBadRequest, "nice try kid, don't fuck with the JWT")
+            return
+        }
+    } 
 
     spotifyID := token.Claims.(*requests.JWTClaims).SpotifyID
     spotifyRefreshToken := token.Claims.(*requests.JWTClaims).RefreshToken
@@ -104,37 +123,21 @@ func ValidateUserJWT(c *gin.Context) {
     c.Set("spotifyAccessToken", spotifyAccessToken)
     c.Set("spotifyRefreshToken", spotifyRefreshToken)
     
-    if err != nil {
-        if errors.Is(err, jwt.ErrTokenExpired) {
-            fmt.Println("here")
-            c.Set("JWT_EXPIRED", true)
-        } else {
-            c.AbortWithStatusJSON(http.StatusBadRequest, "nice try kid, don't fuck with the JWT")
-            return
-        }
-    } 
     c.Next()
 }
 
 func RefreshJWT(c *gin.Context) {
 
-    _, exists := c.Get("JWT_EXPIRED")
+    authReq := &requests.RefreshJWTDTO{}
+    err := c.ShouldBindBodyWithJSON(authReq)
 
-    if !exists {
-        c.Next()
+    if err != nil {
+        fmt.Println(err.Error())
+        c.JSON(http.StatusBadRequest, "bad data for refresh")
         return
     }
 
-    spotifyRefreshToken, _ := c.Get("spotifyRefreshToken")
-
-
-    refreshToken, err := c.Cookie("REFRESH_JWT")
-
-    if err != nil {
-        panic(err)
-    }
-
-    _, e := helpers.ValidateRefreshToken(refreshToken)
+    _, e := helpers.ValidateRefreshToken(authReq.RefreshToken)
 
     if e != nil {
         if errors.Is(e, jwt.ErrTokenExpired) {
@@ -146,7 +149,15 @@ func RefreshJWT(c *gin.Context) {
         }
     }
 
-    accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken.(string))
+    acc_token, e := helpers.ValidateAccessToken(authReq.AccessToken)
+
+    if e != nil && !errors.Is(e, jwt.ErrTokenExpired) {
+        c.AbortWithStatusJSON(http.StatusUnauthorized, "do not fuck with the JWT BITCH")
+        return
+    }
+
+    spotifyRefreshToken := acc_token.Claims.(*requests.JWTClaims).RefreshToken
+    accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken)
 
     if err != nil {
         c.AbortWithStatusJSON(http.StatusInternalServerError, "error retreiving a new spotify access token for the user")
@@ -154,7 +165,7 @@ func RefreshJWT(c *gin.Context) {
     }
 
     if accessTokenResponseBody.Refresh_token == "" {
-        accessTokenResponseBody.Refresh_token = spotifyRefreshToken.(string)
+        accessTokenResponseBody.Refresh_token = spotifyRefreshToken
     }
 
     userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponseBody.Access_token)
@@ -190,11 +201,7 @@ func RefreshJWT(c *gin.Context) {
         return
     }
 
-    c.SetCookie("JWT", accessTokenJWT, 3600, "/", "localhost", false, true)
-    c.Set("spotifyID", userProfileResponse.Id)
-    c.Set("userRole", userDBResponse.Role)
-    c.Set("spotifyAccessToken", accessTokenResponseBody.Access_token)
-    c.Next()
+    c.JSON(http.StatusOK, accessTokenJWT)
 }
 
 func ValidateAdminUser(c *gin.Context) {
@@ -208,6 +215,7 @@ func ValidateAdminUser(c *gin.Context) {
 
     if role == responses.ADMIN {
         c.Next()
+        return
     }
 
     c.AbortWithStatusJSON(http.StatusBadRequest, "cannot access this endpoint if your not admin dummy!")

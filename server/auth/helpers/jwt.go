@@ -17,7 +17,8 @@ func CreateAccessJWT(spotifyID string, username string, accessToken string, refr
            Issuer: "tunes", 
            Subject: "bitch",
            Audience: []string{"another bitch"},
-           ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour)},
+           //ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour)},
+           ExpiresAt: &jwt.NumericDate{Time: time.Now()},
            NotBefore: &jwt.NumericDate{Time: time.Now()},
            IssuedAt: &jwt.NumericDate{Time: time.Now()},
            ID: "garbage for now",
@@ -37,16 +38,15 @@ func CreateAccessJWT(spotifyID string, username string, accessToken string, refr
 }
 
 func CreateRefreshJWT() (string, error) {
-
-    claimsForRefresh := &jwt.RegisteredClaims{
-           Issuer: "tunes", 
-           Subject: "bitch",
-           Audience: []string{"another bitch"},
-           ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24)},
-           NotBefore: &jwt.NumericDate{Time: time.Now()},
-           IssuedAt: &jwt.NumericDate{Time: time.Now()},
-           ID: "garbage for now",
-    }
+        claimsForRefresh := &jwt.RegisteredClaims{
+            Issuer: "tunes", 
+            Subject: "bitch",
+            Audience: []string{"another bitch"},
+            ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24)},
+            NotBefore: &jwt.NumericDate{Time: time.Now()},
+            IssuedAt: &jwt.NumericDate{Time: time.Now()},
+            ID: "garbage for now",
+        }
 
     refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsForRefresh)
     refreshString, err := refreshToken.SignedString([]byte(os.Getenv("JWT_SECRET")))
