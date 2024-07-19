@@ -15,7 +15,7 @@ import (
 func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time) (*responses.Post, error) {
     resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
     `MATCH (u:User {spotifyID: $spotifyID}) 
-    MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text, createdAt: $createdAt, updatedAt: $updatedAt})
+    MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text, createdAt: $createdAt, updatedAt: $updatedAt, spotifyID: $spotifyID})
      CREATE (u)-[:Posted]->(p)
      RETURN properties(p) as Post, u.username as Username`,
         map[string]any{ 
@@ -34,14 +34,15 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
         neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
     )
 
-    postResponse := &responses.Post{}
 
     if err != nil {
         return nil, err
     }
 
+    postResponse := &responses.Post{}
     post, _ := resp.Records[0].Get("Post")
     username, _ := resp.Records[0].Get("Username")
+
     mapstructure.Decode(post, postResponse)
     postResponse.Username = username.(string)
     postResponse.SpotifyID = spotifyID

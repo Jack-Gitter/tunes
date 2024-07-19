@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/spotifyResponses"
 )
 
@@ -41,19 +40,4 @@ func GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*spoti
 
     return spotifySongResponse, nil
 
-}
-
-func UserHasPostedSongAlready(spotifyID string, songID string) (bool, error) {
-
-    _, foundPost, err := db.GetUserPostByID(songID, spotifyID)
-
-    if err != nil {
-        return false, err
-    }
-
-    if !foundPost {
-        return false, nil
-    }
-
-    return true, nil
 }

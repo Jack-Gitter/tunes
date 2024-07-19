@@ -1,0 +1,4 @@
+CREATE CONSTRAINT constraint_example_2 FOR (p:Post) REQUIRE (p.spotifyID, p.songID) IS NODE KEY
+
+CREATE CONSTRAINT constraint_example_3 FOR (u:User) REQUIRE u.spotifyID IS NODE KEY
+

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -35,25 +34,12 @@ func CreatePostForCurrentUser(c *gin.Context) {
         return
     }
 
-    hasPostedAlready, err := helpers.UserHasPostedSongAlready(spotifyID.(string), createPostDTO.SongID)
-
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if hasPostedAlready {
-        c.JSON(http.StatusBadRequest, "post with songID is already found for user")
-        return
-    }
-
     spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(createPostDTO.SongID, spotifyAccessToken.(string))
 
     if err != nil {
         c.JSON(http.StatusBadRequest, err.Error())
         return
     }
-
 
     var albumImage string = ""
     if len(spotifySongResponse.Album.Images) > 0 {
@@ -73,7 +59,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
     )
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
+        c.JSON(http.StatusInternalServerError, "duplicate entry")
         return
     }
 
@@ -104,7 +90,6 @@ func LikePost(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, postPreview)*/
-
 }
 
 func GetAllPostsForUserByID(c *gin.Context) {
