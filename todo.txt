@@ -1,12 +1,18 @@
 tunes todos:
 
-errors:
-    rework errors on the DB level. check to see what type of neo4j error is thrown, wrap 
+errors: 
+    make a method that checks to see if an error is a neo4j error. if it is a return true and the error code (number). if it is not return false and nil
+    clean up errors everywhere
+
+neo4j: 
+    make it so that we can run database migrations easily with those constraints in the file.txt
+
+database: 
+    ensure that we are actually running decent queries -- nothing to really do about the username, but just check the merges are correct and whatnot
 
 endpoints: 
     general: 
         clean up endpoint names
-        constraints -- need to make them on users and posts
     user
     posts
         like another post
