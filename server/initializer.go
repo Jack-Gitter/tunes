@@ -32,7 +32,7 @@ func InitializeHttpServer() *gin.Engine {
     r.GET("/currentUserPostPreviews/", auth.ValidateUserJWT, posts.GetAllPostsForCurrentUser)
     r.GET("/specificUserPostPreviews/:spotifyID", auth.ValidateUserJWT, posts.GetAllPostsForUserByID)
     r.POST("/posts", auth.ValidateUserJWT, posts.CreatePostForCurrentUser)
-    r.POST("/currentUserPosts/:songID", auth.ValidateUserJWT, posts.UpdateCurrentUserPost)
+    r.PATCH("/currentUserPosts/:songID", auth.ValidateUserJWT, posts.UpdateCurrentUserPost)
     r.POST("/posts/like/:spotifyID/:songID", auth.ValidateUserJWT, posts.LikePost)
     r.DELETE("/posts/:spotifyID/:songID", auth.ValidateUserJWT,  posts.DeletePostBySpotifyIDAndSongID)
     r.DELETE("/currentUserPosts/:songID", auth.ValidateUserJWT,  posts.DeletePostForCurrentUserBySongID)
