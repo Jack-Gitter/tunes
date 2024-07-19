@@ -11,11 +11,15 @@ general:
     swagger?
     rework file structure into users all in one section, posts all in one folder etc
 
+JWT: 
+    we need to send this in the payload body, and read it from the authorization header. This will prevent csrf attacks! -- so dumb bruh
+
 errors:
     the errors are a mess, think about them and fix!
 
 endpoints: 
     general: 
+        clean up endpoint names
         make the createPost endpoint either into a transaction OR just add a constraint on the database so that PK and trackID have to be unique
         make logging in a transaction -- the whole user creation part of it maybe
     user

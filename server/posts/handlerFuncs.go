@@ -81,6 +81,33 @@ func CreatePostForCurrentUser(c *gin.Context) {
 
 }
 
+func LikePost(c *gin.Context) {
+
+    /*currentUserSpotifyID, found := c.Get("spotifyID")
+    spotifyID := c.Param("spotifyID")
+    songID := c.Param("songID")
+
+    if !found {
+        c.JSON(http.StatusInternalServerError, "nope to jwt")
+        return
+    }
+
+    postPreview, found, err := db.LikePostForUser(currentUserSpotifyID, spotifyID, songID)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "no post found")
+        return
+    }
+
+    c.JSON(http.StatusOK, postPreview)*/
+
+}
+
 func GetAllPostsForUserByID(c *gin.Context) {
 
     spotifyID := c.Param("spotifyID")
