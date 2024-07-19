@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
 	"github.com/Jack-Gitter/tunes/db"
+	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/posts/helpers"
@@ -59,7 +61,13 @@ func CreatePostForCurrentUser(c *gin.Context) {
     )
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "duplicate entry")
+        resp := responses.ReponseError{}
+        resp.Error = err.Error()
+        if erro, ok := err.(customerrors.CustomError); ok {
+            c.JSON(erro.Code, resp)
+            return
+        }
+        c.JSON(http.StatusInternalServerError, "bad")
         return
     }
 
