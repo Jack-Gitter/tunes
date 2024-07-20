@@ -159,7 +159,43 @@ func FollowUser(spotifyID string, otherUserSpotifyID string) (bool, error) {
 }
 
 func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], bool, error) {
-    return nil, false, nil
+    // we need to get all of the userfollowed from the join table where follower = spotifyID  -> just use a join!
+    // we then need to do a select on the user table  for all of the records for those ids. This needs to be like order by spotifyID and spotifyID < paginationkey
+    query := `
+            SELECT users.spotifyid, users.username, users.bio, users.userrole 
+            FROM followers 
+            INNER JOIN  users 
+            ON users.spotifyid = followers.userfollowed 
+            WHERE followers.userfollowed = $1 AND users.spotifyid < $2 ORDER BY users.spotifyid LIMIT 25 `
+
+    rows, err := DB.Driver.Query(query, spotifyID, paginationKey)
+
+    userResponses := []responses.User{}
+
+    for rows.Next() {
+        user := responses.User{}
+        err := rows.Scan(&user.SpotifyID, &user.Username, &user.Bio, &user.Role)
+        if err != nil {
+            return nil, false, err
+        }
+        userResponses = append(userResponses, user)
+    }
+
+    paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
+    paginationResponse.DataResponse = userResponses
+
+    if len(userResponses) > 0 {
+        lastUser := userResponses[len(userResponses)-1]
+        paginationResponse.PaginationKey = lastUser.SpotifyID
+    } else {
+        paginationResponse.PaginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
+    }
+
+    if err != nil {
+        return nil, false, err
+    }
+
+    return paginationResponse, true, nil
 }
 
 func UnFollowUserBySpotifyID(){}
