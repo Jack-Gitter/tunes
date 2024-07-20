@@ -3,13 +3,29 @@ package db
 import (
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
-	//"github.com/mitchellh/mapstructure"
+	_ "github.com/lib/pq"
 )
 
 /* =================== CREATE ================== */
 
+// upsert user!!!
 func InsertUserIntoDBIfNeeded(username string, spotifyID string, role responses.Role) (*responses.User, error) {
-    return nil, nil
+    query := "INSERT INTO users (spotifyid, username, userRole) values ($1, $2, $3) ON CONFLICT (spotifyID) DO UPDATE SET username=$2, userRole=$3 RETURNING bio"
+    row := DB.Driver.QueryRow(query, spotifyID, username, role)
+
+    err := row.Err()
+    if err != nil {
+        return nil, err
+    }
+
+    userResponse := &responses.User{}
+    userResponse.Role = role
+    userResponse.Username = username
+    userResponse.SpotifyID = spotifyID
+    row.Scan(&userResponse.Bio)
+
+
+    return userResponse, nil
 }
 
 /* =================== READ ================== */
