@@ -30,7 +30,18 @@ func UpsertUser(username string, spotifyID string, role responses.Role) (*respon
 /* =================== READ ================== */
 
 func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
-    return nil, false, nil
+    query := "SELECT spotifyid, userrole, username, bio FROM users WHERE spotifyid = $1"
+    row := DB.Driver.QueryRow(query, spotifyID)
+
+    err := row.Err()
+    if err != nil {
+        return nil, false, err
+    }
+
+    userResponse := &responses.User{}
+    row.Scan(&userResponse.SpotifyID, &userResponse.Username, &userResponse.Role, &userResponse.Bio)
+
+    return userResponse, true, nil
 }
 
 
