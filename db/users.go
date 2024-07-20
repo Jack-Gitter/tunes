@@ -8,8 +8,7 @@ import (
 
 /* =================== CREATE ================== */
 
-// upsert user!!!
-func InsertUserIntoDBIfNeeded(username string, spotifyID string, role responses.Role) (*responses.User, error) {
+func UpsertUser(username string, spotifyID string, role responses.Role) (*responses.User, error) {
     query := "INSERT INTO users (spotifyid, username, userRole) values ($1, $2, $3) ON CONFLICT (spotifyID) DO UPDATE SET username=$2, userRole=$3 RETURNING bio"
     row := DB.Driver.QueryRow(query, spotifyID, username, role)
 

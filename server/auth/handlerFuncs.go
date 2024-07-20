@@ -42,7 +42,7 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
-    user, err := db.InsertUserIntoDBIfNeeded(userProfileResponse.Display_name, userProfileResponse.Id, responses.BASIC_USER)
+    user, err := db.UpsertUser(userProfileResponse.Display_name, userProfileResponse.Id, responses.BASIC_USER)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
