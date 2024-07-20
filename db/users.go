@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
@@ -49,18 +51,25 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
 func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (bool, error) { 
     query := "UPDATE users SET "
     args := []any{}
+    varNum := 1
     if updatedUser.Bio != nil {
-
         args = append(args, updatedUser.Bio)
-        query += "bio = $1 "
+        query += fmt.Sprintf("bio = $%d", varNum)
+        varNum += 1 
 
     } 
     if updatedUser.Role != nil {
         args = append(args, updatedUser.Role)
-        query += ", userrole = $2 "
+        if varNum > 1 {
+            query += fmt.Sprintf(", userrole = $%d", varNum)
+        } else {
+            query += fmt.Sprintf("userrole = $%d", varNum)
+        }
+        varNum += 1
     }
 
-    //query += "WHERE spotifyID "
+    query += fmt.Sprintf(" WHERE spotifyID = $%d", varNum)
+    args = append(args, spotifyID)
 
 
     res, err := DB.Driver.Exec(query, args...)
