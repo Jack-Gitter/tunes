@@ -112,20 +112,54 @@ func DeleteUserByID(spotifyID string) (bool, error) {
     return true, nil
 }
 
-func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], bool, error) {
-    return nil, false, nil
-}
-
-
 
 /* RELATIONAL UDPATES */
 func UnfollowUser(spotifyID string, otherUserSpotifyID string) (bool, error)  {
-    return false, nil
+    query := "DELETE FROM followers WHERE follower = $1 AND userfollowed = $2"
+
+    res, err := DB.Driver.Exec(query, spotifyID, otherUserSpotifyID)
+
+    if err != nil {
+        return false, err
+    }
+
+    rows, err := res.RowsAffected()
+
+    if err != nil {
+        return false, err
+    }
+
+    if rows < 1 {
+        return false, nil
+    }
+
+    return true, nil
 }
 
 func FollowUser(spotifyID string, otherUserSpotifyID string) (bool, error) {
-    return false, nil
+    query := "INSERT INTO followers (follower, userFollowed) VALUES ($1, $2)"
+
+    res, err := DB.Driver.Exec(query, spotifyID, otherUserSpotifyID)
+
+    if err != nil {
+        return false, err
+    }
+
+    rows, err := res.RowsAffected()
+
+    if err != nil {
+        return false, err
+    }
+
+    if rows < 1 {
+        return false, nil
+    }
+
+    return true, nil
 }
 
+func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], bool, error) {
+    return nil, false, nil
+}
 
 func UnFollowUserBySpotifyID(){}
