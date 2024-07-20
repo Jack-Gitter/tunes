@@ -51,7 +51,24 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
 }
 
 func DeleteUserByID(spotifyID string) (bool, error) {
-    return false, nil
+    query := "DELETE FROM users WHERE spotifyID = $1"
+    res, err := DB.Driver.Exec(query, spotifyID)
+
+    if err != nil {
+        return false, err
+    }
+
+    num, err :=  res.RowsAffected()
+
+    if err != nil {
+        return false, err
+    }
+
+    if num < 1 {
+        return false, nil
+    }
+
+    return true, nil
 }
 
 func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], bool, error) {
