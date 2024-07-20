@@ -8,9 +8,9 @@ import (
 
 /* =================== CREATE ================== */
 
-func UpsertUser(username string, spotifyID string, role responses.Role) (*responses.User, error) {
-    query := "INSERT INTO users (spotifyid, username, userRole) values ($1, $2, $3) ON CONFLICT (spotifyID) DO UPDATE SET username=$2, userRole=$3 RETURNING bio"
-    row := DB.Driver.QueryRow(query, spotifyID, username, role)
+func UpsertUser(username string, spotifyID string) (*responses.User, error) {
+    query := "INSERT INTO users (spotifyid, username, userrole) values ($1, $2, 'BASIC') ON CONFLICT (spotifyID) DO UPDATE SET username=$2 RETURNING bio, userrole"
+    row := DB.Driver.QueryRow(query, spotifyID, username)
 
     err := row.Err()
     if err != nil {
@@ -18,10 +18,9 @@ func UpsertUser(username string, spotifyID string, role responses.Role) (*respon
     }
 
     userResponse := &responses.User{}
-    userResponse.Role = role
     userResponse.Username = username
     userResponse.SpotifyID = spotifyID
-    row.Scan(&userResponse.Bio)
+    row.Scan(&userResponse.Bio, &userResponse.Role)
 
 
     return userResponse, nil
@@ -49,17 +48,38 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
 // todo
 func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (bool, error) { 
     query := "UPDATE users SET "
+    args := []any{}
     if updatedUser.Bio != nil {
 
+        args = append(args, updatedUser.Bio)
         query += "bio = $1 "
 
     } 
     if updatedUser.Role != nil {
-
-        query += ", role = $2 "
+        args = append(args, updatedUser.Role)
+        query += ", userrole = $2 "
     }
 
-    return false, nil
+    //query += "WHERE spotifyID "
+
+
+    res, err := DB.Driver.Exec(query, args...)
+
+    if err != nil {
+        return false, err
+    }
+
+    num, err := res.RowsAffected()
+
+    if err != nil {
+        return false, err
+    }
+
+    if num < 1 {
+        return false, nil
+    }
+
+    return true, nil
 }
 
 func DeleteUserByID(spotifyID string) (bool, error) {
