@@ -2,31 +2,44 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"os"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	_ "github.com/lib/pq"
 )
 
 type dbConnection struct {
     Ctx context.Context
-    Driver neo4j.DriverWithContext
+    Driver *sql.DB
 }
 
 var DB = &dbConnection{}
 
 func ConnectToDB() {
     DB.Ctx = context.Background()
-    dbUri := os.Getenv("DB_URI")
+    dbHost := os.Getenv("DB_HOST")
     dbUser := os.Getenv("DB_USER")
     dbPassword := os.Getenv("DB_PASS")
+    dbPort := os.Getenv("DB_PORT")
+    dbName := os.Getenv("DB_NAME")
 
-    var err error = nil
-    DB.Driver, err = neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth(dbUser, dbPassword, ""))
+    psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+    dbHost, dbPort, dbUser, dbPassword, dbName)
 
-    err = DB.Driver.VerifyConnectivity(DB.Ctx)
+    db, err := sql.Open("postgres", psqlInfo)
 
     if err != nil {
         panic(err)
     }
+
+    err = db.Ping()
+
+    if err != nil {
+        panic(err)
+    }
+
+    DB.Driver = db
+    
 }
 
 
