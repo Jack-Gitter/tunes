@@ -198,4 +198,3 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
     return paginationResponse, true, nil
 }
 
-func UnFollowUserBySpotifyID(){}
