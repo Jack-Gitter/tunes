@@ -179,14 +179,14 @@ func UpdateUserBySpotifyID(c *gin.Context) {
         return
     }
 
-    user, err := updateUser(spotifyID, userUpdateRequest, userRole.(responses.Role))
+    err = updateUser(spotifyID, userUpdateRequest, userRole.(responses.Role))
 
     if err != nil {
         c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
-    c.JSON(http.StatusOK, user)
+    c.Status(http.StatusOK)
 }
 
 
@@ -209,14 +209,14 @@ func UpdateCurrentUserProperties(c *gin.Context) {
         return
     }
 
-    user, err := updateUser(spotifyID.(string), userUpdateRequest, userRole.(responses.Role))
+    err = updateUser(spotifyID.(string), userUpdateRequest, userRole.(responses.Role))
 
     if err != nil {
         c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
-    c.JSON(http.StatusOK, user)
+    c.Status(http.StatusOK)
 
 }
 
@@ -261,27 +261,27 @@ func DeleteUserBySpotifyID(c *gin.Context) {
     c.Status(http.StatusOK)
 }
 
-func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, error) {
+func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (error) {
 
     if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
-        return nil, errors.New("cannot change your role if you're not an admin")
+        return errors.New("cannot change your role if you're not an admin")
     }
 
     if userUpdateRequest.Role != nil && !responses.IsValidRole(string(*userUpdateRequest.Role)) {
-        return nil, errors.New("invalid user role")
+        return errors.New("invalid user role")
     }
 
-    user, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
+    found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
 
     if err != nil {
-        return nil, err
+        return err
     }
 
     if !found {
-        return nil, errors.New("could not find user in db")
+        return errors.New("could not find user in db")
     }
 
-    return user, nil
+    return nil
 
 }
 

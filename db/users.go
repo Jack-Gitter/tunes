@@ -46,8 +46,20 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
 
 
 /* PROPERTY UPDATES */
-func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, bool, error) { 
-    return nil, false, nil
+// todo
+func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (bool, error) { 
+    query := "UPDATE users SET "
+    if updatedUser.Bio != nil {
+
+        query += "bio = $1 "
+
+    } 
+    if updatedUser.Role != nil {
+
+        query += ", role = $2 "
+    }
+
+    return false, nil
 }
 
 func DeleteUserByID(spotifyID string) (bool, error) {
@@ -75,16 +87,16 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
     return nil, false, nil
 }
 
+
+
+/* RELATIONAL UDPATES */
 func UnfollowUser(spotifyID string, otherUserSpotifyID string) (bool, error)  {
     return false, nil
 }
 
-/* RELATIONAL UDPATES */
 func FollowUser(spotifyID string, otherUserSpotifyID string) (bool, error) {
     return false, nil
 }
-
-
 
 
 func UnFollowUserBySpotifyID(){}
