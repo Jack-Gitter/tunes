@@ -189,7 +189,7 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
         return
     }
 
-    _, found, err := db.DeletePost(songID, spotifyID)
+    found, err := db.DeletePost(songID, spotifyID)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, "something went wrong with deletion")
@@ -217,7 +217,7 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
     }
     songID := c.Param("songID")
 
-    _, found, err := db.DeletePost(songID, requestorSpotifyID.(string))
+    found, err := db.DeletePost(songID, requestorSpotifyID.(string))
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, "something went wrong with deletion")

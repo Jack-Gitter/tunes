@@ -50,18 +50,64 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
 
 // make this method get the posts with id offset -> offset+limit-1
 func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
+
     return nil, nil
 }
 
 func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, bool, error){
-    return nil, false, nil
+    query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
+                FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`
+
+    row := DB.Driver.QueryRow(query, spotifyID, songID)
+
+    postPreview := &responses.PostPreview{}
+
+    err := row.Scan(&postPreview.AlbumArtURI, 
+                    &postPreview.AlbumID, 
+                    &postPreview.AlbumName, 
+                    &postPreview.CreatedAt, 
+                    &postPreview.Rating, 
+                    &postPreview.SongID, 
+                    &postPreview.SongName, 
+                    &postPreview.Text, 
+                    &postPreview.UpdatedAt, 
+                    &postPreview.SpotifyID, 
+                    &postPreview.Username)
+
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, false, nil 
+        } 
+        return nil, false, err
+    }
+
+    return postPreview, true, nil
+
 }
 
 
 /* ===================== DELETE =====================  */
 
-func DeletePost(songID string, spotifyID string) (bool, bool, error) {
-    return false, false, nil
+func DeletePost(songID string, spotifyID string) (bool, error) {
+    query := `DELETE FROM posts WHERE posterspotifyid = $1 AND songid = $2`
+
+    res, err := DB.Driver.Exec(query, spotifyID, songID)
+
+    if err != nil {
+        return false, err
+    }
+
+    rows, err := res.RowsAffected()
+
+    if err != nil {
+        return false, err
+    }
+
+    if rows < 1 {
+        return false, nil
+    }
+
+    return true, nil
 }
 
 
