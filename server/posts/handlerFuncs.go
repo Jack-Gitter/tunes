@@ -10,7 +10,6 @@ import (
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/posts/helpers"
 	"github.com/gin-gonic/gin"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func CreatePostForCurrentUser(c *gin.Context) {
@@ -48,7 +47,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
         albumImage = spotifySongResponse.Album.Images[0].Url
     }
 
-    post, err := db.CreatePost(
+    err = db.CreatePost(
         spotifyID.(string),
         createPostDTO.SongID,
         spotifySongResponse.Name, 
@@ -61,23 +60,11 @@ func CreatePostForCurrentUser(c *gin.Context) {
     )
 
     if err != nil {
-        neoErr, ok := err.(*neo4j.Neo4jError); 
-
-        if ok {
-            code := http.StatusInternalServerError
-            switch neoErr.Code {
-                case "Neo.ClientError.Schema.ConstraintValidationFailed": 
-                    code = http.StatusBadRequest
-            }
-            c.JSON(code, map[string]string{"Error":neoErr.Error()})
-            return
-        }
-       
         c.JSON(http.StatusInternalServerError, "bad")
         return
     }
 
-    c.JSON(http.StatusOK, post)
+    c.Status(http.StatusOK)
 
 }
 

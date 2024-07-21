@@ -18,7 +18,8 @@ CREATE TABLE posts (
 	songName varchar(255),
 	review varchar(255),
 	updatedAt timestamp with time zone,
-	posterSpotifyID varchar(255) references users(spotifyid)
+	posterSpotifyID varchar(255) references users(spotifyid),
+    primary key (posterSpotifyID, songID)
 )
 
 CREATE TABLE FOLLOWERS (
