@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -48,7 +50,7 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
 
 /* PROPERTY UPDATES */
 // todo
-func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (bool, error) { 
+func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, bool, error) { 
     query := "UPDATE users SET "
     args := []any{}
     varNum := 1
@@ -68,27 +70,24 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
         varNum += 1
     }
 
-    query += fmt.Sprintf(" WHERE spotifyID = $%d", varNum)
+    query += fmt.Sprintf(" WHERE spotifyID = $%d RETURNING bio, userrole, spotifyid, username", varNum)
     args = append(args, spotifyID)
 
 
-    res, err := DB.Driver.Exec(query, args...)
+    res := DB.Driver.QueryRow(query, args...)
+
+    userResponse := &responses.User{}
+    err := res.Scan(&userResponse.Bio, &userResponse.Role, &userResponse.SpotifyID, &userResponse.Username)
 
     if err != nil {
-        return false, err
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, false, nil 
+        } 
+        return nil, false, err
     }
 
-    num, err := res.RowsAffected()
+    return userResponse, true, nil
 
-    if err != nil {
-        return false, err
-    }
-
-    if num < 1 {
-        return false, nil
-    }
-
-    return true, nil
 }
 
 func DeleteUserByID(spotifyID string) (bool, error) {

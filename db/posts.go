@@ -113,5 +113,46 @@ func DeletePost(songID string, spotifyID string) (bool, error) {
 
 /* PROPERTY UPDATES */
 func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*responses.PostPreview, bool, error) {
+    query := "UPDATE posts SET "
+
+    val := 1
+    vals := []any{}
+    if text != nil {
+        query += fmt.Sprintf("review = $%d", val)
+        val+=1
+        vals = append(vals, text)
+    }
+
+    if rating != nil {
+        if val > 1 {
+            query += fmt.Sprintf(", rating = $%d", val)
+        } else {
+            query += fmt.Sprintf("rating = $%d", val)
+        }
+        vals = append(vals, rating)
+        val+=1
+    }
+
+    query += fmt.Sprintf("WHERE posterspotifyid = $%d AND songid = $%d", val, val+1)
+    vals = append(vals, spotifyID, songID)
+
+    res, err := DB.Driver.Exec(query, vals)
+
+    if err != nil {
+       return nil, false, err 
+    }
+
+    num, err := res.RowsAffected()
+
+    if err != nil {
+        return nil, false, err
+    }
+
+    if num < 1 {
+        return nil, false, nil
+    }
+
+
+
     return nil, false, nil
 }
