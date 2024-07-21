@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -113,6 +114,14 @@ func DeletePost(songID string, spotifyID string) (bool, error) {
 
 /* PROPERTY UPDATES */
 func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*responses.PostPreview, bool, error) {
+    tx, err := DB.Driver.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        return nil, false, err
+    }
+
+    defer tx.Rollback()
+
     query := "UPDATE posts SET "
 
     val := 1
@@ -133,26 +142,42 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
         val+=1
     }
 
-    query += fmt.Sprintf("WHERE posterspotifyid = $%d AND songid = $%d", val, val+1)
+    query += fmt.Sprintf(`
+    WHERE posterspotifyid = $%d AND songid = $%d RETURNING 
+    albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid
+    `, val, val+1)
     vals = append(vals, spotifyID, songID)
 
-    res, err := DB.Driver.Exec(query, vals)
+    res := tx.QueryRow(query, vals...)
+
+
+    postPreview := &responses.PostPreview{}
+    err = res.Scan(&postPreview.AlbumArtURI, &postPreview.AlbumID, &postPreview.AlbumName, &postPreview.CreatedAt, &postPreview.Rating, &postPreview.SongID, &postPreview.SongName, 
+&postPreview.Text, &postPreview.UpdatedAt, &postPreview.SpotifyID)
 
     if err != nil {
-       return nil, false, err 
-    }
-
-    num, err := res.RowsAffected()
-
-    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, false, nil 
+        } 
         return nil, false, err
     }
 
-    if num < 1 {
-        return nil, false, nil
+
+    query = "SELECT username FROM users WHERE spotifyid = $1"
+    res = tx.QueryRow(query, spotifyID)
+
+    err = res.Scan(&postPreview.Username)
+
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, false, nil 
+        } 
+        return nil, false, err
     }
 
+     if err = tx.Commit(); err != nil {
+         return nil, false, err
+    }
 
-
-    return nil, false, nil
+    return postPreview, true, nil
 }

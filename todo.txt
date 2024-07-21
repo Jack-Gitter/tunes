@@ -45,3 +45,9 @@ testing:
 general: 
     swagger?
     rework file structure?
+
+user auth questions: 
+    does cors prevent browser from setting cookies?
+    bearer token as http only cookie
+    access token as normal cookie, but still read from header
+    prevent XSS? -- look into this as well!
