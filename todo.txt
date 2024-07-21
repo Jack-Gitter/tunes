@@ -1,9 +1,8 @@
 tunes todos:
 
 errors: 
-    make a method that checks to see if an error is a neo4j error. if it is a return true and the error code (number). if it is not return false and nil
-    clean up errors everywhere
-
+    handle expected errors like duplicate inserts, no user found and then return accordingly from them
+    clean up errors
 
 database: 
     make migrations runnable
@@ -38,15 +37,9 @@ caching questions:
     also updating cache after db writes — we have one post then another which changes a value. A hits db first then b, but b writes to cache first then a. how to prevent?
 
 testing:
-    implement tests
+    implement tests -- e2e is difficult
     implement a git workflow to run tests on push
 
 general: 
     swagger?
     rework file structure?
-
-user auth questions: 
-    does cors prevent browser from setting cookies?
-    bearer token as http only cookie
-    access token as normal cookie, but still read from header
-    prevent XSS? -- look into this as well!
