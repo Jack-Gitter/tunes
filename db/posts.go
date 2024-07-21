@@ -51,8 +51,41 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
 
 // make this method get the posts with id offset -> offset+limit-1
 func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
+    query := `
+            SELECT posts.albumarturi, posts.albumid, posts.albumname, posts.createdat, posts.rating, posts.songid, posts.songname, posts.review, posts.updatedat, posts.posterspotifyid, users.username
+            FROM posts 
+            INNER JOIN users 
+            ON users.spotifyid = posts.posterspotifyid
+            WHERE posts.posterspotifyid = $1 AND posts.createdat < $2 ORDER BY posts.createdat DESC LIMIT 25 `
 
-    return nil, nil
+    rows, err := DB.Driver.Query(query, spotifyID, createdAt)
+
+    postPreviewsResponse := []responses.PostPreview{}
+
+    for rows.Next() {
+        post := responses.PostPreview{}
+        err := rows.Scan(&post.AlbumArtURI, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
+        if err != nil {
+            return nil, err
+        }
+        postPreviewsResponse = append(postPreviewsResponse, post)
+    }
+
+    paginationResponse := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{}
+    paginationResponse.DataResponse = postPreviewsResponse
+
+    if len(postPreviewsResponse) > 0 {
+        lastPost := postPreviewsResponse[len(postPreviewsResponse)-1]
+        paginationResponse.PaginationKey = lastPost.CreatedAt
+    } else {
+        paginationResponse.PaginationKey = time.Now().UTC()
+    }
+
+    if err != nil {
+        return nil, err
+    }
+
+    return paginationResponse, nil
 }
 
 func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, bool, error){
