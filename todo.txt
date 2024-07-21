@@ -1,5 +1,7 @@
 tunes todos:
 
+makefile: 
+    make it easy to run migrations, run project, etc
 errors: 
     handle expected errors like duplicate inserts, no user found and then return accordingly from them
     clean up errors
