@@ -14,3 +14,8 @@ type JWTClaims struct {
     Username string
     jwt.RegisteredClaims
 }
+
+type RefreshJWTClaims struct {
+    RefreshToken string
+    jwt.RegisteredClaims
+}
