@@ -8,7 +8,6 @@ import (
 type JWTClaims struct {
     SpotifyID string
     AccessToken string
-    RefreshToken string
     AccessTokenExpiresAt int
     UserRole responses.Role
     Username string

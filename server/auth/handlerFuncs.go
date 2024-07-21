@@ -102,23 +102,19 @@ func ValidateUserJWT(c *gin.Context) {
     } 
 
     spotifyID := token.Claims.(*requests.JWTClaims).SpotifyID
-    spotifyRefreshToken := token.Claims.(*requests.JWTClaims).RefreshToken
     spotifyAccessToken := token.Claims.(*requests.JWTClaims).AccessToken
     role := token.Claims.(*requests.JWTClaims).UserRole
 
     c.Set("spotifyID", spotifyID)
     c.Set("userRole", role)
     c.Set("spotifyAccessToken", spotifyAccessToken)
-    c.Set("spotifyRefreshToken", spotifyRefreshToken)
     
     c.Next()
 }
 
 func RefreshJWT(c *gin.Context) {
 
-    fmt.Println("hi")
     refresh_jwt, err := c.Cookie("REFRESH_JWT")
-    fmt.Println(refresh_jwt)
 
     if err != nil {
         c.JSON(http.StatusBadRequest, "need the refresh token!")
