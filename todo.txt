@@ -45,3 +45,6 @@ testing:
 general: 
     swagger?
     rework file structure?
+
+auth: 
+    can I use cors to control if cookies are set on the browser? I'm not entirely sure
