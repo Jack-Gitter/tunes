@@ -42,7 +42,7 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
-    user, err := db.InsertUserIntoDBIfNeeded(userProfileResponse.Display_name, userProfileResponse.Id, responses.BASIC_USER)
+    user, err := db.UpsertUser(userProfileResponse.Display_name, userProfileResponse.Id)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
@@ -53,7 +53,6 @@ func LoginCallback(c *gin.Context) {
         userProfileResponse.Id, 
         userProfileResponse.Display_name, 
         accessTokenResponse.Access_token, 
-        accessTokenResponse.Refresh_token, 
         accessTokenResponse.Expires_in, 
         user.Role) 
 
@@ -62,19 +61,17 @@ func LoginCallback(c *gin.Context) {
         return
     }
 
-    refreshString, err := helpers.CreateRefreshJWT()
+    refreshString, err := helpers.CreateRefreshJWT(accessTokenResponse.Refresh_token)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
-    resp := responses.AuthResponse{}
-    resp.AccessToken = tokenString
-    resp.RefreshToken = refreshString
-    resp.Data = user
+    c.SetCookie("ACCESS_JWT", tokenString, 3600, "/", "localhost", false, false)
+    c.SetCookie("REFRESH_JWT", refreshString, 86400, "/", "localhost", false, true)
 
-    c.JSON(http.StatusOK, resp)
+    c.JSON(http.StatusOK, user)
 }
 
 func ValidateUserJWT(c *gin.Context) {
@@ -119,16 +116,16 @@ func ValidateUserJWT(c *gin.Context) {
 
 func RefreshJWT(c *gin.Context) {
 
-    authReq := &requests.RefreshJWTDTO{}
-    err := c.ShouldBindBodyWithJSON(authReq)
+    fmt.Println("hi")
+    refresh_jwt, err := c.Cookie("REFRESH_JWT")
+    fmt.Println(refresh_jwt)
 
     if err != nil {
-        fmt.Println(err.Error())
-        c.JSON(http.StatusBadRequest, "bad data for refresh")
+        c.JSON(http.StatusBadRequest, "need the refresh token!")
         return
     }
 
-    _, e := helpers.ValidateRefreshToken(authReq.RefreshToken)
+    refresh_token, e := helpers.ValidateRefreshToken(refresh_jwt)
 
     if e != nil {
         if errors.Is(e, jwt.ErrTokenExpired) {
@@ -140,14 +137,7 @@ func RefreshJWT(c *gin.Context) {
         }
     }
 
-    acc_token, e := helpers.ValidateAccessToken(authReq.AccessToken)
-
-    if e != nil && !errors.Is(e, jwt.ErrTokenExpired) {
-        c.AbortWithStatusJSON(http.StatusUnauthorized, "do not fuck with the JWT BITCH")
-        return
-    }
-
-    spotifyRefreshToken := acc_token.Claims.(*requests.JWTClaims).RefreshToken
+    spotifyRefreshToken := refresh_token.Claims.(*requests.RefreshJWTClaims).RefreshToken
     accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken)
 
     if err != nil {
@@ -155,6 +145,7 @@ func RefreshJWT(c *gin.Context) {
         return
     }
 
+    // if this is new, do we need to set a whole new refresh token??? -- would be a bitch
     if accessTokenResponseBody.Refresh_token == "" {
         accessTokenResponseBody.Refresh_token = spotifyRefreshToken
     }
@@ -182,7 +173,6 @@ func RefreshJWT(c *gin.Context) {
         userProfileResponse.Id, 
         userProfileResponse.Display_name, 
         accessTokenResponseBody.Access_token, 
-        accessTokenResponseBody.Refresh_token, 
         accessTokenResponseBody.Expires_in,
         userDBResponse.Role,
     )
@@ -192,11 +182,9 @@ func RefreshJWT(c *gin.Context) {
         return
     }
 
-    resp := map[string]string{
-        "AccessToken": accessTokenJWT,
-    }
+    c.SetCookie("ACCESS_JWT", accessTokenJWT, 3600, "/", "localhost", false, false)
 
-    c.JSON(http.StatusOK, resp)
+    c.Status(http.StatusOK)
 }
 
 func ValidateAdminUser(c *gin.Context) {

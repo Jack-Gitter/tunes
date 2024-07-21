@@ -179,14 +179,14 @@ func UpdateUserBySpotifyID(c *gin.Context) {
         return
     }
 
-    user, err := updateUser(spotifyID, userUpdateRequest, userRole.(responses.Role))
+    resp, err := updateUser(spotifyID, userUpdateRequest, userRole.(responses.Role))
 
     if err != nil {
         c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
-    c.JSON(http.StatusOK, user)
+    c.JSON(http.StatusOK, resp)
 }
 
 
@@ -209,14 +209,14 @@ func UpdateCurrentUserProperties(c *gin.Context) {
         return
     }
 
-    user, err := updateUser(spotifyID.(string), userUpdateRequest, userRole.(responses.Role))
+    resp, err := updateUser(spotifyID.(string), userUpdateRequest, userRole.(responses.Role))
 
     if err != nil {
         c.JSON(http.StatusBadRequest, err.Error())
         return
     }
 
-    c.JSON(http.StatusOK, user)
+    c.JSON(http.StatusOK, resp)
 
 }
 
@@ -271,7 +271,7 @@ func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestD
         return nil, errors.New("invalid user role")
     }
 
-    user, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
+    resp, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
 
     if err != nil {
         return nil, err
@@ -281,7 +281,7 @@ func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestD
         return nil, errors.New("could not find user in db")
     }
 
-    return user, nil
+    return resp, nil
 
 }
 

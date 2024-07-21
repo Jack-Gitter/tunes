@@ -4,11 +4,9 @@ errors:
     make a method that checks to see if an error is a neo4j error. if it is a return true and the error code (number). if it is not return false and nil
     clean up errors everywhere
 
-neo4j: 
-    make it so that we can run database migrations easily with those constraints in the file.txt
 
 database: 
-    ensure that we are actually running decent queries -- nothing to really do about the username, but just check the merges are correct and whatnot
+    make migrations runnable
 
 endpoints: 
     general: 
@@ -28,11 +26,12 @@ caching:
         read up on caching techniques!!! 
 
 dockerize:
-    neo4j
+    postgres
     redis
 
 admin: 
     cors
+
 
 caching questions: 
     i validate cadhe on every data change — what about data race with get and data change where data change clears cache but get reaches db first and caches data?
@@ -45,3 +44,9 @@ testing:
 general: 
     swagger?
     rework file structure?
+
+user auth questions: 
+    does cors prevent browser from setting cookies?
+    bearer token as http only cookie
+    access token as normal cookie, but still read from header
+    prevent XSS? -- look into this as well!

@@ -1,246 +1,216 @@
 package db
 
 import (
+	"context"
+	"database/sql"
 	"errors"
-	"os"
+	"fmt"
 	"time"
+
 	"github.com/Jack-Gitter/tunes/models/responses"
-	"github.com/mitchellh/mapstructure"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	_ "github.com/lib/pq"
 )
 
 /* ===================== CREATE =====================  */
 
-func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time) (*responses.Post, error) {
-    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    `MATCH (u:User {spotifyID: $spotifyID}) 
-    MERGE (p:Post {songID: $songID, songName: $songName, albumName: $albumName, albumArtURI: $albumArtURI, albumID: $albumID, rating: $rating, text: $text, createdAt: $createdAt, updatedAt: $updatedAt, spotifyID: $spotifyID})
-     CREATE (u)-[:Posted]->(p)
-     RETURN properties(p) as Post, u.username as Username`,
-        map[string]any{ 
-            "songID": songID,
-            "songName": songName,
-            "albumName": albumName,
-            "albumArtURI": albumImage,
-            "albumID": albumID,
-            "rating": rating,
-            "text": text,
-            "spotifyID": spotifyID,
-            "createdAt": createdAt,
-            "updatedAt": time.Now().UTC(),
-        }, 
-        neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
-    )
+func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time) error {
+    query := `INSERT INTO posts 
+                    (albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid) 
+                    values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+
+    _, err := DB.Driver.Exec(query, albumImage, albumID, albumName, createdAt, rating, songID, songName, text, createdAt, spotifyID)
 
     if err != nil {
-        return nil, err
+        fmt.Println(err.Error())
+        return err
     }
 
-    postResponse := &responses.Post{}
-    post, _ := resp.Records[0].Get("Post")
-    username, _ := resp.Records[0].Get("Username")
-
-    mapstructure.Decode(post, postResponse)
-    postResponse.Username = username.(string)
-    postResponse.SpotifyID = spotifyID
-
-    return postResponse, nil
+    return nil
 }
 
 /* ===================== READ =====================  */
 
 func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, error) {
-    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post, u.username as Username`,
-        map[string]any{ 
-            "spotifyID": spotifyID,
-            "postID": postID,
-        }, 
-        neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
-    )
+    query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
+                FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`
 
-    if err != nil {
-        return nil, false, err
-    }
-
-    if len(resp.Records) < 1 {
-        return nil, false, nil 
-    }
-
-    postResponse, foundPost := resp.Records[0].Get("Post")
-    usernameResponse, foundUsername := resp.Records[0].Get("Username")
-
-    if !foundPost || !foundUsername {
-        return nil, false, errors.New("post or username has no properites in DB, something went wrong")
-    }
+    row := DB.Driver.QueryRow(query, spotifyID, postID)
 
     post := &responses.Post{}
-    post.SpotifyID = spotifyID
-    post.Username = usernameResponse.(string)
-    mapstructure.Decode(postResponse, post)
+    err := row.Scan(&post.AlbumArtURI, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
+
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, false, nil 
+        } 
+        return nil, false, err
+    }
 
     return post, true, nil
 }
 
 // make this method get the posts with id offset -> offset+limit-1
 func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
+    query := `
+            SELECT posts.albumarturi, posts.albumid, posts.albumname, posts.createdat, posts.rating, posts.songid, posts.songname, posts.review, posts.updatedat, posts.posterspotifyid, users.username
+            FROM posts 
+            INNER JOIN users 
+            ON users.spotifyid = posts.posterspotifyid
+            WHERE posts.posterspotifyid = $1 AND posts.createdat < $2 ORDER BY posts.createdat DESC LIMIT 25 `
 
-    res, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) WHERE datetime(p.createdAt) < datetime($time) RETURN properties(p) as postProperties, u.username as Username ORDER BY p.createdAt DESC LIMIT 25",
-        map[string]any{
-            "spotifyID": spotifyID,
-            "time": createdAt,
-        }, neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
-    )
+    rows, err := DB.Driver.Query(query, spotifyID, createdAt)
 
-    if err != nil {
-        return nil, err
-    }
+    postPreviewsResponse := []responses.PostPreview{}
 
-    posts := []responses.PostPreview{}
-
-    for _, record := range res.Records {
-        postResponse, exists := record.Get("postProperties")
-        usernameResponse, uexists := record.Get("Username")
-        if !exists || !uexists { return nil, errors.New("post has no properties in database") }
-        post := &responses.PostPreview{}
-        mapstructure.Decode(postResponse, post)
-        post.UserIdentifer.SpotifyID = spotifyID
-        post.UserIdentifer.Username = usernameResponse.(string)
-        posts = append(posts, (*post))
+    for rows.Next() {
+        post := responses.PostPreview{}
+        err := rows.Scan(&post.AlbumArtURI, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
+        if err != nil {
+            return nil, err
+        }
+        postPreviewsResponse = append(postPreviewsResponse, post)
     }
 
     paginationResponse := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{}
-    paginationResponse.DataResponse = posts
-    if len(posts) > 0 {
-        paginationResponse.PaginationKey = posts[len(posts)-1].CreatedAt
+    paginationResponse.DataResponse = postPreviewsResponse
+
+    if len(postPreviewsResponse) > 0 {
+        lastPost := postPreviewsResponse[len(postPreviewsResponse)-1]
+        paginationResponse.PaginationKey = lastPost.CreatedAt
     } else {
-        paginationResponse.PaginationKey = time.Time{}
+        paginationResponse.PaginationKey = time.Now().UTC()
+    }
+
+    if err != nil {
+        return nil, err
     }
 
     return paginationResponse, nil
 }
 
 func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, bool, error){
-    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID return properties(p) as Post, u.username as Username`,
-        map[string]any{ 
-            "spotifyID": spotifyID,
-            "postID": songID,
-        }, 
-        neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
-    )
+    query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
+                FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`
+
+    row := DB.Driver.QueryRow(query, spotifyID, songID)
+
+    postPreview := &responses.PostPreview{}
+
+    err := row.Scan(&postPreview.AlbumArtURI, 
+                    &postPreview.AlbumID, 
+                    &postPreview.AlbumName, 
+                    &postPreview.CreatedAt, 
+                    &postPreview.Rating, 
+                    &postPreview.SongID, 
+                    &postPreview.SongName, 
+                    &postPreview.Text, 
+                    &postPreview.UpdatedAt, 
+                    &postPreview.SpotifyID, 
+                    &postPreview.Username)
 
     if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, false, nil 
+        } 
         return nil, false, err
     }
 
-    if len(resp.Records) < 1 {
-        return nil, false, nil 
-    }
+    return postPreview, true, nil
 
-    postResponse, found := resp.Records[0].Get("Post")
-    usernameResponse, ufound := resp.Records[0].Get("Username")
-
-    if !found || !ufound {
-        return nil, false, errors.New("post or username has no properites in DB, something went wrong")
-    }
-
-
-    post := &responses.PostPreview{}
-    post.SpotifyID = spotifyID
-    post.Username = usernameResponse.(string)
-    mapstructure.Decode(postResponse, post)
-
-    return post, true, nil
 }
 
 
 /* ===================== DELETE =====================  */
 
-func DeletePost(songID string, spotifyID string) (bool, bool, error) {
-    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    `MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) where p.songID = $postID DETACH DELETE p return properties(p) as Post`,
-        map[string]any{ 
-            "spotifyID": spotifyID,
-            "postID": songID,
-        }, 
-        neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
-    )
+func DeletePost(songID string, spotifyID string) (bool, error) {
+    query := `DELETE FROM posts WHERE posterspotifyid = $1 AND songid = $2`
+
+    res, err := DB.Driver.Exec(query, spotifyID, songID)
 
     if err != nil {
-        return false, false, err
+        return false, err
     }
 
-    if len(resp.Records) < 1 {
-        return false, false, nil
+    rows, err := res.RowsAffected()
+
+    if err != nil {
+        return false, err
     }
 
-    return true, true, nil
+    if rows < 1 {
+        return false, nil
+    }
+
+    return true, nil
 }
 
 
 /* PROPERTY UPDATES */
 func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*responses.PostPreview, bool, error) {
-    
-    query := "MATCH (u:User {spotifyID: $spotifyID}) MATCH (u)-[:Posted]->(p) WHERE p.songID = $songID"
-
-    t := ""
-    if text != nil {
-        t = *text
-        query += " SET p.text = $text"
-    }
-
-    r := -1 
-    if rating != nil {
-        r = *rating
-        if r < 0 || r > 5 {
-            return nil, false, errors.New("please rate 0 to 5!")
-        }
-        query += " SET p.rating = $rating"
-    }
-
-    query += ", p.updatedAt = $updatedAt RETURN properties(p) as postProperties, u.username as username"
-
-    resp, err := neo4j.ExecuteQuery(DB.Ctx, DB.Driver, 
-    query,
-        map[string]any{ 
-            "spotifyID": spotifyID,
-            "songID": songID,
-            "text": t,
-            "rating": r,
-            "updatedAt": time.Now().UTC(),
-        }, 
-        neo4j.EagerResultTransformer,
-        neo4j.ExecuteQueryWithDatabase(os.Getenv("DB_NAME")),
-    )
+    tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
     if err != nil {
         return nil, false, err
     }
 
-    if len(resp.Records) < 1 {
-        return nil, false, nil
+    defer tx.Rollback()
+
+    query := "UPDATE posts SET "
+
+    val := 1
+    vals := []any{}
+    if text != nil {
+        query += fmt.Sprintf("review = $%d", val)
+        val+=1
+        vals = append(vals, text)
     }
+
+    if rating != nil {
+        if val > 1 {
+            query += fmt.Sprintf(", rating = $%d", val)
+        } else {
+            query += fmt.Sprintf("rating = $%d", val)
+        }
+        vals = append(vals, rating)
+        val+=1
+    }
+
+    query += fmt.Sprintf(`
+    WHERE posterspotifyid = $%d AND songid = $%d RETURNING 
+    albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid
+    `, val, val+1)
+    vals = append(vals, spotifyID, songID)
+
+    res := tx.QueryRow(query, vals...)
+
 
     postPreview := &responses.PostPreview{}
-    props, found := resp.Records[0].Get("postProperties")
-    username, foundu := resp.Records[0].Get("username")
-    
-    if !found || !foundu {
-        return nil, false, nil
+    err = res.Scan(&postPreview.AlbumArtURI, &postPreview.AlbumID, &postPreview.AlbumName, &postPreview.CreatedAt, &postPreview.Rating, &postPreview.SongID, &postPreview.SongName, 
+&postPreview.Text, &postPreview.UpdatedAt, &postPreview.SpotifyID)
+
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, false, nil 
+        } 
+        return nil, false, err
     }
 
-    mapstructure.Decode(props, postPreview)
-    postPreview.Username = username.(string)
-    postPreview.SpotifyID = spotifyID
+
+    query = "SELECT username FROM users WHERE spotifyid = $1"
+    res = tx.QueryRow(query, spotifyID)
+
+    err = res.Scan(&postPreview.Username)
+
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, false, nil 
+        } 
+        return nil, false, err
+    }
+
+     if err = tx.Commit(); err != nil {
+         return nil, false, err
+    }
 
     return postPreview, true, nil
-
-
 }
