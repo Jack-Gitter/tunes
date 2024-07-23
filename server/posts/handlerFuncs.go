@@ -18,7 +18,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
     spotifyAccessToken, spotifyAccessTokenExists := c.Get("spotifyAccessToken")
 
     if !spotifyIDExists || !spotifyAccessTokenExists {
-        c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
+        c.JSON(http.StatusInternalServerError, "No JWT data found for the current user")
         return
     }
 
@@ -26,7 +26,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(createPostDTO)
 
     if createPostDTO.Rating < 0 || createPostDTO.Rating > 5 {
-        c.JSON(http.StatusBadRequest, "please rate from 0-5!")
+        c.JSON(http.StatusBadRequest, "Please provide a rating 0-5")
         return
     }
 
@@ -38,7 +38,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
     spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(createPostDTO.SongID, spotifyAccessToken.(string))
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, err.Error())
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
@@ -60,11 +60,11 @@ func CreatePostForCurrentUser(c *gin.Context) {
     )
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "bad")
+        c.JSON(http.StatusInternalServerError, "being lazy just search for this error")
         return
     }
 
-    c.Status(http.StatusOK)
+    c.Status(http.StatusNoContent)
 
 }
 
@@ -106,7 +106,7 @@ func GetAllPostsForUserByID(c *gin.Context) {
     }
 
     if !foundUser {
-        c.JSON(http.StatusBadRequest, "Could not find user with ID")
+        c.JSON(http.StatusNotFound, "Could not find user with ID")
         return
     }
 
@@ -130,7 +130,7 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
     }
 
     if !foundUser {
-        c.JSON(http.StatusBadRequest, "Could not find user with ID")
+        c.JSON(http.StatusNotFound, "Could not find user with ID")
         return
     }
 
@@ -150,7 +150,7 @@ func GetPostBySpotifyIDAndSongID(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusNotFound, "could not find post with that userid and songid in the database")
+        c.JSON(http.StatusNotFound, "Could not find post with corresponding userid and songid")
         return
     }
 
@@ -176,7 +176,7 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusNotFound, "could not find post with that userid and songid in the database")
+        c.JSON(http.StatusNotFound, "Could not find post with that userid and songid")
         return
     }
 
@@ -189,29 +189,29 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
     requestorSpotifyID, found := c.Get("spotifyID")
 
     if !found {
-        c.JSON(http.StatusInternalServerError, "no spotify ID found for user making request (did I forget to pass it in the middleware?)")
+        c.JSON(http.StatusInternalServerError, "No spotifyID set from JWT middleware")
     }
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")
 
     if requestorSpotifyID != spotifyID {
-        c.JSON(http.StatusBadRequest, "cannot delete a post that is not your own! (unless you're admin, tbd)")
+        c.JSON(http.StatusForbidden, "Cannot delete post that is not your own, unless you are an admin")
         return
     }
 
     found, err := db.DeletePost(songID, spotifyID)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "something went wrong with deletion")
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "post for that user has not been found!")
+        c.JSON(http.StatusNotFound, "Post for user with songID could not be found")
         return
     }
 
-    c.JSON(http.StatusOK, "post deleted")
+    c.Status(http.StatusNoContent)
 
 
 }
@@ -223,23 +223,23 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
     requestorSpotifyID, found := c.Get("spotifyID")
 
     if !found {
-        c.JSON(http.StatusInternalServerError, "no spotify ID found for user making request (did I forget to pass it in the middleware?)")
+        c.JSON(http.StatusInternalServerError, "No spotifyID variable set in JWT middleware")
     }
     songID := c.Param("songID")
 
     found, err := db.DeletePost(songID, requestorSpotifyID.(string))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, "something went wrong with deletion")
+        c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "post for that user has not been found!")
+        c.JSON(http.StatusNotFound, "Post with specified songID for user could not be found")
         return
     }
 
-    c.JSON(http.StatusOK, "post deleted")
+    c.Status(http.StatusNoContent)
 
 }
 

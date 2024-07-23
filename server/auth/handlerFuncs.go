@@ -179,7 +179,7 @@ func RefreshJWT(c *gin.Context) {
 
     c.SetCookie("ACCESS_JWT", accessTokenJWT, 3600, "/", "localhost", false, false)
 
-    c.Status(http.StatusOK)
+    c.Status(http.StatusNoContent)
 }
 
 func ValidateAdminUser(c *gin.Context) {

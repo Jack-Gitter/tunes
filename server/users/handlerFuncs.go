@@ -56,7 +56,7 @@ func UnFollowUser(c *gin.Context) {
         return
     }
 
-    c.Status(http.StatusOK)
+    c.Status(http.StatusNoContent)
 
 }
 
@@ -141,7 +141,7 @@ func FollowerUser(c *gin.Context) {
         return
     }
 
-    c.Status(http.StatusOK)
+    c.Status(http.StatusNoContent)
 
 }
 
@@ -259,7 +259,7 @@ func DeleteCurrentUser(c *gin.Context) {
         return
     }
 
-    c.Status(http.StatusOK)
+    c.Status(http.StatusNoContent)
 }
 
 func DeleteUserBySpotifyID(c *gin.Context) {
@@ -278,7 +278,7 @@ func DeleteUserBySpotifyID(c *gin.Context) {
         return
     }
 
-    c.Status(http.StatusOK)
+    c.Status(http.StatusNoContent)
 }
 
 func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, bool, error) {
