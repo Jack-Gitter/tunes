@@ -8,8 +8,8 @@ const (
     ADMIN Role = "ADMIN"
 )
 
-func IsValidRole(role string) bool {
-    return role == string(BASIC_USER) || role == string(MODERATOR) || role == string(ADMIN)
+func IsValidRole(role Role) bool {
+    return role == BASIC_USER || role == MODERATOR || role == ADMIN
 }
 
 type User struct {

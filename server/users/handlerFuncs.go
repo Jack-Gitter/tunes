@@ -22,7 +22,7 @@ func GetUserById(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "No user with ID found")
+        c.JSON(http.StatusNotFound, "No user with specified ID found")
         return
     }
 
@@ -35,12 +35,12 @@ func UnFollowUser(c *gin.Context) {
     spotifyID, found := c.Get("spotifyID")
 
     if otherUserSpotifyID == spotifyID {
-        c.JSON(http.StatusBadRequest, "cannot unfollow yourself!")
+        c.JSON(http.StatusBadRequest, "Unfollowing is not reflexive")
         return
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "no jwt")
+        c.JSON(http.StatusInternalServerError, "spotifyID key not set from JWT middleware")
         return
     }
 
@@ -52,7 +52,7 @@ func UnFollowUser(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "one user couldn't be fond!")
+        c.JSON(http.StatusNotFound, "One of the provided spotifyIDs failed to map to a valid user")
         return
     }
 
@@ -76,7 +76,7 @@ func GetFollowersByID(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "user not found")
+        c.JSON(http.StatusNotFound, "The provided spotifyID failed to map to a valid user")
         return
     }
 
@@ -90,7 +90,7 @@ func GetFollowers(c *gin.Context) {
     paginationKey := c.Query("spotifyID")
 
     if !found {
-        c.JSON(http.StatusInternalServerError, "no jwt")
+        c.JSON(http.StatusInternalServerError, "No spotifyID variable set from JWT middleware")
         return
     }
 
@@ -106,7 +106,7 @@ func GetFollowers(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "user not found")
+        c.JSON(http.StatusNotFound, "The provided spotifyID failed to map to a valid user")
         return
     }
 
@@ -120,12 +120,12 @@ func FollowerUser(c *gin.Context) {
     spotifyID, found := c.Get("spotifyID")
 
     if otherUserSpotifyID == spotifyID {
-        c.JSON(http.StatusBadRequest, "cannot follow yourself!")
+        c.JSON(http.StatusBadRequest, "Following is not reflexive")
         return
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "no jwt")
+        c.JSON(http.StatusInternalServerError, "No spotifyID set from JWT middleware")
         return
     }
 
@@ -137,7 +137,7 @@ func FollowerUser(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "one user couldn't be fond!")
+        c.JSON(http.StatusNotFound, "One of the provided spotifyIDs failed to map to a valid user")
         return
     }
 
@@ -151,7 +151,7 @@ func GetCurrentUser(c *gin.Context) {
     spotifyID, spotifyIdExists := c.Get("spotifyID")
 
     if !spotifyIdExists {
-        c.JSON(http.StatusUnauthorized, "please log in again. no JWT found")
+        c.JSON(http.StatusInternalServerError, "No spotifyID key set from JWT middleware")
         return
     }
 
@@ -163,7 +163,7 @@ func GetCurrentUser(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "No user with ID found")
+        c.JSON(http.StatusNotFound, "No user with ID found")
         return
     }
 
@@ -177,7 +177,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
 
     if !found || spotifyID == "" {
-        c.JSON(http.StatusInternalServerError, "no role found for user")
+        c.JSON(http.StatusInternalServerError, "No role variable set by JWT middleware")
         return
     }
 
@@ -185,7 +185,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
 
     if err != nil {
         fmt.Println(err.Error())
-        c.JSON(http.StatusBadRequest, "invalid json body for updating a user!")
+        c.JSON(http.StatusBadRequest, "Invalid JSON body")
         return
     }
 
@@ -197,7 +197,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "no user found")
+        c.JSON(http.StatusNotFound, "No user found with provided spotifyID")
         return
     }
 
@@ -212,7 +212,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     spotifyID, spotifyIdExists := c.Get("spotifyID")
 
     if !found || !spotifyIdExists {
-        c.JSON(http.StatusInternalServerError, "no role found for user")
+        c.JSON(http.StatusInternalServerError, "No role variable set by JWT middleware")
         return
     }
 
@@ -220,7 +220,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 
     if err != nil {
         fmt.Println(err.Error())
-        c.JSON(http.StatusBadRequest, "invalid json body for updating a user!")
+        c.JSON(http.StatusBadRequest, "Invalid JSON body")
         return
     }
 
@@ -232,7 +232,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusInternalServerError, "no user with id")
+        c.JSON(http.StatusNotFound, "No user with provided spotifyID found")
         return
     }
 
@@ -243,7 +243,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 func DeleteCurrentUser(c *gin.Context) {
     spotifyID, spotifyIdExists := c.Get("spotifyID")
     if !spotifyIdExists {
-        c.JSON(http.StatusBadRequest, "no spotify id found")
+        c.JSON(http.StatusInternalServerError, "No spotifyID variable set by JWT middleware")
         return
     }
 
@@ -255,7 +255,7 @@ func DeleteCurrentUser(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "could not find user")
+        c.JSON(http.StatusNotFound, "No user found with provided spotifyID")
         return
     }
 
@@ -274,7 +274,7 @@ func DeleteUserBySpotifyID(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "no user with that id found")
+        c.JSON(http.StatusNotFound, "No user found with provided spotifyID")
         return
     }
 
@@ -284,11 +284,11 @@ func DeleteUserBySpotifyID(c *gin.Context) {
 func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, bool, error) {
 
     if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
-        return nil, false, errors.New("cannot change your role if you're not an admin")
+        return nil, false, errors.New("Do not have sufficient permissions to change roles")
     }
 
-    if userUpdateRequest.Role != nil && !responses.IsValidRole(string(*userUpdateRequest.Role)) {
-        return nil, false, errors.New("invalid user role")
+    if userUpdateRequest.Role != nil && !responses.IsValidRole(*userUpdateRequest.Role) {
+        return nil, false, errors.New("User rle provided is not valid")
     }
 
     resp, found, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)

@@ -78,12 +78,12 @@ func ValidateUserJWT(c *gin.Context) {
     
     header := strings.Split(c.GetHeader("Authorization"), " ")
     if len(header) < 2 {
-        c.AbortWithStatusJSON(http.StatusBadRequest, "invalid auth header!")
+        c.AbortWithStatusJSON(http.StatusBadRequest, "Not enough values supplied in the Authorization header")
         return
     }
 
     if strings.ToLower(header[0]) != "bearer" {
-        c.AbortWithStatusJSON(http.StatusBadRequest, "invalid auth type!")
+        c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid authorization type")
         return
     }
 
@@ -93,10 +93,10 @@ func ValidateUserJWT(c *gin.Context) {
 
     if err != nil {
         if errors.Is(err, jwt.ErrTokenExpired) {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, "please refresh your JWT with the provided refresh token!")
+            c.AbortWithStatusJSON(http.StatusUnauthorized, "Please refresh your JWT by accessing the refresh endpoint")
             return
         } else {
-            c.AbortWithStatusJSON(http.StatusBadRequest, "nice try kid, don't fuck with the JWT")
+            c.AbortWithStatusJSON(http.StatusUnauthorized, "JWT signature could not be verified")
             return
         }
     } 
@@ -117,7 +117,7 @@ func RefreshJWT(c *gin.Context) {
     refresh_jwt, err := c.Cookie("REFRESH_JWT")
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, "need the refresh token!")
+        c.JSON(http.StatusBadRequest, "Refresh JWT cookie missing")
         return
     }
 
@@ -125,10 +125,10 @@ func RefreshJWT(c *gin.Context) {
 
     if e != nil {
         if errors.Is(e, jwt.ErrTokenExpired) {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, "your refresh token has expired, please log back in")
+            c.AbortWithStatusJSON(http.StatusUnauthorized, "Your refresh JWT has expired, please log out and log back in to continue")
             return
         } else {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, "do not tamper with the refresh token either :) ")
+            c.AbortWithStatusJSON(http.StatusUnauthorized, "Refresh JWT signature could not be verified")
             return
         }
     }
@@ -137,11 +137,10 @@ func RefreshJWT(c *gin.Context) {
     accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken)
 
     if err != nil {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, "error retreiving a new spotify access token for the user")
+        c.AbortWithStatusJSON(http.StatusInternalServerError, "Error retrieving a new spotify access token")
         return
     }
 
-    // if this is new, do we need to set a whole new refresh token??? -- would be a bitch
     if accessTokenResponseBody.Refresh_token == "" {
         accessTokenResponseBody.Refresh_token = spotifyRefreshToken
     }
@@ -149,19 +148,19 @@ func RefreshJWT(c *gin.Context) {
     userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponseBody.Access_token)
 
     if err != nil {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, "unable to get user profile from spotify")
+        c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
         return
     }
 
     userDBResponse, found, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if err != nil {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, "unable to get user from db")
+        c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
         return
     }
 
     if !found {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, "user does not exist in DB")
+        c.AbortWithStatusJSON(http.StatusNotFound, "No user in the database could be found for spotifyID specified in JWT")
         return
     }
 
@@ -174,7 +173,7 @@ func RefreshJWT(c *gin.Context) {
     )
 
     if err != nil {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, "error creating a JWT for the user")
+        c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
         return
     }
 
@@ -188,7 +187,7 @@ func ValidateAdminUser(c *gin.Context) {
     role, found := c.Get("userRole")
 
     if !found {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, "could not get role for the current user!")
+        c.AbortWithStatusJSON(http.StatusInternalServerError, "No role specified for the current user in the database")
         return
     }
 
@@ -197,7 +196,7 @@ func ValidateAdminUser(c *gin.Context) {
         return
     }
 
-    c.AbortWithStatusJSON(http.StatusBadRequest, "cannot access this endpoint if your not admin dummy!")
+    c.AbortWithStatusJSON(http.StatusForbidden, "Only admins are allowed to access this endpoint")
     return
 
 }

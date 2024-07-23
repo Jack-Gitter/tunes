@@ -1,13 +1,7 @@
 tunes todos:
 
-makefile: 
-    make it easy to run migrations, run project, etc
-
 errors: 
     clean up errors -- correct error codes and nice messages
-
-database: 
-    make migrations runnable
 
 endpoints: 
     general: 
