@@ -1,7 +1,9 @@
-goose_dbstring := postgresql://postgres:04122001@localhost:5432/tunes 
-migrations-up:
-	GOOSE_DRIVER=postgres GOOSE_DBSTRING=postgresql://postgres:04122001@localhost:5432/tunes GOOSE_MIGRATION_DIR=./db/migrations goose up
-migrations-down:
-	GOOSE_DRIVER=postgres GOOSE_DBSTRING=postgresql://postgres:04122001@localhost:5432/tunes GOOSE_MIGRATION_DIR=./db/migrations goose reset
+goose_dbstring ?= postgresql://postgres:04122001@localhost:5432/tunes
+goose_dir ?= ./db/migrations
+
+goose-up:
+	GOOSE_DRIVER=postgres GOOSE_DBSTRING=$(goose_dbstring) GOOSE_MIGRATION_DIR=$(goose_dir) goose up
+goose-reset:
+	GOOSE_DRIVER=postgres GOOSE_DBSTRING=$(goose_dbstring) GOOSE_MIGRATION_DIR=$(goose_dir) goose reset
 
 
