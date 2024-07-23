@@ -3,10 +3,8 @@ package db
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"time"
-
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
 )
@@ -19,6 +17,7 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
                     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
     _, err := DB.Driver.Exec(query, albumImage, albumID, albumName, createdAt, rating, songID, songName, text, createdAt, spotifyID)
+
 
     if err != nil {
         fmt.Println(err.Error())
@@ -40,7 +39,7 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
     err := row.Scan(&post.AlbumArtURI, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
 
     if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
+        if err == sql.ErrNoRows {
             return nil, false, nil 
         } 
         return nil, false, err
@@ -49,16 +48,41 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
     return post, true, nil
 }
 
-// make this method get the posts with id offset -> offset+limit-1
-func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
-    query := `
-            SELECT posts.albumarturi, posts.albumid, posts.albumname, posts.createdat, posts.rating, posts.songid, posts.songname, posts.review, posts.updatedat, posts.posterspotifyid, users.username
+func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], bool, error) {
+    tx, err := DB.Driver.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        return nil, false, err
+    }
+
+    defer tx.Rollback()
+
+    query :=  `SELECT spotifyid from USERS WHERE spotifyid = $1`
+
+    row := tx.QueryRow(query, spotifyID)
+
+    rep := "" 
+    err = row.Scan(&rep)
+
+    if err != nil {
+        if err == sql.ErrNoRows {
+            return nil, false, nil 
+        } 
+        return nil, false, err
+    }
+
+    query = ` SELECT posts.albumarturi, posts.albumid, posts.albumname, posts.createdat, posts.rating, posts.songid, posts.songname, posts.review, posts.updatedat, posts.posterspotifyid, users.username
             FROM posts 
             INNER JOIN users 
             ON users.spotifyid = posts.posterspotifyid
             WHERE posts.posterspotifyid = $1 AND posts.createdat < $2 ORDER BY posts.createdat DESC LIMIT 25 `
 
-    rows, err := DB.Driver.Query(query, spotifyID, createdAt)
+
+    rows, err := tx.Query(query, spotifyID, createdAt)
+
+    if err != nil {
+        return nil, false, err
+    }
 
     postPreviewsResponse := []responses.PostPreview{}
 
@@ -66,7 +90,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
         post := responses.PostPreview{}
         err := rows.Scan(&post.AlbumArtURI, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
         if err != nil {
-            return nil, err
+            return nil, false, err
         }
         postPreviewsResponse = append(postPreviewsResponse, post)
     }
@@ -81,11 +105,11 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
         paginationResponse.PaginationKey = time.Now().UTC()
     }
 
-    if err != nil {
-        return nil, err
+     if err = tx.Commit(); err != nil {
+         return nil, false, err
     }
 
-    return paginationResponse, nil
+    return paginationResponse, true, nil
 }
 
 func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, bool, error){
@@ -109,7 +133,7 @@ func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPre
                     &postPreview.Username)
 
     if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
+        if err == sql.ErrNoRows {
             return nil, false, nil 
         } 
         return nil, false, err
@@ -185,11 +209,19 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
 
 
     postPreview := &responses.PostPreview{}
-    err = res.Scan(&postPreview.AlbumArtURI, &postPreview.AlbumID, &postPreview.AlbumName, &postPreview.CreatedAt, &postPreview.Rating, &postPreview.SongID, &postPreview.SongName, 
-&postPreview.Text, &postPreview.UpdatedAt, &postPreview.SpotifyID)
+    err = res.Scan(&postPreview.AlbumArtURI, 
+                    &postPreview.AlbumID, 
+                    &postPreview.AlbumName, 
+                    &postPreview.CreatedAt, 
+                    &postPreview.Rating, 
+                    &postPreview.SongID, 
+                    &postPreview.SongName, 
+                    &postPreview.Text, 
+                    &postPreview.UpdatedAt, 
+                    &postPreview.SpotifyID)
 
     if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
+        if err == sql.ErrNoRows {
             return nil, false, nil 
         } 
         return nil, false, err
@@ -202,7 +234,7 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
     err = res.Scan(&postPreview.Username)
 
     if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
+        if err == sql.ErrNoRows {
             return nil, false, nil 
         } 
         return nil, false, err

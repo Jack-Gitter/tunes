@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -14,10 +15,15 @@ func GetUserById(c *gin.Context) {
 
     spotifyID := c.Param("spotifyID")
 
-    user, err := getUser(spotifyID)
+    user, found, err := db.GetUserFromDbBySpotifyID(spotifyID)
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, err.Error())
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "No user with ID found")
         return
     }
 
@@ -150,10 +156,15 @@ func GetCurrentUser(c *gin.Context) {
         return
     }
 
-    user, err := getUser(spotifyID.(string))
+    user, found, err := db.GetUserFromDbBySpotifyID(spotifyID.(string))
 
     if err != nil {
         c.JSON(http.StatusBadRequest, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusBadRequest, "No user with ID found")
         return
     }
 
@@ -282,21 +293,5 @@ func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestD
     }
 
     return resp, nil
-
-}
-
-func getUser(spotifyID string) (*responses.User, error) {
-
-    user, foundUser, err := db.GetUserFromDbBySpotifyID(spotifyID)
-
-    if err != nil {
-        return nil, err
-    }
-
-    if !foundUser {
-        return nil, err
-    }
-
-    return user, nil
 
 }

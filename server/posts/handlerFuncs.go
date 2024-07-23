@@ -98,10 +98,15 @@ func GetAllPostsForUserByID(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
     createdAt := c.Query("createdAt")
 
-    posts, err := getAllPosts(spotifyID, createdAt)
+    posts, foundUser, err := getAllPosts(spotifyID, createdAt)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !foundUser {
+        c.JSON(http.StatusBadRequest, "Could not find user with ID")
         return
     }
 
@@ -117,10 +122,15 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
         return
     }
 
-    posts, err := getAllPosts(spotifyID.(string), createdAt)
+    posts, foundUser, err := getAllPosts(spotifyID.(string), createdAt)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !foundUser {
+        c.JSON(http.StatusBadRequest, "Could not find user with ID")
         return
     }
 
@@ -267,7 +277,7 @@ func UpdateCurrentUserPost(c *gin.Context) {
     c.JSON(http.StatusOK, preview)
 }
 
-func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
+func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], bool, error) {
     var t time.Time 
     if createdAt == "" {
         t = time.Now().UTC()
@@ -275,12 +285,6 @@ func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationRespo
         t, _ = time.Parse(time.RFC3339, createdAt)
     }
 
-    posts, err := db.GetUserPostsPreviewsByUserID(spotifyID, t)
-
-    if err != nil {
-        return nil, err
-    }
-
-    return posts, nil
+    return db.GetUserPostsPreviewsByUserID(spotifyID, t)
 
 }

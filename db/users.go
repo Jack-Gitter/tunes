@@ -2,9 +2,7 @@ package db
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
-
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
@@ -16,16 +14,14 @@ func UpsertUser(username string, spotifyID string) (*responses.User, error) {
     query := "INSERT INTO users (spotifyid, username, userrole) values ($1, $2, 'BASIC') ON CONFLICT (spotifyID) DO UPDATE SET username=$2 RETURNING bio, userrole"
     row := DB.Driver.QueryRow(query, spotifyID, username)
 
-    err := row.Err()
-    if err != nil {
-        return nil, err
-    }
-
     userResponse := &responses.User{}
     userResponse.Username = username
     userResponse.SpotifyID = spotifyID
-    row.Scan(&userResponse.Bio, &userResponse.Role)
+    err := row.Scan(&userResponse.Bio, &userResponse.Role)
 
+    if err != nil {
+        return nil, err
+    }
 
     return userResponse, nil
 }
@@ -36,20 +32,22 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
     query := "SELECT spotifyid, userrole, username, bio FROM users WHERE spotifyid = $1"
     row := DB.Driver.QueryRow(query, spotifyID)
 
-    err := row.Err()
-    if err != nil {
-        return nil, false, err
-    }
 
     userResponse := &responses.User{}
-    row.Scan(&userResponse.SpotifyID, &userResponse.Username, &userResponse.Role, &userResponse.Bio)
+    err := row.Scan(&userResponse.SpotifyID, &userResponse.Username, &userResponse.Role, &userResponse.Bio)
+
+    if err != nil {
+        if err == sql.ErrNoRows {
+            return nil, false, nil
+        } 
+        return nil, false, err
+    }
 
     return userResponse, true, nil
 }
 
 
 /* PROPERTY UPDATES */
-// todo
 func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, bool, error) { 
     query := "UPDATE users SET "
     args := []any{}
@@ -80,7 +78,7 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
     err := res.Scan(&userResponse.Bio, &userResponse.Role, &userResponse.SpotifyID, &userResponse.Username)
 
     if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
+        if err == sql.ErrNoRows {
             return nil, false, nil 
         } 
         return nil, false, err
@@ -158,8 +156,6 @@ func FollowUser(spotifyID string, otherUserSpotifyID string) (bool, error) {
 }
 
 func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], bool, error) {
-    // we need to get all of the userfollowed from the join table where follower = spotifyID  -> just use a join!
-    // we then need to do a select on the user table  for all of the records for those ids. This needs to be like order by spotifyID and spotifyID < paginationkey
     query := `
             SELECT users.spotifyid, users.username, users.bio, users.userrole 
             FROM followers 
@@ -169,12 +165,19 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
 
     rows, err := DB.Driver.Query(query, spotifyID, paginationKey)
 
+    if err != nil {
+        return nil, false, err
+    }
+
     userResponses := []responses.User{}
 
     for rows.Next() {
         user := responses.User{}
         err := rows.Scan(&user.SpotifyID, &user.Username, &user.Bio, &user.Role)
         if err != nil {
+            if err == sql.ErrNoRows {
+                return nil, false, nil 
+            } 
             return nil, false, err
         }
         userResponses = append(userResponses, user)
@@ -188,10 +191,6 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
         paginationResponse.PaginationKey = lastUser.SpotifyID
     } else {
         paginationResponse.PaginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
-    }
-
-    if err != nil {
-        return nil, false, err
     }
 
     return paginationResponse, true, nil
