@@ -2,9 +2,9 @@ tunes todos:
 
 makefile: 
     make it easy to run migrations, run project, etc
+
 errors: 
-    handle expected errors like duplicate inserts, no user found and then return accordingly from them
-    clean up errors
+    clean up errors -- correct error codes and nice messages
 
 database: 
     make migrations runnable
@@ -33,18 +33,14 @@ dockerize:
 admin: 
     cors
 
-
 caching questions: 
     i validate cadhe on every data change — what about data race with get and data change where data change clears cache but get reaches db first and caches data?
     also updating cache after db writes — we have one post then another which changes a value. A hits db first then b, but b writes to cache first then a. how to prevent?
 
 testing:
-    implement tests -- e2e is difficult
+    implement tests -- e2e test with testing library!
     implement a git workflow to run tests on push
 
 general: 
     swagger?
     rework file structure?
-
-auth: 
-    can I use cors to control if cookies are set on the browser? I'm not entirely sure
