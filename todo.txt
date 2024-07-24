@@ -3,7 +3,6 @@ tunes todos:
 
 sql queries: 
     duplicate key errors -- return 400 not 500
-    values that could be null -- we need to be careful when scannign from database, use sql.NullString
 
 endpoints: 
     general: 

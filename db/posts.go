@@ -67,6 +67,7 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
 }
 
 func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], bool, error) {
+    fmt.Println(createdAt)
     tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
     if err != nil {
@@ -89,6 +90,8 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
         return nil, false, err
     }
 
+    
+    createdAt = createdAt.Round(time.Microsecond)
     query = ` SELECT posts.albumarturi, posts.albumid, posts.albumname, posts.createdat, posts.rating, posts.songid, posts.songname, posts.review, posts.updatedat, posts.posterspotifyid, users.username
             FROM posts 
             INNER JOIN users 
@@ -250,9 +253,9 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int, user
 }
 
 
-func LikePostForUser(spotifyID string, posterSpotifyID string, songID string) (bool, error) {
-    query := "INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) values ($1, $2, $3, $4, $5, $6)"
-    res, err := DB.Driver.Exec(query, spotifyID, posterSpotifyID, songID, time.Now().UTC(), time.Now().UTC(), true)
+func LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, liked bool) (bool, error) {
+    query := "INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) values ($1, $2, $3, $4, $5, $6) ON CONFLICT (voterspotifyid, posterspotifyid, postsongid) DO UPDATE SET updatedat=$5, liked=$6"
+    res, err := DB.Driver.Exec(query, spotifyID, posterSpotifyID, songID, time.Now().UTC(), time.Now().UTC(), liked)
 
     if err != nil {
         return false, err

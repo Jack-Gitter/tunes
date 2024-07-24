@@ -18,7 +18,7 @@ func UpsertUser(username string, spotifyID string) (*responses.User, error) {
     userResponse.Username = username
     userResponse.SpotifyID = spotifyID
     bio := sql.NullString{}
-    err := row.Scan(&userResponse.Bio, &bio)
+    err := row.Scan(&bio, &userResponse.Role)
     userResponse.Bio = bio.String
 
     if err != nil {

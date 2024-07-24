@@ -87,7 +87,7 @@ func LikePost(c *gin.Context) {
         return
     }
 
-    found, err := db.LikePostForUser(currentUserSpotifyID.(string), spotifyID, songID)
+    found, err := db.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, true)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
@@ -101,6 +101,33 @@ func LikePost(c *gin.Context) {
 
     c.Status(http.StatusNoContent)
 }
+
+func DislikePost(c *gin.Context) {
+
+    currentUserSpotifyID, found := c.Get("spotifyID")
+    spotifyID := c.Param("spotifyID")
+    songID := c.Param("songID")
+
+    if !found {
+        c.JSON(http.StatusInternalServerError, "Did not set spotifyID in JWT middleware")
+        return
+    }
+
+    found, err := db.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, false)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, err.Error())
+        return
+    }
+
+    if !found {
+        c.JSON(http.StatusNotFound, "Could not find post or user with specified values")
+        return
+    }
+
+    c.Status(http.StatusNoContent)
+}
+
 
 func GetAllPostsForUserByID(c *gin.Context) {
 
