@@ -1,9 +1,13 @@
 tunes todos:
 
+errors:
+    handle all errors in two places -- one in the db. We want to wrap errors thrown by sql. 
+    our custom error has an http status code associated with it, and the actual error object thrown
 
-sql queries: 
-    duplicate key errors -- return 400 not 500
 
+golang stufff
+    wtf are type assertions really?
+    
 endpoints: 
     general: 
         clean up endpoint names

@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
@@ -22,6 +23,7 @@ func UpsertUser(username string, spotifyID string) (*responses.User, error) {
     userResponse.Bio = bio.String
 
     if err != nil {
+        err = HandleDatabaseError(err)
         return nil, err
     }
 

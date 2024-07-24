@@ -25,6 +25,7 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
         }
         return nil, true, nil
     }
+
     postPreview := &responses.PostPreview{}
     postPreview.SpotifyID = spotifyID
     postPreview.SongID = songID
