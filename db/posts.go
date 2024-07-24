@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"time"
 	"github.com/Jack-Gitter/tunes/models/responses"
-	pq "github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
 
 /* ===================== CREATE =====================  */
 
-func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, bool, error) {
+func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, error) {
     query := `INSERT INTO posts 
                     (albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid) 
                     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
@@ -19,11 +19,8 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
     _, err := DB.Driver.Exec(query, albumImage, albumID, albumName, createdAt, rating, songID, songName, text, createdAt, spotifyID)
     
     if err != nil {
-        err, ok := err.(*pq.Error)
-        if !ok || err.Code != "23505"{
-            return nil, false, err
-        }
-        return nil, true, nil
+         return nil, HandleDatabaseError(err)
+        
     }
 
     postPreview := &responses.PostPreview{}
@@ -41,12 +38,12 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
 
 
 
-    return postPreview, false, nil
+    return postPreview, nil
 }
 
 /* ===================== READ =====================  */
 
-func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, error) {
+func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
     query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
                 FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`
 
@@ -58,20 +55,17 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
     post.AlbumArtURI = albumArtUri.String
 
     if err != nil {
-        if err == sql.ErrNoRows {
-            return nil, false, nil 
-        } 
-        return nil, false, err
+        HandleDatabaseError(err)
     }
 
-    return post, true, nil
+    return post, nil
 }
 
-func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], bool, error) {
+func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
     tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
     if err != nil {
-        return nil, false, err
+        return nil, HandleDatabaseError(err)
     }
 
     defer tx.Rollback()
@@ -84,10 +78,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
     err = row.Scan(&rep)
 
     if err != nil {
-        if err == sql.ErrNoRows {
-            return nil, false, nil 
-        } 
-        return nil, false, err
+        return nil, HandleDatabaseError(err)
     }
 
     
@@ -102,7 +93,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
     rows, err := tx.Query(query, spotifyID, createdAt)
 
     if err != nil {
-        return nil, false, err
+        return nil, HandleDatabaseError(err)
     }
 
     postPreviewsResponse := []responses.PostPreview{}
@@ -113,7 +104,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
         err := rows.Scan(&albumArtUri, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
         post.AlbumArtURI = albumArtUri.String
         if err != nil {
-            return nil, false, err
+            return nil, HandleDatabaseError(err)
         }
         postPreviewsResponse = append(postPreviewsResponse, post)
     }
@@ -129,13 +120,13 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
     }
 
      if err = tx.Commit(); err != nil {
-         return nil, false, err
+         return nil, HandleDatabaseError(err)
     }
 
-    return paginationResponse, true, nil
+    return paginationResponse, nil
 }
 
-func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, bool, error){
+func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, error){
     query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
                 FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`
 
@@ -159,44 +150,41 @@ func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPre
     postPreview.AlbumArtURI = albumArtUri.String
 
     if err != nil {
-        if err == sql.ErrNoRows {
-            return nil, false, nil 
-        } 
-        return nil, false, err
+        return nil, HandleDatabaseError(err)
     }
 
-    return postPreview, true, nil
+    return postPreview, nil
 
 }
 
 
 /* ===================== DELETE =====================  */
 
-func DeletePost(songID string, spotifyID string) (bool, error) {
+func DeletePost(songID string, spotifyID string) error {
     query := `DELETE FROM posts WHERE posterspotifyid = $1 AND songid = $2`
 
     res, err := DB.Driver.Exec(query, spotifyID, songID)
 
     if err != nil {
-        return false, err
+        return HandleDatabaseError(err)
     }
 
     rows, err := res.RowsAffected()
 
     if err != nil {
-        return false, err
+        return HandleDatabaseError(err)
     }
 
     if rows < 1 {
-        return false, nil
+        return HandleDatabaseError(sql.ErrNoRows)
     }
 
-    return true, nil
+    return nil
 }
 
 
 /* PROPERTY UPDATES */
-func UpdatePost(spotifyID string, songID string, text *string, rating *int, username string) (*responses.PostPreview, bool, error) {
+func UpdatePost(spotifyID string, songID string, text *string, rating *int, username string) (*responses.PostPreview, error) {
 
     query := "UPDATE posts SET "
 
@@ -243,33 +231,30 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int, user
     postPreview.AlbumArtURI = albumArtUri.String
 
     if err != nil {
-        if err == sql.ErrNoRows {
-            return nil, false, nil 
-        } 
-        return nil, false, err
+        return nil, HandleDatabaseError(err)
     }
 
-    return postPreview, true, nil
+    return postPreview, nil
 }
 
 
-func LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, liked bool) (bool, error) {
+func LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, liked bool) error {
     query := "INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) values ($1, $2, $3, $4, $5, $6) ON CONFLICT (voterspotifyid, posterspotifyid, postsongid) DO UPDATE SET updatedat=$5, liked=$6"
     res, err := DB.Driver.Exec(query, spotifyID, posterSpotifyID, songID, time.Now().UTC(), time.Now().UTC(), liked)
 
     if err != nil {
-        return false, err
+        return HandleDatabaseError(err)
     }
 
     rows, err := res.RowsAffected() 
 
     if err != nil {
-        return false, err
+        return HandleDatabaseError(err)
     }
 
     if rows < 1 {
-        return false, nil
+        return HandleDatabaseError(sql.ErrNoRows)
     }
 
-    return true, nil
+    return nil
 }

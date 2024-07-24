@@ -32,7 +32,7 @@ func UpsertUser(username string, spotifyID string) (*responses.User, error) {
 
 /* =================== READ ================== */
 
-func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
+func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, error) {
     query := "SELECT spotifyid, userrole, username, bio FROM users WHERE spotifyid = $1"
     row := DB.Driver.QueryRow(query, spotifyID)
 
@@ -42,18 +42,15 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
     userResponse.Bio = bio.String
 
     if err != nil {
-        if err == sql.ErrNoRows {
-            return nil, false, nil
-        } 
-        return nil, false, err
+        return nil, HandleDatabaseError(err)
     }
 
-    return userResponse, true, nil
+    return userResponse, nil
 }
 
 
 /* PROPERTY UPDATES */
-func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, bool, error) { 
+func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error) { 
     query := "UPDATE users SET "
     args := []any{}
     varNum := 1
@@ -76,7 +73,6 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
     query += fmt.Sprintf(" WHERE spotifyID = $%d RETURNING bio, userrole, spotifyid, username", varNum)
     args = append(args, spotifyID)
 
-
     res := DB.Driver.QueryRow(query, args...)
 
     userResponse := &responses.User{}
@@ -85,84 +81,81 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
     userResponse.Bio = bio.String
 
     if err != nil {
-        if err == sql.ErrNoRows {
-            return nil, false, nil 
-        } 
-        return nil, false, err
+        return nil, HandleDatabaseError(err)
     }
 
-    return userResponse, true, nil
+    return userResponse, nil
 
 }
 
-func DeleteUserByID(spotifyID string) (bool, error) {
+func DeleteUserByID(spotifyID string) error {
     query := "DELETE FROM users WHERE spotifyID = $1"
     res, err := DB.Driver.Exec(query, spotifyID)
 
     if err != nil {
-        return false, err
+        return HandleDatabaseError(err)
     }
 
     num, err :=  res.RowsAffected()
 
     if err != nil {
-        return false, err
+        return HandleDatabaseError(err)
     }
 
     if num < 1 {
-        return false, nil
+        return HandleDatabaseError(sql.ErrNoRows)
     }
 
-    return true, nil
+    return nil
 }
 
 
 /* RELATIONAL UDPATES */
-func UnfollowUser(spotifyID string, otherUserSpotifyID string) (bool, error)  {
+func UnfollowUser(spotifyID string, otherUserSpotifyID string) error  {
     query := "DELETE FROM followers WHERE follower = $1 AND userfollowed = $2"
 
     res, err := DB.Driver.Exec(query, spotifyID, otherUserSpotifyID)
 
     if err != nil {
-        return false, err
+        return HandleDatabaseError(err)
     }
 
     rows, err := res.RowsAffected()
 
     if err != nil {
-        return false, err
+        return HandleDatabaseError(err)
     }
 
     if rows < 1 {
-        return false, nil
+        return HandleDatabaseError(sql.ErrNoRows)
     }
 
-    return true, nil
+    return nil
 }
 
-func FollowUser(spotifyID string, otherUserSpotifyID string) (bool, error) {
+func FollowUser(spotifyID string, otherUserSpotifyID string) (error) {
     query := "INSERT INTO followers (follower, userFollowed) VALUES ($1, $2)"
 
     res, err := DB.Driver.Exec(query, spotifyID, otherUserSpotifyID)
 
     if err != nil {
-        return false, err
+        return HandleDatabaseError(err)
     }
 
     rows, err := res.RowsAffected()
 
     if err != nil {
-        return false, err
+        return HandleDatabaseError(err)
     }
 
     if rows < 1 {
-        return false, nil
+        return HandleDatabaseError(sql.ErrNoRows)
     }
 
-    return true, nil
+    return nil
 }
 
-func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], bool, error) {
+func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
     query := `
             SELECT users.spotifyid, users.username, users.bio, users.userrole 
             FROM followers 
@@ -173,7 +166,7 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
     rows, err := DB.Driver.Query(query, spotifyID, paginationKey)
 
     if err != nil {
-        return nil, false, err
+        return nil, HandleDatabaseError(err)
     }
 
     userResponses := []responses.User{}
@@ -182,10 +175,7 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
         user := responses.User{}
         err := rows.Scan(&user.SpotifyID, &user.Username, &user.Bio, &user.Role)
         if err != nil {
-            if err == sql.ErrNoRows {
-                return nil, false, nil 
-            } 
-            return nil, false, err
+            return nil, HandleDatabaseError(err)
         }
         userResponses = append(userResponses, user)
     }
@@ -200,6 +190,6 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
         paginationResponse.PaginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
     }
 
-    return paginationResponse, true, nil
+    return paginationResponse, nil
 }
 

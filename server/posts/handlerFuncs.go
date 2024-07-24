@@ -49,7 +49,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
         albumImage = spotifySongResponse.Album.Images[0].Url
     }
 
-    resp, collision, err := db.CreatePost(
+    resp, err := db.CreatePost(
         spotifyID.(string),
         createPostDTO.SongID,
         spotifySongResponse.Name, 
@@ -63,15 +63,13 @@ func CreatePostForCurrentUser(c *gin.Context) {
     )
 
     if err != nil {
-        fmt.Println(err.Error())
-        c.JSON(http.StatusInternalServerError, "being lazy just search for this error")
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.JSON(err.StatusCode, err.Msg)
+            return
+        }
+        panic("should only be throwing database errors from here!")
     }
 
-    if collision {
-        c.JSON(http.StatusBadRequest, "cant post same song twice")
-        return
-    }
 
     c.JSON(http.StatusOK, resp)
 
@@ -87,17 +85,16 @@ func LikePost(c *gin.Context) {
         return
     }
 
-    found, err := db.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, true)
+    err := db.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, true)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.JSON(err.StatusCode, err.Msg)
+            return
+        }
+        panic("blah")
     }
 
-    if !found {
-        c.JSON(http.StatusNotFound, "Could not find post or user with specified values")
-        return
-    }
 
     c.Status(http.StatusNoContent)
 }
@@ -113,16 +110,14 @@ func DislikePost(c *gin.Context) {
         return
     }
 
-    found, err := db.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, false)
+    err := db.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, false)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if !found {
-        c.JSON(http.StatusNotFound, "Could not find post or user with specified values")
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.JSON(err.StatusCode, err.Msg)
+            return
+        }
+        panic("cant be here")
     }
 
     c.Status(http.StatusNoContent)
@@ -134,16 +129,14 @@ func GetAllPostsForUserByID(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
     createdAt := c.Query("createdAt")
 
-    posts, foundUser, err := getAllPosts(spotifyID, createdAt)
+    posts, err := getAllPosts(spotifyID, createdAt)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if !foundUser {
-        c.JSON(http.StatusNotFound, "Could not find user with ID")
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.JSON(err.StatusCode, err.Msg)
+            return
+        } 
+        panic("should never be here")
     }
 
     c.JSON(http.StatusOK, posts)
@@ -158,16 +151,14 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
         return
     }
 
-    posts, foundUser, err := getAllPosts(spotifyID.(string), createdAt)
+    posts, err := getAllPosts(spotifyID.(string), createdAt)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if !foundUser {
-        c.JSON(http.StatusNotFound, "Could not find user with ID")
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.JSON(err.StatusCode, err.Msg)
+            return
+        }
+        panic("shouldn't be here")
     }
 
     c.JSON(http.StatusOK, posts)
@@ -178,18 +169,15 @@ func GetPostBySpotifyIDAndSongID(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")
 
-    post, found, err := db.GetUserPostByID(songID, spotifyID)
+    post, err := db.GetUserPostByID(songID, spotifyID)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.JSON(err.StatusCode, err.Msg)
+            return
+        }
+        panic("should never be here")
     }
-
-    if !found {
-        c.JSON(http.StatusNotFound, "Could not find post with corresponding userid and songid")
-        return
-    }
-
 
     c.JSON(http.StatusOK, post)
 }
@@ -204,17 +192,16 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
         return
     }
 
-    post, found, err := db.GetUserPostByID(songID, currentUserSpotifyID.(string))
+    post, err := db.GetUserPostByID(songID, currentUserSpotifyID.(string))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.JSON(err.StatusCode, err.Msg)
+            return
+        }
+        panic("should never be here")
     }
 
-    if !found {
-        c.JSON(http.StatusNotFound, "Could not find post with that userid and songid")
-        return
-    }
 
 
     c.JSON(http.StatusOK, post)
@@ -235,16 +222,14 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
         return
     }
 
-    found, err := db.DeletePost(songID, spotifyID)
+    err := db.DeletePost(songID, spotifyID)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if !found {
-        c.JSON(http.StatusNotFound, "Post for user with songID could not be found")
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.JSON(err.StatusCode, err.Msg)
+            return
+        }
+        panic("shouldnt be here")
     }
 
     c.Status(http.StatusNoContent)
@@ -263,17 +248,16 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
     }
     songID := c.Param("songID")
 
-    found, err := db.DeletePost(songID, requestorSpotifyID.(string))
+    err := db.DeletePost(songID, requestorSpotifyID.(string))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.JSON(err.StatusCode, err.Msg)
+            return
+        }
+        panic("should never be here")
     }
 
-    if !found {
-        c.JSON(http.StatusNotFound, "Post with specified songID for user could not be found")
-        return
-    }
 
     c.Status(http.StatusNoContent)
 
@@ -299,22 +283,20 @@ func UpdateCurrentUserPost(c *gin.Context) {
         return
     }
 
-    preview, found, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating, spotifyUsername.(string))
+    preview, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating, spotifyUsername.(string))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if !found {
-        c.JSON(http.StatusBadRequest, "could not find post or user")
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.JSON(err.StatusCode, err.Msg)
+            return
+        }
+        panic("should never get here")
     }
 
     c.JSON(http.StatusOK, preview)
 }
 
-func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], bool, error) {
+func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
     var t time.Time 
     if createdAt == "" {
         t = time.Now().UTC()

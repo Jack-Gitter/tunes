@@ -9,31 +9,36 @@ import (
 
 type DBError struct {
     StatusCode int
-    Err error
+    Msg string
 }
 
 // returns error if it is 500, nil if not
 
 func (dbe DBError) Error() string {
-    return dbe.Err.Error()
+    return dbe.Msg
 }
 
 func HandleDatabaseError(err error) error {
     dbError := &DBError{}
-    dbError.Err = err
+    dbError.Msg = err.Error()
 
     if err == sql.ErrNoRows {
         dbError.StatusCode = http.StatusNotFound
+        dbError.Msg = "Resource not found"
         return dbError
     }
 
     if err, ok := err.(*pq.Error); ok {
         switch err.Code {
-            case "10000": 
-                dbError.StatusCode = http.StatusBadRequest
+            case "23505": 
+                dbError.StatusCode = http.StatusConflict
+                dbError.Msg = "Duplicate resource cannot be created"
+                return dbError
+            default: 
+                dbError.StatusCode = http.StatusInternalServerError
+                dbError.Msg = "Something went wrong"
                 return dbError
         }
     }
     panic("we should never be here!")
 }
-

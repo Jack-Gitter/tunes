@@ -153,16 +153,14 @@ func RefreshJWT(c *gin.Context) {
         return
     }
 
-    userDBResponse, found, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
+    userDBResponse, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if err != nil {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    if !found {
-        c.AbortWithStatusJSON(http.StatusNotFound, "No user in the database could be found for spotifyID specified in JWT")
-        return
+        if err, ok := err.(*db.DBError); ok {
+            c.AbortWithStatusJSON(err.StatusCode, err.Msg)
+            return
+        }
+        panic("cant be here")
     }
 
     accessTokenJWT, err := helpers.CreateAccessJWT(
