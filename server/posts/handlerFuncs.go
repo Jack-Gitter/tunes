@@ -272,7 +272,7 @@ func UpdateCurrentUserPost(c *gin.Context) {
         return
     }
 
-    preview, found, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating, username.(string))
+    preview, found, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating, spotifyUsername.(string))
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())
