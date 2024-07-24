@@ -1,8 +1,5 @@
 tunes todos:
 
-errors: 
-    clean up errors -- correct error codes and nice messages
-
 endpoints: 
     general: 
         clean up endpoint names
