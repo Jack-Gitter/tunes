@@ -1,5 +1,6 @@
 package responses
 
+
 type Role string
 
 const (

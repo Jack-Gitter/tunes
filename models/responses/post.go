@@ -1,6 +1,8 @@
 package responses
 
-import "time"
+import (
+	"time"
+)
 
 type Post struct {
     PostPreview `mapstructure:",squash"`

@@ -52,7 +52,9 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
     row := DB.Driver.QueryRow(query, spotifyID, postID)
 
     post := &responses.Post{}
-    err := row.Scan(&post.AlbumArtURI, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
+    albumArtUri := sql.NullString{}
+    err := row.Scan(&albumArtUri, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
+    post.AlbumArtURI = albumArtUri.String
 
     if err != nil {
         if err == sql.ErrNoRows {
@@ -104,7 +106,9 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
 
     for rows.Next() {
         post := responses.PostPreview{}
-        err := rows.Scan(&post.AlbumArtURI, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
+        albumArtUri := sql.NullString{}
+        err := rows.Scan(&albumArtUri, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
+        post.AlbumArtURI = albumArtUri.String
         if err != nil {
             return nil, false, err
         }
@@ -135,8 +139,9 @@ func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPre
     row := DB.Driver.QueryRow(query, spotifyID, songID)
 
     postPreview := &responses.PostPreview{}
+    albumArtUri := sql.NullString{}
 
-    err := row.Scan(&postPreview.AlbumArtURI, 
+    err := row.Scan(&albumArtUri,
                     &postPreview.AlbumID, 
                     &postPreview.AlbumName, 
                     &postPreview.CreatedAt, 
@@ -147,6 +152,8 @@ func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPre
                     &postPreview.UpdatedAt, 
                     &postPreview.SpotifyID, 
                     &postPreview.Username)
+
+    postPreview.AlbumArtURI = albumArtUri.String
 
     if err != nil {
         if err == sql.ErrNoRows {
@@ -217,7 +224,8 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int, user
     res := DB.Driver.QueryRow(query, vals...)
 
     postPreview := &responses.PostPreview{}
-    err := res.Scan(&postPreview.AlbumArtURI, 
+    albumArtUri := sql.NullString{}
+    err := res.Scan(&albumArtUri,
                     &postPreview.AlbumID, 
                     &postPreview.AlbumName, 
                     &postPreview.CreatedAt, 
@@ -229,6 +237,7 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int, user
                     &postPreview.SpotifyID)
 
     postPreview.Username = username
+    postPreview.AlbumArtURI = albumArtUri.String
 
     if err != nil {
         if err == sql.ErrNoRows {

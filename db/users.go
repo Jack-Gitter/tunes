@@ -16,13 +16,10 @@ func UpsertUser(username string, spotifyID string) (*responses.User, error) {
 
     userResponse := &responses.User{}
     userResponse.Username = username
-    bio := sql.NullString{}
     userResponse.SpotifyID = spotifyID
-    err := row.Scan(&bio, &userResponse.Role)
-
-    if bio.Valid {
-        userResponse.Bio = bio.String
-    }
+    bio := sql.NullString{}
+    err := row.Scan(&userResponse.Bio, &bio)
+    userResponse.Bio = bio.String
 
     if err != nil {
         return nil, err
@@ -37,14 +34,10 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
     query := "SELECT spotifyid, userrole, username, bio FROM users WHERE spotifyid = $1"
     row := DB.Driver.QueryRow(query, spotifyID)
 
-
-    bio := sql.NullString{}
     userResponse := &responses.User{}
+    bio := sql.NullString{}
     err := row.Scan(&userResponse.SpotifyID, &userResponse.Username, &userResponse.Role, &bio)
-
-    if bio.Valid {
-        userResponse.Bio = bio.String
-    }
+    userResponse.Bio = bio.String
 
     if err != nil {
         if err == sql.ErrNoRows {
@@ -85,7 +78,9 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
     res := DB.Driver.QueryRow(query, args...)
 
     userResponse := &responses.User{}
-    err := res.Scan(&userResponse.Bio, &userResponse.Role, &userResponse.SpotifyID, &userResponse.Username)
+    bio := sql.NullString{}
+    err := res.Scan(&bio, &userResponse.Role, &userResponse.SpotifyID, &userResponse.Username)
+    userResponse.Bio = bio.String
 
     if err != nil {
         if err == sql.ErrNoRows {
