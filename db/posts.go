@@ -248,7 +248,23 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
 }
 
 
-func LikePostForUser(spotifyID string, posterSpotifyID string, songID string) (*responses.PostPreview, bool, error) {
-    query := "INSERT INTO post_votes (posterspotifyid, postsongid, createdat, updatedat, liked)"
-    return nil, false, nil
+func LikePostForUser(spotifyID string, posterSpotifyID string, songID string) (bool, error) {
+    query := "INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) values ($1, $2, $3, $4, $5, $6)"
+    res, err := DB.Driver.Exec(query, spotifyID, posterSpotifyID, songID, time.Now().UTC(), time.Now().UTC(), true)
+
+    if err != nil {
+        return false, err
+    }
+
+    rows, err := res.RowsAffected() 
+
+    if err != nil {
+        return false, err
+    }
+
+    if rows < 1 {
+        return false, nil
+    }
+
+    return true, nil
 }

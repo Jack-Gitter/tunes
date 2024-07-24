@@ -1,9 +1,9 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE FOLLOWERS (
-	follower varchar(255) references users(spotifyid),
-	userFollowed varchar(255) references users(spotifyid),
-	primary key(follower, userFollowed)
+	follower varchar(255) references users(spotifyid) NOT NULL,
+	userFollowed varchar(255) references users(spotifyid) NOT NULL,
+	PRIMARY KEY (follower, userFollowed)
 );
 -- +goose StatementEnd
 

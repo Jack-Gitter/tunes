@@ -16,8 +16,13 @@ func UpsertUser(username string, spotifyID string) (*responses.User, error) {
 
     userResponse := &responses.User{}
     userResponse.Username = username
+    bio := sql.NullString{}
     userResponse.SpotifyID = spotifyID
-    err := row.Scan(&userResponse.Bio, &userResponse.Role)
+    err := row.Scan(&bio, &userResponse.Role)
+
+    if bio.Valid {
+        userResponse.Bio = bio.String
+    }
 
     if err != nil {
         return nil, err
@@ -33,8 +38,13 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, bool, error) {
     row := DB.Driver.QueryRow(query, spotifyID)
 
 
+    bio := sql.NullString{}
     userResponse := &responses.User{}
-    err := row.Scan(&userResponse.SpotifyID, &userResponse.Username, &userResponse.Role, &userResponse.Bio)
+    err := row.Scan(&userResponse.SpotifyID, &userResponse.Username, &userResponse.Role, &bio)
+
+    if bio.Valid {
+        userResponse.Bio = bio.String
+    }
 
     if err != nil {
         if err == sql.ErrNoRows {

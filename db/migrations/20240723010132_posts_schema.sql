@@ -1,17 +1,18 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE posts (
-	albumArtURI varchar(255),
-	albumID varchar(255),
-	albumName varchar(255),
-	createdAt timestamp with time zone,
-	rating int,
-	songID varchar(255),
-	songName varchar(255),
-	review varchar(255),
-	updatedAt timestamp with time zone,
 	posterSpotifyID varchar(255) references users(spotifyid),
-    primary key (posterSpotifyID, songID)
+	songID varchar(255) NOT NULL,
+    PRIMARY KEY (posterSpotifyID, songID),
+	createdAt timestamp with time zone NOT NULL,
+	updatedAt timestamp with time zone NOT NULL,
+	songName varchar(255) NOT NULL,
+	review varchar(255) NOT NULL,
+	albumID varchar(255) NOT NULL,
+	albumName varchar(255) NOT NULL,
+    rating int NOT NULL,
+	albumArtURI varchar(255)
+	
 );
 -- +goose StatementEnd
 
