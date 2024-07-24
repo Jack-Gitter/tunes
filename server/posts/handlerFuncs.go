@@ -69,12 +69,12 @@ func CreatePostForCurrentUser(c *gin.Context) {
 }
 
 func LikePost(c *gin.Context) {
-    /*currentUserSpotifyID, found := c.Get("spotifyID")
+    currentUserSpotifyID, found := c.Get("spotifyID")
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")
 
     if !found {
-        c.JSON(http.StatusInternalServerError, "nope to jwt")
+        c.JSON(http.StatusInternalServerError, "Did not set spotifyID in JWT middleware")
         return
     }
 
@@ -86,11 +86,11 @@ func LikePost(c *gin.Context) {
     }
 
     if !found {
-        c.JSON(http.StatusBadRequest, "no post found")
+        c.JSON(http.StatusNotFound, "Could not find post or user with specified values")
         return
     }
 
-    c.JSON(http.StatusOK, postPreview)*/
+    c.JSON(http.StatusOK, postPreview)
 }
 
 func GetAllPostsForUserByID(c *gin.Context) {

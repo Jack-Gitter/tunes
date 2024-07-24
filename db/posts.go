@@ -246,3 +246,8 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
 
     return postPreview, true, nil
 }
+
+
+func LikePostForUser(spotifyID string, posterSpotifyID string, songID string) (*responses.PostPreview, bool, error) {
+    return nil, false, nil
+}
