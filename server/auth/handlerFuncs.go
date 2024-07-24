@@ -104,9 +104,11 @@ func ValidateUserJWT(c *gin.Context) {
     spotifyID := token.Claims.(*requests.JWTClaims).SpotifyID
     spotifyAccessToken := token.Claims.(*requests.JWTClaims).AccessToken
     role := token.Claims.(*requests.JWTClaims).UserRole
+    username := token.Claims.(*requests.JWTClaims).Username
 
     c.Set("spotifyID", spotifyID)
     c.Set("userRole", role)
+    c.Set("spotifyUsername", username)
     c.Set("spotifyAccessToken", spotifyAccessToken)
     
     c.Next()

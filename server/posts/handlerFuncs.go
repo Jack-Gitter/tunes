@@ -15,9 +15,11 @@ import (
 func CreatePostForCurrentUser(c *gin.Context) {
 
     spotifyID, spotifyIDExists := c.Get("spotifyID")
+    spotifyUsername, spotifyUsernameExists := c.Get("spotifyUsername")
     spotifyAccessToken, spotifyAccessTokenExists := c.Get("spotifyAccessToken")
 
-    if !spotifyIDExists || !spotifyAccessTokenExists {
+
+    if !spotifyIDExists || !spotifyAccessTokenExists || !spotifyUsernameExists {
         c.JSON(http.StatusInternalServerError, "No JWT data found for the current user")
         return
     }
@@ -47,7 +49,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
         albumImage = spotifySongResponse.Album.Images[0].Url
     }
 
-    err = db.CreatePost(
+    resp, collision, err := db.CreatePost(
         spotifyID.(string),
         createPostDTO.SongID,
         spotifySongResponse.Name, 
@@ -57,14 +59,21 @@ func CreatePostForCurrentUser(c *gin.Context) {
         createPostDTO.Rating,
         createPostDTO.Text,
         time.Now().UTC(),
+        spotifyUsername.(string),
     )
 
     if err != nil {
+        fmt.Println(err.Error())
         c.JSON(http.StatusInternalServerError, "being lazy just search for this error")
         return
     }
 
-    c.Status(http.StatusNoContent)
+    if collision {
+        c.JSON(http.StatusBadRequest, "cant post same song twice")
+        return
+    }
+
+    c.JSON(http.StatusOK, resp)
 
 }
 
@@ -246,6 +255,7 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
 func UpdateCurrentUserPost(c *gin.Context) {
 
     spotifyID, exists := c.Get("spotifyID")
+    spotifyUsername, uexists := c.Get("spotifyUsername")
     songID := c.Param("songID")
     updatePostReq := &requests.UpdatePostRequestDTO{}
 
@@ -257,12 +267,12 @@ func UpdateCurrentUserPost(c *gin.Context) {
         return
     }
 
-    if !exists {
+    if !exists || !uexists {
         c.JSON(http.StatusBadRequest, "need jwt")
         return
     }
 
-    preview, found, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating)
+    preview, found, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating, username.(string))
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())

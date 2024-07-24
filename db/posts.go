@@ -6,25 +6,41 @@ import (
 	"fmt"
 	"time"
 	"github.com/Jack-Gitter/tunes/models/responses"
-	_ "github.com/lib/pq"
+	pq "github.com/lib/pq"
 )
 
 /* ===================== CREATE =====================  */
 
-func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time) error {
+func CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, bool, error) {
     query := `INSERT INTO posts 
                     (albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid) 
                     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
     _, err := DB.Driver.Exec(query, albumImage, albumID, albumName, createdAt, rating, songID, songName, text, createdAt, spotifyID)
-
-
+    
     if err != nil {
-        fmt.Println(err.Error())
-        return err
+        err, ok := err.(*pq.Error)
+        if !ok || err.Code != "23505"{
+            return nil, false, err
+        }
+        return nil, true, nil
     }
+    postPreview := &responses.PostPreview{}
+    postPreview.SpotifyID = spotifyID
+    postPreview.SongID = songID
+    postPreview.SongName = songName
+    postPreview.AlbumID = albumID
+    postPreview.AlbumName = albumName
+    postPreview.AlbumArtURI = albumImage
+    postPreview.Rating = rating
+    postPreview.Text = text
+    postPreview.CreatedAt = createdAt
+    postPreview.UpdatedAt = createdAt
+    postPreview.Username = username
 
-    return nil
+
+
+    return postPreview, false, nil
 }
 
 /* ===================== READ =====================  */
@@ -170,14 +186,7 @@ func DeletePost(songID string, spotifyID string) (bool, error) {
 
 
 /* PROPERTY UPDATES */
-func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*responses.PostPreview, bool, error) {
-    tx, err := DB.Driver.BeginTx(context.Background(), nil)
-
-    if err != nil {
-        return nil, false, err
-    }
-
-    defer tx.Rollback()
+func UpdatePost(spotifyID string, songID string, text *string, rating *int, username string) (*responses.PostPreview, bool, error) {
 
     query := "UPDATE posts SET "
 
@@ -205,11 +214,10 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
     `, val, val+1)
     vals = append(vals, spotifyID, songID)
 
-    res := tx.QueryRow(query, vals...)
-
+    res := DB.Driver.QueryRow(query, vals...)
 
     postPreview := &responses.PostPreview{}
-    err = res.Scan(&postPreview.AlbumArtURI, 
+    err := res.Scan(&postPreview.AlbumArtURI, 
                     &postPreview.AlbumID, 
                     &postPreview.AlbumName, 
                     &postPreview.CreatedAt, 
@@ -220,28 +228,13 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
                     &postPreview.UpdatedAt, 
                     &postPreview.SpotifyID)
 
-    if err != nil {
-        if err == sql.ErrNoRows {
-            return nil, false, nil 
-        } 
-        return nil, false, err
-    }
-
-
-    query = "SELECT username FROM users WHERE spotifyid = $1"
-    res = tx.QueryRow(query, spotifyID)
-
-    err = res.Scan(&postPreview.Username)
+    postPreview.Username = username
 
     if err != nil {
         if err == sql.ErrNoRows {
             return nil, false, nil 
         } 
         return nil, false, err
-    }
-
-     if err = tx.Commit(); err != nil {
-         return nil, false, err
     }
 
     return postPreview, true, nil
