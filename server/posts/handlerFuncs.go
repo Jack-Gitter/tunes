@@ -78,7 +78,7 @@ func LikePost(c *gin.Context) {
         return
     }
 
-    postPreview, found, err := db.LikePostForUser(currentUserSpotifyID, spotifyID, songID)
+    postPreview, found, err := db.LikePostForUser(currentUserSpotifyID.(string), spotifyID, songID)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, err.Error())

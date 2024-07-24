@@ -249,5 +249,6 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int) (*re
 
 
 func LikePostForUser(spotifyID string, posterSpotifyID string, songID string) (*responses.PostPreview, bool, error) {
+    query := "INSERT INTO post_votes (posterspotifyid, postsongid, createdat, updatedat, liked)"
     return nil, false, nil
 }
