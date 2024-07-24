@@ -67,7 +67,6 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, bool, er
 }
 
 func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], bool, error) {
-    fmt.Println(createdAt)
     tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
     if err != nil {

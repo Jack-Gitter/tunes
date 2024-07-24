@@ -319,7 +319,7 @@ func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationRespo
     if createdAt == "" {
         t = time.Now().UTC()
     } else {
-        t, _ = time.Parse(time.RFC3339, createdAt)
+        t, _ = time.Parse(time.UTC.String(), createdAt)
     }
 
     return db.GetUserPostsPreviewsByUserID(spotifyID, t)
