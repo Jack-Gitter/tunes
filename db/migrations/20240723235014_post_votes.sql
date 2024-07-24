@@ -7,8 +7,8 @@ CREATE TABLE post_votes (
 	createdAt timestamp with time zone,
     updatedAt timestamp with time zone,
     liked boolean,
-    foreign key (posterSpotifyID, postsongID) references posts(posterspotifyid, songid),
-    primary key (voterspotifyID, posterSpotifyID, postsongid)
+    FOREIGN KEY (posterSpotifyID, postsongID) references posts(posterspotifyid, songid),
+    PRIMARY KEY (voterspotifyID, posterSpotifyID, postsongid)
 );
 -- +goose StatementEnd
 
