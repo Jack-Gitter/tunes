@@ -7,11 +7,11 @@ testing:
     actually in depth tests of what the fuck it is that I have!!!
 
 
+go specific stuff: why does type validation have to be a pointer to an obejct?
 errors: 
     make package level sentinel errors -- 
-        for database, make errors and parse the sql errors into our sentinel errors
-        for jwt, just return custom errors
-        for other stuff, just return custom errors
+        for database, still parse the db errors but return an error which is sentinel error from handledberror func
+        for jwt, do something similar because jwt errors also have error codes or something -- we are checking this in the expiredJWT, so create custom sentinels and then 
     make a middleware to handle these errors
         take the first error that was thrown, generate a statuts code, and then done
 
