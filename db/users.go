@@ -12,7 +12,7 @@ import (
 
 /* =================== CREATE ================== */
 
-func UpsertUser(username string, spotifyID string) (*responses.User, error) {
+func UpsertUser(username string, spotifyID string) (*responses.User, *DBError) {
     query := "INSERT INTO users (spotifyid, username, userrole) values ($1, $2, 'BASIC') ON CONFLICT (spotifyID) DO UPDATE SET username=$2 RETURNING bio, userrole"
     row := DB.Driver.QueryRow(query, spotifyID, username)
 
@@ -24,8 +24,7 @@ func UpsertUser(username string, spotifyID string) (*responses.User, error) {
     userResponse.Bio = bio.String
 
     if err != nil {
-        err = HandleDatabaseError(err)
-        return nil, err
+        return nil, HandleDatabaseError(err)
     }
 
     return userResponse, nil
@@ -33,7 +32,7 @@ func UpsertUser(username string, spotifyID string) (*responses.User, error) {
 
 /* =================== READ ================== */
 
-func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, error) {
+func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, *DBError) {
     query := "SELECT spotifyid, userrole, username, bio FROM users WHERE spotifyid = $1"
     row := DB.Driver.QueryRow(query, spotifyID)
 
@@ -51,7 +50,7 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, error) {
 
 
 /* PROPERTY UPDATES */
-func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error) { 
+func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, *DBError) { 
     query := "UPDATE users SET "
     args := []any{}
     varNum := 1
@@ -88,7 +87,7 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
 
 }
 
-func DeleteUserByID(spotifyID string) error {
+func DeleteUserByID(spotifyID string) *DBError {
     query := "DELETE FROM users WHERE spotifyID = $1"
     res, err := DB.Driver.Exec(query, spotifyID)
 
@@ -111,7 +110,7 @@ func DeleteUserByID(spotifyID string) error {
 
 
 /* RELATIONAL UDPATES */
-func UnfollowUser(spotifyID string, otherUserSpotifyID string) error  {
+func UnfollowUser(spotifyID string, otherUserSpotifyID string) *DBError  {
     query := "DELETE FROM followers WHERE follower = $1 AND userfollowed = $2"
 
     res, err := DB.Driver.Exec(query, spotifyID, otherUserSpotifyID)
@@ -133,7 +132,7 @@ func UnfollowUser(spotifyID string, otherUserSpotifyID string) error  {
     return nil
 }
 
-func FollowUser(spotifyID string, otherUserSpotifyID string) (error) {
+func FollowUser(spotifyID string, otherUserSpotifyID string) *DBError {
     query := "INSERT INTO followers (follower, userFollowed) VALUES ($1, $2)"
 
     res, err := DB.Driver.Exec(query, spotifyID, otherUserSpotifyID)
@@ -155,7 +154,7 @@ func FollowUser(spotifyID string, otherUserSpotifyID string) (error) {
     return nil
 }
 
-func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
+func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], *DBError) {
     tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
     if err != nil {

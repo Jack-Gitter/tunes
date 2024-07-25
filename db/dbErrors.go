@@ -18,8 +18,9 @@ func (dbe DBError) Error() string {
     return dbe.Msg
 }
 
-func HandleDatabaseError(err error) error {
+func HandleDatabaseError(err error) *DBError {
     dbError := &DBError{}
+    dbError.StatusCode = http.StatusBadRequest
     dbError.Msg = err.Error()
 
     if err == sql.ErrNoRows {
@@ -44,5 +45,6 @@ func HandleDatabaseError(err error) error {
                 return dbError
         }
     }
-    panic("we should never be here!")
+
+    return dbError
 }

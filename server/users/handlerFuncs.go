@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -18,11 +17,8 @@ func GetUserById(c *gin.Context) {
     user, err := db.GetUserFromDbBySpotifyID(spotifyID)
 
     if err != nil {
-        if err, ok := err.(*db.DBError); ok {
-            c.JSON(err.StatusCode, err.Msg)
-            return
-        }
-        panic("cant")
+        c.JSON(err.StatusCode, err.Msg)
+        return
     }
 
     c.JSON(http.StatusOK, user) 
@@ -46,11 +42,8 @@ func UnFollowUser(c *gin.Context) {
     err := db.UnfollowUser(spotifyID.(string), otherUserSpotifyID)
 
     if err != nil {
-        if err, ok := err.(*db.DBError); ok  {
-            c.JSON(err.StatusCode, err.Msg)
-            return
-        }
-        panic("no")
+        c.JSON(err.StatusCode, err.Msg)
+        return
     }
 
     c.Status(http.StatusNoContent)
@@ -68,11 +61,8 @@ func GetFollowersByID(c *gin.Context) {
     followersPaginated, err := db.GetFollowers(spotifyID, paginationKey)
 
     if err != nil {
-        if err, ok := err.(*db.DBError); ok {
-            c.JSON(err.StatusCode, err.Msg)
-            return
-        }
-        panic("hey")
+        c.JSON(err.StatusCode, err.Msg)
+        return
     }
 
 
@@ -97,11 +87,8 @@ func GetFollowers(c *gin.Context) {
     followersPaginated, err := db.GetFollowers(spotifyID.(string), paginationKey)
 
     if err != nil {
-        if err, ok := err.(*db.DBError); ok {
-            c.JSON(err.StatusCode, err.Msg)
-            return
-        }
-        panic("hijK;")
+        c.JSON(err.StatusCode, err.Msg)
+        return
     }
 
     if !found {
@@ -131,11 +118,8 @@ func FollowerUser(c *gin.Context) {
     err := db.FollowUser(spotifyID.(string), otherUserSpotifyID)
 
     if err != nil {
-        if err, ok := err.(*db.DBError); ok  {
-            c.JSON(err.StatusCode, err.Msg)
-            return
-        }
-        panic("cant be here")
+        c.JSON(err.StatusCode, err.Msg)
+        return
     }
 
 
@@ -156,11 +140,8 @@ func GetCurrentUser(c *gin.Context) {
     user, err := db.GetUserFromDbBySpotifyID(spotifyID.(string))
 
     if err != nil {
-        if err, ok := err.(*db.DBError); ok {
-            c.JSON(err.StatusCode, err.Msg)
-            return
-        }
-        panic("cant ")
+        c.JSON(err.StatusCode, err.Msg)
+        return
     }
 
 
@@ -191,9 +172,9 @@ func UpdateUserBySpotifyID(c *gin.Context) {
         return
     }
 
-    resp, err := updateUser(spotifyID, userUpdateRequest, userRole.(responses.Role))
+    resp, e := updateUser(spotifyID, userUpdateRequest, userRole.(responses.Role))
 
-    if err != nil {
+    if e != nil {
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
         } else {
@@ -231,9 +212,9 @@ func UpdateCurrentUserProperties(c *gin.Context) {
         return
     }
 
-    resp, err := updateUser(spotifyID.(string), userUpdateRequest, userRole.(responses.Role))
+    resp, e := updateUser(spotifyID.(string), userUpdateRequest, userRole.(responses.Role))
 
-    if err != nil {
+    if e != nil {
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
         } else {
@@ -257,11 +238,8 @@ func DeleteCurrentUser(c *gin.Context) {
     err := db.DeleteUserByID(spotifyID.(string))
 
     if err != nil {
-        if err, ok := err.(*db.DBError); ok {
-            c.JSON(err.StatusCode, err.Msg)
-            return
-        }
-        panic("should not be here")
+        c.JSON(err.StatusCode, err.Msg)
+        return
     }
 
     c.Status(http.StatusNoContent)
@@ -274,33 +252,24 @@ func DeleteUserBySpotifyID(c *gin.Context) {
     err := db.DeleteUserByID(spotifyID)
 
     if err != nil {
-        if err, ok := err.(*db.DBError); ok {
-            c.JSON(err.StatusCode, err.Msg)
-            return
-        }
-        panic("should not be here")
+        c.JSON(err.StatusCode, err.Msg)
+        return
     }
 
     c.Status(http.StatusNoContent)
 }
 
-func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, error) {
+func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, *db.DBError) {
 
     if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
-        return nil, errors.New("Do not have sufficient permissions to change roles")
+        return nil, db.HandleDatabaseError(errors.New("Do not have sufficient permissions to change roles"))
     }
 
     if userUpdateRequest.Role != nil && !responses.IsValidRole(*userUpdateRequest.Role) {
-        return nil, errors.New("User role provided is not valid")
+        return nil, db.HandleDatabaseError(errors.New("User role provided is not valid"))
     }
 
-    resp, err := db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
+    return db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
 
-    if err != nil {
-        return nil, err
-    }
-
-
-    return resp, nil
 
 }
