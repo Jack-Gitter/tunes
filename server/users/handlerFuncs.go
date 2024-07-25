@@ -1,10 +1,7 @@
 package users
 
 import (
-	"errors"
-	//"fmt"
 	"net/http"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -32,12 +29,12 @@ func UnFollowUser(c *gin.Context) {
     spotifyID, found := c.Get("spotifyID")
 
     if otherUserSpotifyID == spotifyID {
-        c.AbortWithError(-1, customerrors.BadJSONBodyError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Unfollowing not reflexive"})
         return
     }
 
     if !found {
-        c.AbortWithError(-1, customerrors.InternalServerError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Middleware issue" })
         return
     }
 
@@ -77,7 +74,7 @@ func GetFollowers(c *gin.Context) {
     paginationKey := c.Query("spotifyID")
 
     if !found {
-        c.AbortWithError(-1, customerrors.InternalServerError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Jwt issue"})
         return
     }
 
@@ -102,12 +99,12 @@ func FollowerUser(c *gin.Context) {
     spotifyID, found := c.Get("spotifyID")
 
     if otherUserSpotifyID == spotifyID {
-        c.AbortWithError(-1, customerrors.BadJSONBodyError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad JSON body"})
         return
     }
 
     if !found {
-        c.AbortWithError(-1, customerrors.InternalServerError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JWT fuckup"})
         return
     }
 
@@ -129,7 +126,7 @@ func GetCurrentUser(c *gin.Context) {
     spotifyID, spotifyIdExists := c.Get("spotifyID")
 
     if !spotifyIdExists {
-        c.AbortWithError(-1, customerrors.InternalServerError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Jwtfuckup"})
         return
     }
 
@@ -150,7 +147,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
 
     if !found || spotifyID == "" {
-        c.AbortWithError(-1, customerrors.InternalServerError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JwtFuckup"})
         return
     }
 
@@ -162,7 +159,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
     }
 
     if userUpdateRequest.Bio == nil && userUpdateRequest.Role == nil {
-        c.AbortWithError(-1, customerrors.BadJSONBodyError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "give a body"})
         return
     }
 
@@ -184,19 +181,19 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     spotifyID, spotifyIdExists := c.Get("spotifyID")
 
     if !found || !spotifyIdExists {
-        c.AbortWithError(-1, customerrors.InternalServerError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JwtFuckup"})
         return
     }
 
     err := c.ShouldBindBodyWithJSON(userUpdateRequest)
 
     if err != nil {
-        c.AbortWithError(-1, customerrors.BadJSONBodyError)
+        c.AbortWithError(-1, err)
         return
     }
 
     if userUpdateRequest.Bio == nil && userUpdateRequest.Role == nil {
-        c.AbortWithError(-1, customerrors.BadJSONBodyError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad body"})
         return
     }
 
@@ -215,7 +212,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 func DeleteCurrentUser(c *gin.Context) {
     spotifyID, spotifyIdExists := c.Get("spotifyID")
     if !spotifyIdExists {
-        c.AbortWithError(-1, customerrors.InternalServerError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Bad"})
         return
     }
 
@@ -236,7 +233,7 @@ func DeleteUserBySpotifyID(c *gin.Context) {
     err := db.DeleteUserByID(spotifyID)
 
     if err != nil {
-        c.AbortWithError(-1, customerrors.InternalServerError)
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "kill me"})
         return
     }
 
@@ -246,11 +243,11 @@ func DeleteUserBySpotifyID(c *gin.Context) {
 func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, error) {
 
     if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
-        return nil, customerrors.PermissionDeniedError
+        return nil, customerrors.CustomError{StatusCode: http.StatusUnauthorized, Msg: "kill me last second last time"}
     }
 
     if userUpdateRequest.Role != nil && !responses.IsValidRole(*userUpdateRequest.Role) {
-        return nil, customerrors.BadJSONBodyError
+        return nil, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "get your shit together"}
     }
 
     return db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)

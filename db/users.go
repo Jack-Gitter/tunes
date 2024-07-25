@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
@@ -24,7 +25,7 @@ func UpsertUser(username string, spotifyID string) (*responses.User, error) {
     userResponse.Bio = bio.String
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     return userResponse, nil
@@ -42,7 +43,7 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, error) {
     userResponse.Bio = bio.String
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     return userResponse, nil
@@ -80,7 +81,7 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
     userResponse.Bio = bio.String
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     return userResponse, nil
@@ -92,17 +93,17 @@ func DeleteUserByID(spotifyID string) error {
     res, err := DB.Driver.Exec(query, spotifyID)
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
     num, err :=  res.RowsAffected()
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
     if num < 1 {
-        return sql.ErrNoRows
+        return customerrors.WrapBasicError(sql.ErrNoRows)
     }
 
     return nil
@@ -122,11 +123,11 @@ func UnfollowUser(spotifyID string, otherUserSpotifyID string) error {
     rows, err := res.RowsAffected()
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
     if rows < 1 {
-        return sql.ErrNoRows
+        return customerrors.WrapBasicError(sql.ErrNoRows)
     }
 
     return nil
@@ -144,11 +145,11 @@ func FollowUser(spotifyID string, otherUserSpotifyID string) error {
     rows, err := res.RowsAffected()
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
     if rows < 1 {
-        return sql.ErrNoRows
+        return customerrors.WrapBasicError(sql.ErrNoRows)
     }
 
     return nil
@@ -167,17 +168,17 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
     row, err := tx.Exec(query, spotifyID)
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     count, err := row.RowsAffected()
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     if count < 1 {
-        return nil, sql.ErrNoRows
+        return nil, customerrors.WrapBasicError(sql.ErrNoRows)
     }
 
     query = `
@@ -190,7 +191,7 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
     rows, err := tx.Query(query, spotifyID, paginationKey)
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     userResponses := []responses.User{}
@@ -199,7 +200,7 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
         user := responses.User{}
         err := rows.Scan(&user.SpotifyID, &user.Username, &user.Bio, &user.Role)
         if err != nil {
-            return nil, err
+            return nil, customerrors.WrapBasicError(err)
         }
         userResponses = append(userResponses, user)
     }
@@ -217,7 +218,7 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
     err = tx.Commit()
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     } 
 
     return paginationResponse, nil

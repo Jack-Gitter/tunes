@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/spotifyResponses"
 )
 
@@ -16,7 +18,7 @@ func GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*spoti
     songRequest, err := http.NewRequest(http.MethodGet, url, nil)
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     songRequest.Header.Set("Authorization", fmt.Sprintf("Bearer %s", spotifyAccessToken))
@@ -25,17 +27,17 @@ func GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*spoti
     resp, err := client.Do(songRequest) 
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     defer resp.Body.Close()
     
     if resp.StatusCode != 200 {
-        return nil, errors.New("spotify request for a song failed without 200")
+        return nil, customerrors.WrapBasicError(errors.New("spotify request for a song failed without 200"))
     }
 
     spotifySongResponse := &spotifyresponses.SongResponse{}
-    bodyString, err := io.ReadAll(resp.Body)
+    bodyString, _ := io.ReadAll(resp.Body)
     json.Unmarshal(bodyString, spotifySongResponse)
 
     return spotifySongResponse, nil

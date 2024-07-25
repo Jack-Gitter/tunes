@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+
+	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/spotifyResponses"
 )
 
@@ -25,7 +27,7 @@ func RetrieveInitialAccessToken(authorizationCode string) (*spotifyresponses.Acc
     accessTokenRequest, err := http.NewRequest(http.MethodPost, "https://accounts.spotify.com/api/token", bytes.NewBuffer([]byte(queryParams)))
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     accessTokenRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -35,7 +37,7 @@ func RetrieveInitialAccessToken(authorizationCode string) (*spotifyresponses.Acc
     resp, err := client.Do(accessTokenRequest) 
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     defer resp.Body.Close()
@@ -50,7 +52,7 @@ func RetrieveUserProfile(accessToken string) (*spotifyresponses.ProfileResponse,
     nReq, err := http.NewRequest(http.MethodGet, "https://api.spotify.com/v1/me", &bytes.Buffer{})
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     nReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
@@ -59,7 +61,7 @@ func RetrieveUserProfile(accessToken string) (*spotifyresponses.ProfileResponse,
     nResp, err := client.Do(nReq)
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     defer nResp.Body.Close()
@@ -89,7 +91,7 @@ func RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken string) (*spotifyre
     resp, err := client.Do(accessTokenRefreshRequest) 
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     defer resp.Body.Close()

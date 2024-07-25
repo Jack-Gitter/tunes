@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+
+	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
 )
@@ -19,7 +21,7 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
     _, err := DB.Driver.Exec(query, albumImage, albumID, albumName, createdAt, rating, songID, songName, text, createdAt, spotifyID)
     
     if err != nil {
-         return nil, err
+         return nil, customerrors.WrapBasicError(err)
     }
 
     postPreview := &responses.PostPreview{}
@@ -54,7 +56,7 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
     post.AlbumArtURI = albumArtUri.String
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     return post, nil
@@ -77,7 +79,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
     err = row.Scan(&rep)
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     
@@ -92,7 +94,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
     rows, err := tx.Query(query, spotifyID, createdAt)
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     postPreviewsResponse := []responses.PostPreview{}
@@ -103,7 +105,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
         err := rows.Scan(&albumArtUri, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
         post.AlbumArtURI = albumArtUri.String
         if err != nil {
-            return nil, err
+            return nil, customerrors.WrapBasicError(err)
         }
         postPreviewsResponse = append(postPreviewsResponse, post)
     }
@@ -119,7 +121,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
     }
 
      if err = tx.Commit(); err != nil {
-         return nil, err
+         return nil, customerrors.WrapBasicError(err)
     }
 
     return paginationResponse, nil
@@ -149,7 +151,7 @@ func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPre
     postPreview.AlbumArtURI = albumArtUri.String
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     return postPreview, nil
@@ -165,17 +167,17 @@ func DeletePost(songID string, spotifyID string) error {
     res, err := DB.Driver.Exec(query, spotifyID, songID)
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
     rows, err := res.RowsAffected()
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
     if rows < 1 {
-        return sql.ErrNoRows
+        return customerrors.WrapBasicError(sql.ErrNoRows)
     }
 
     return nil
