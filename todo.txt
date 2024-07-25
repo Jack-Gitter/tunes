@@ -6,6 +6,9 @@ golang stufff
 testing: 
     actually in depth tests of what the fuck it is that I have!!!
 
+
+middleware: 
+    make an error handling middleware, call it first. this way I can just get rid of the duplicate code in the handler funcs
 endpoints: 
     general: 
         clean up endpoint names
