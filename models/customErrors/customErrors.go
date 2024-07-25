@@ -32,8 +32,6 @@ func ErrorHandlerMiddleware(c *gin.Context) {
         default:
             c.JSON(http.StatusInternalServerError, e.Error())
     }
-
-    return
 }
 
 func WrapBasicError(err error) *CustomError {

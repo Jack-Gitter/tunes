@@ -133,7 +133,7 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
     createdAt := c.Query("createdAt")
 
     if !spotifyIDExists {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt lookup"})
+        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, "bad jwt lookup"}
         return
     }
 
@@ -168,7 +168,7 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
     songID := c.Param("songID")
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
+        c.AbortWithError(-1, customerrors.InternalServerError)
         return
     }
 
@@ -189,7 +189,7 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
     requestorSpotifyID, found := c.Get("spotifyID")
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
+        c.AbortWithError(-1, customerrors.InternalServerError)
         return
     }
 
@@ -197,7 +197,7 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
     songID := c.Param("songID")
 
     if requestorSpotifyID != spotifyID {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "canot do that"})
+        c.AbortWithError(-1, customerrors.PermissionDeniedError)
         return
     }
 
@@ -218,7 +218,7 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
     requestorSpotifyID, found := c.Get("spotifyID")
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.AbortWithError(-1, customerrors.InternalServerError)
         return
     }
     songID := c.Param("songID")
@@ -245,17 +245,17 @@ func UpdateCurrentUserPost(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(updatePostReq)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.AbortWithError(-1, customerrors.BadJSONBodyError)
         return
     }
 
     if !exists || !uexists {
-        c.AbortWithError(-1, err)
+        c.AbortWithError(-1, customerrors.BadJSONBodyError)
         return
     }
 
     if updatePostReq.Text == nil && updatePostReq.Rating == nil {
-        c.AbortWithError(-1, err)
+        c.AbortWithError(-1, customerrors.BadJSONBodyError)
         return
     }
 

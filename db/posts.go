@@ -232,7 +232,7 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int, user
     postPreview.AlbumArtURI = albumArtUri.String
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     return postPreview, nil
@@ -254,7 +254,7 @@ func LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, 
     }
 
     if rows < 1 {
-        return sql.ErrNoRows
+        return customerrors.WrapBasicError(sql.ErrNoRows)
     }
 
     return nil
