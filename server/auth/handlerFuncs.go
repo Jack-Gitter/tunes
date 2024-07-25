@@ -197,7 +197,7 @@ func ValidateAdminUser(c *gin.Context) {
         return
     }
 
-    c.Error(&customerrors.CustomError{StatusCode: http.StatusForbidden, Msg: "only admins"})
+    c.Error(&customerrors.CustomError{StatusCode: http.StatusForbidden, Msg: "This endpoint is accessable to only admins!"})
     c.Abort()
     return
 

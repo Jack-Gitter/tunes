@@ -27,7 +27,7 @@ func InitializeHttpServer() *gin.Engine {
     r.POST("/currentUser/follow/:otherUserSpotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT,  users.FollowerUser)
     r.POST("/currentUser/unfollow/:otherUserSpotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.UnFollowUser)
     r.PATCH("/currentUser", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.UpdateCurrentUserProperties) 
-    r.PATCH("/user/:spotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.UpdateUserBySpotifyID)
+    r.PATCH("/user/:spotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, auth.ValidateAdminUser, users.UpdateUserBySpotifyID)
     r.DELETE("/currentUser", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.DeleteCurrentUser) 
     r.DELETE("/user/:spotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, auth.ValidateAdminUser, users.DeleteUserBySpotifyID) 
 

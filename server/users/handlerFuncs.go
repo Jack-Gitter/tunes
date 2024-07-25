@@ -155,10 +155,9 @@ func GetCurrentUser(c *gin.Context) {
 func UpdateUserBySpotifyID(c *gin.Context) {
 
     userUpdateRequest := &requests.UpdateUserRequestDTO{}
-    userRole, found := c.Get("userRole")
     spotifyID := c.Param("spotifyID")
 
-    if !found || spotifyID == "" {
+    if spotifyID == "" {
         c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JwtFuckup"})
         c.Abort()
         return
@@ -178,7 +177,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
         return
     }
 
-    resp, err := updateUser(spotifyID, userUpdateRequest, userRole.(responses.Role))
+    resp, err := updateUser(spotifyID, userUpdateRequest)
 
     if err != nil {
         c.Error(err)
@@ -194,10 +193,9 @@ func UpdateUserBySpotifyID(c *gin.Context) {
 func UpdateCurrentUserProperties(c *gin.Context) {
     
     userUpdateRequest := &requests.UpdateUserRequestDTO{}
-    userRole, found := c.Get("userRole")
     spotifyID, spotifyIdExists := c.Get("spotifyID")
 
-    if !found || !spotifyIdExists {
+    if !spotifyIdExists {
         c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JwtFuckup"})
         c.Abort()
         return
@@ -217,7 +215,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
         return
     }
 
-    resp, e := updateUser(spotifyID.(string), userUpdateRequest, userRole.(responses.Role))
+    resp, e := updateUser(spotifyID.(string), userUpdateRequest)
 
     if e != nil {
         c.Error(e)
@@ -264,11 +262,7 @@ func DeleteUserBySpotifyID(c *gin.Context) {
     c.Status(http.StatusNoContent)
 }
 
-func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO, userRole responses.Role) (*responses.User, error) {
-
-    if userUpdateRequest.Role != nil && userRole != responses.ADMIN {
-        return nil, &customerrors.CustomError{StatusCode: http.StatusUnauthorized, Msg: "Cannot update role if you are not admin!"}
-    }
+func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO) (*responses.User, error) {
 
     if userUpdateRequest.Role != nil && !responses.IsValidRole(*userUpdateRequest.Role) {
         return nil, &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Invalid Role"}
