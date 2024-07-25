@@ -154,7 +154,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(userUpdateRequest)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.AbortWithError(-1, customerrors.WrapBasicError(err))
         return
     }
 
@@ -188,7 +188,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(userUpdateRequest)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.AbortWithError(-1, customerrors.WrapBasicError(err))
         return
     }
 

@@ -33,7 +33,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
     }
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.AbortWithError(-1, customerrors.WrapBasicError(err))
         return
     }
 
@@ -248,7 +248,7 @@ func UpdateCurrentUserPost(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(updatePostReq)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.AbortWithError(-1, customerrors.WrapBasicError(err))
         return
     }
 
