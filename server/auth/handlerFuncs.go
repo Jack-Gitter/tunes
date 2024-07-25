@@ -82,13 +82,13 @@ func ValidateUserJWT(c *gin.Context) {
     
     header := strings.Split(c.GetHeader("Authorization"), " ")
     if len(header) < 2 {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "not enough values in the auth header"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "not enough values in the auth header"})
         c.Abort()
         return
     }
 
     if strings.ToLower(header[0]) != "bearer" {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid auth type"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid auth type"})
         c.Abort()
         return
     }
@@ -113,7 +113,6 @@ func ValidateUserJWT(c *gin.Context) {
     c.Set("spotifyUsername", username)
     c.Set("spotifyAccessToken", spotifyAccessToken)
     
-    fmt.Println("validation complete")
     c.Next()
 }
 
@@ -188,7 +187,7 @@ func ValidateAdminUser(c *gin.Context) {
     role, found := c.Get("userRole")
 
     if !found {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "no role specified for user in db"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "no role specified for user in db"})
         c.Abort()
         return
     }
@@ -198,7 +197,7 @@ func ValidateAdminUser(c *gin.Context) {
         return
     }
 
-    c.Error(customerrors.CustomError{StatusCode: http.StatusForbidden, Msg: "only admins"})
+    c.Error(&customerrors.CustomError{StatusCode: http.StatusForbidden, Msg: "only admins"})
     c.Abort()
     return
 

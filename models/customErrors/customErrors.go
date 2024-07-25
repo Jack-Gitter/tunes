@@ -26,11 +26,11 @@ func ErrorHandlerMiddleware(c *gin.Context) {
         return
     }
     firstError := c.Errors[0].Err
-
-    if err, ok := firstError.(*CustomError); ok {
-        c.JSON(err.StatusCode, err.Msg)
-    } else {
-        c.JSON(http.StatusInternalServerError, err.Error())
+    switch err := firstError.(type) {
+        case *CustomError: 
+            c.JSON(err.StatusCode, err.Msg)
+        default:
+            c.JSON(http.StatusInternalServerError, err.Error())
     }
 }
 

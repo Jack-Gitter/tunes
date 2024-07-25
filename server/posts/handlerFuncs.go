@@ -20,7 +20,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
 
 
     if !spotifyIDExists || !spotifyAccessTokenExists || !spotifyUsernameExists {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
         c.Abort()
         return
     }
@@ -29,13 +29,13 @@ func CreatePostForCurrentUser(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(createPostDTO)
 
     if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad JSON Body"})
         c.Abort()
         return
     }
 
     if createPostDTO.Rating < 0 || createPostDTO.Rating > 5 {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"})
         c.Abort()
         return
     }
@@ -83,7 +83,7 @@ func LikePost(c *gin.Context) {
     songID := c.Param("songID")
 
     if !found {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
         c.Abort()
         return
     }
@@ -107,7 +107,7 @@ func DislikePost(c *gin.Context) {
     songID := c.Param("songID")
 
     if !found {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
         c.Abort()
         return
     }
@@ -145,7 +145,7 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
     createdAt := c.Query("createdAt")
 
     if !spotifyIDExists {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt lookup"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt lookup"})
         c.Abort()
         return
     }
@@ -183,7 +183,7 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
     songID := c.Param("songID")
 
     if !found {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
         c.Abort()
         return
     }
@@ -206,7 +206,7 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
     requestorSpotifyID, found := c.Get("spotifyID")
 
     if !found {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
         c.Abort()
         return
     }
@@ -215,7 +215,7 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
     songID := c.Param("songID")
 
     if requestorSpotifyID != spotifyID {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "canot do that"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "canot do that"})
         c.Abort()
         return
     }
@@ -239,7 +239,7 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
     requestorSpotifyID, found := c.Get("spotifyID")
 
     if !found {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
         c.Abort()
         return
     }
@@ -268,13 +268,13 @@ func UpdateCurrentUserPost(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(updatePostReq)
 
     if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad JSON Body"})
         c.Abort()
         return
     }
 
     if !exists || !uexists {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad body"})
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad body"})
         c.Abort()
         return
     }

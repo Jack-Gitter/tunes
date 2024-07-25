@@ -18,8 +18,12 @@ func InitializeHttpServer() *gin.Engine {
 
     r.GET("/users/:spotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.GetUserById)
     r.GET("/currentUser", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.GetCurrentUser)
+
+    // need to fix pagination
     r.GET("/currentUser/followers", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.GetFollowers)
+    // need to fix pagination
     r.GET("/users/:spotifyID/followers/", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.GetFollowersByID)
+
     r.POST("/currentUser/follow/:otherUserSpotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT,  users.FollowerUser)
     r.POST("/currentUser/unfollow/:otherUserSpotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.UnFollowUser)
     r.PATCH("/currentUser", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.UpdateCurrentUserProperties) 
