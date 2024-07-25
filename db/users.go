@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -156,14 +157,39 @@ func FollowUser(spotifyID string, otherUserSpotifyID string) (error) {
 }
 
 func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
-    query := `
+    tx, err := DB.Driver.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        return nil, HandleDatabaseError(err)
+    }
+
+    defer tx.Rollback()
+    query := `SELECT spotifyid FROM users WHERE spotifyid = $1`
+
+    row, err := tx.Exec(query, spotifyID)
+
+    if err != nil {
+        return nil, HandleDatabaseError(err)
+    }
+
+    count, err := row.RowsAffected()
+
+    if err != nil {
+        return nil, HandleDatabaseError(err)
+    }
+
+    if count < 1 {
+        return nil, HandleDatabaseError(sql.ErrNoRows)
+    }
+
+    query = `
             SELECT users.spotifyid, users.username, users.bio, users.userrole 
             FROM followers 
             INNER JOIN  users 
             ON users.spotifyid = followers.userfollowed 
             WHERE followers.userfollowed = $1 AND users.spotifyid < $2 ORDER BY users.spotifyid LIMIT 25 `
 
-    rows, err := DB.Driver.Query(query, spotifyID, paginationKey)
+    rows, err := tx.Query(query, spotifyID, paginationKey)
 
     if err != nil {
         return nil, HandleDatabaseError(err)
@@ -189,6 +215,12 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
     } else {
         paginationResponse.PaginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
     }
+
+    err = tx.Commit()
+
+    if err != nil {
+        return nil, HandleDatabaseError(err)
+    } 
 
     return paginationResponse, nil
 }

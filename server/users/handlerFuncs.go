@@ -72,7 +72,7 @@ func GetFollowersByID(c *gin.Context) {
             c.JSON(err.StatusCode, err.Msg)
             return
         }
-        panic("hi")
+        panic("hey")
     }
 
 
