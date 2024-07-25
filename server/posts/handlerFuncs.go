@@ -20,6 +20,8 @@ func CreatePostForCurrentUser(c *gin.Context) {
 
 
     if !spotifyIDExists || !spotifyAccessTokenExists || !spotifyUsernameExists {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusInternalServerError, "No JWT data found for the current user")
         return
     }
@@ -28,11 +30,15 @@ func CreatePostForCurrentUser(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(createPostDTO)
 
     if createPostDTO.Rating < 0 || createPostDTO.Rating > 5 {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusBadRequest, "Please provide a rating 0-5")
         return
     }
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusBadRequest, err.Error())
         return
     }
@@ -40,6 +46,8 @@ func CreatePostForCurrentUser(c *gin.Context) {
     spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(createPostDTO.SongID, spotifyAccessToken.(string))
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusInternalServerError, err.Error())
         return
     }
@@ -63,6 +71,8 @@ func CreatePostForCurrentUser(c *gin.Context) {
     )
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
             return
@@ -81,6 +91,8 @@ func LikePost(c *gin.Context) {
     songID := c.Param("songID")
 
     if !found {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusInternalServerError, "Did not set spotifyID in JWT middleware")
         return
     }
@@ -88,6 +100,8 @@ func LikePost(c *gin.Context) {
     err := db.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, true)
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
             return
@@ -106,6 +120,8 @@ func DislikePost(c *gin.Context) {
     songID := c.Param("songID")
 
     if !found {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusInternalServerError, "Did not set spotifyID in JWT middleware")
         return
     }
@@ -113,6 +129,8 @@ func DislikePost(c *gin.Context) {
     err := db.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, false)
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
             return
@@ -132,6 +150,8 @@ func GetAllPostsForUserByID(c *gin.Context) {
     posts, err := getAllPosts(spotifyID, createdAt)
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
             return
@@ -147,6 +167,8 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
     createdAt := c.Query("createdAt")
 
     if !spotifyIDExists {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusUnauthorized, "No JWT data found for the current user")
         return
     }
@@ -154,6 +176,8 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
     posts, err := getAllPosts(spotifyID.(string), createdAt)
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
             return
@@ -172,6 +196,8 @@ func GetPostBySpotifyIDAndSongID(c *gin.Context) {
     post, err := db.GetUserPostByID(songID, spotifyID)
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
             return
@@ -188,6 +214,8 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
     songID := c.Param("songID")
 
     if !found {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusInternalServerError, "spotifyID not set in JWT middleware")
         return
     }
@@ -195,6 +223,8 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
     post, err := db.GetUserPostByID(songID, currentUserSpotifyID.(string))
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
             return
@@ -212,12 +242,16 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
     requestorSpotifyID, found := c.Get("spotifyID")
 
     if !found {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusInternalServerError, "No spotifyID set from JWT middleware")
     }
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")
 
     if requestorSpotifyID != spotifyID {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusForbidden, "Cannot delete post that is not your own, unless you are an admin")
         return
     }
@@ -225,6 +259,8 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
     err := db.DeletePost(songID, spotifyID)
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
             return
@@ -244,6 +280,8 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
     requestorSpotifyID, found := c.Get("spotifyID")
 
     if !found {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusInternalServerError, "No spotifyID variable set in JWT middleware")
     }
     songID := c.Param("songID")
@@ -251,6 +289,8 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
     err := db.DeletePost(songID, requestorSpotifyID.(string))
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
             return
@@ -273,17 +313,23 @@ func UpdateCurrentUserPost(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(updatePostReq)
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         fmt.Println(err.Error())
         c.JSON(http.StatusBadRequest, "bad json body")
         return
     }
 
     if !exists || !uexists {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusBadRequest, "need jwt")
         return
     }
 
     if updatePostReq.Text == nil && updatePostReq.Rating == nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         c.JSON(http.StatusBadGateway, "must provide at least one param to update with patch")
         return
     }
@@ -291,6 +337,8 @@ func UpdateCurrentUserPost(c *gin.Context) {
     preview, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating, spotifyUsername.(string))
 
     if err != nil {
+        /*c.AbortWithError(http.StatusInternalServerError, internalserver)
+        return*/
         if err, ok := err.(*db.DBError); ok {
             c.JSON(err.StatusCode, err.Msg)
             return

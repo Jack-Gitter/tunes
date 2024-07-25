@@ -7,8 +7,14 @@ testing:
     actually in depth tests of what the fuck it is that I have!!!
 
 
-middleware: 
-    make an error handling middleware, call it first. this way I can just get rid of the duplicate code in the handler funcs
+errors: 
+    make package level sentinel errors -- 
+        for database, make errors and parse the sql errors into our sentinel errors
+        for jwt, just return custom errors
+        for other stuff, just return custom errors
+    make a middleware to handle these errors
+        take the first error that was thrown, generate a statuts code, and then done
+
 endpoints: 
     general: 
         clean up endpoint names

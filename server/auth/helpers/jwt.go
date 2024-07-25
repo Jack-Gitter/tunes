@@ -3,7 +3,6 @@ package helpers
 import (
 	"os"
 	"time"
-
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/golang-jwt/jwt/v5"
