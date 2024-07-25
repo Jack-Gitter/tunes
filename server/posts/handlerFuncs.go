@@ -86,6 +86,7 @@ func LikePost(c *gin.Context) {
 
     if err != nil {
         c.AbortWithError(-1, err)
+        return
     }
 
 
@@ -123,6 +124,7 @@ func GetAllPostsForUserByID(c *gin.Context) {
 
     if err != nil {
         c.AbortWithError(-1, err)
+        return
     }
 
     c.JSON(http.StatusOK, posts)
@@ -205,6 +207,7 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 
     if err != nil {
         c.AbortWithError(-1, err)
+        return
     }
 
     c.Status(http.StatusNoContent)

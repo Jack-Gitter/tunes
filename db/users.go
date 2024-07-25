@@ -117,7 +117,7 @@ func UnfollowUser(spotifyID string, otherUserSpotifyID string) error {
     res, err := DB.Driver.Exec(query, spotifyID, otherUserSpotifyID)
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
     rows, err := res.RowsAffected()
@@ -139,7 +139,7 @@ func FollowUser(spotifyID string, otherUserSpotifyID string) error {
     res, err := DB.Driver.Exec(query, spotifyID, otherUserSpotifyID)
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
     rows, err := res.RowsAffected()
@@ -159,7 +159,7 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
     tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     defer tx.Rollback()

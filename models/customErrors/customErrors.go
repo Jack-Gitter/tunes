@@ -2,9 +2,11 @@ package customerrors
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/lib/pq"
 )
 
@@ -65,6 +67,15 @@ func WrapBasicError(err error) *CustomError {
                 customError.Msg = err.Error()
                 return customError
         }
+    }
+
+
+    if errors.Is(err, jwt.ErrTokenExpired) {
+        customError.StatusCode = http.StatusUnauthorized
+        customError.Msg = "Please refresh JWT"
+    } else if errors.Is(err, jwt.ErrTokenMalformed) || errors.Is(err, jwt.ErrSignatureInvalid) || errors.Is(err, jwt.ErrTokenUnverifiable) {
+        customError.StatusCode = http.StatusForbidden
+        customError.Msg = "JWT has been tampered with"
     }
 
     return customError

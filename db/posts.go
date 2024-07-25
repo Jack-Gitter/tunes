@@ -66,7 +66,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
     tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
     defer tx.Rollback()
@@ -250,7 +250,7 @@ func LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, 
     rows, err := res.RowsAffected() 
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
     if rows < 1 {

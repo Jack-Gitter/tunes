@@ -1,17 +1,16 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
 	"github.com/Jack-Gitter/tunes/db"
+	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/auth/helpers"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 func Login(c *gin.Context) {
@@ -30,21 +29,21 @@ func LoginCallback(c *gin.Context) {
     accessTokenResponse, err := helpers.RetrieveInitialAccessToken(c.Query("code"))
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
+        c.AbortWithError(-1, err)
         return
     }
 
     userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
+        c.AbortWithError(-1, err)
         return
     }
 
     user, err := db.UpsertUser(userProfileResponse.Display_name, userProfileResponse.Id)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
+        c.AbortWithError(-1, err)
         return
     }
 
@@ -56,14 +55,14 @@ func LoginCallback(c *gin.Context) {
         user.Role) 
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
+        c.AbortWithError(-1, err)
         return
     }
 
     refreshString, err := helpers.CreateRefreshJWT(accessTokenResponse.Refresh_token)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, err.Error())
+        c.AbortWithError(-1, err)
         return
     }
 
@@ -77,12 +76,12 @@ func ValidateUserJWT(c *gin.Context) {
     
     header := strings.Split(c.GetHeader("Authorization"), " ")
     if len(header) < 2 {
-        c.AbortWithStatusJSON(http.StatusBadRequest, "Not enough values supplied in the Authorization header")
+        c.AbortWithError(http.StatusBadRequest, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "not enough values in the auth header"})
         return
     }
 
     if strings.ToLower(header[0]) != "bearer" {
-        c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid authorization type")
+        c.AbortWithError(http.StatusBadRequest, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid auth type"})
         return
     }
 
@@ -91,13 +90,8 @@ func ValidateUserJWT(c *gin.Context) {
     token, err := helpers.ValidateAccessToken(jwtTokenString)
 
     if err != nil {
-        if errors.Is(err, jwt.ErrTokenExpired) {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, "Please refresh your JWT by accessing the refresh endpoint")
-            return
-        } else {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, "JWT signature could not be verified")
-            return
-        }
+        c.AbortWithError(-1, err)
+        return
     } 
 
     spotifyID := token.Claims.(*requests.JWTClaims).SpotifyID
@@ -118,27 +112,21 @@ func RefreshJWT(c *gin.Context) {
     refresh_jwt, err := c.Cookie("REFRESH_JWT")
 
     if err != nil {
-        c.JSON(http.StatusBadRequest, "Refresh JWT cookie missing")
+        c.AbortWithError(-1, err)
         return
     }
 
     refresh_token, e := helpers.ValidateRefreshToken(refresh_jwt)
 
     if e != nil {
-        if errors.Is(e, jwt.ErrTokenExpired) {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, "Your refresh JWT has expired, please log out and log back in to continue")
-            return
-        } else {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, "Refresh JWT signature could not be verified")
-            return
-        }
+        c.AbortWithError(-1, e)
     }
 
     spotifyRefreshToken := refresh_token.Claims.(*requests.RefreshJWTClaims).RefreshToken
     accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken)
 
     if err != nil {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, "Error retrieving a new spotify access token")
+        c.AbortWithError(-1, err)
         return
     }
 
@@ -149,18 +137,15 @@ func RefreshJWT(c *gin.Context) {
     userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponseBody.Access_token)
 
     if err != nil {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+        c.AbortWithError(-1, err)
         return
     }
 
     userDBResponse, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if err != nil {
-        if err, ok := err.(*db.DBError); ok {
-            c.AbortWithStatusJSON(err.StatusCode, err.Msg)
-            return
-        }
-        panic("cant be here")
+        c.AbortWithError(-1, err)
+        return
     }
 
     accessTokenJWT, err := helpers.CreateAccessJWT(
@@ -172,7 +157,7 @@ func RefreshJWT(c *gin.Context) {
     )
 
     if err != nil {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+        c.AbortWithError(-1, err)
         return
     }
 

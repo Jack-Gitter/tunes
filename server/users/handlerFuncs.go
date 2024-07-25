@@ -233,7 +233,7 @@ func DeleteUserBySpotifyID(c *gin.Context) {
     err := db.DeleteUserByID(spotifyID)
 
     if err != nil {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "kill me"})
+        c.AbortWithError(-1, err)
         return
     }
 
