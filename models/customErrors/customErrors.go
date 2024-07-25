@@ -21,22 +21,20 @@ func (ce CustomError) Error() string {
 }
 
 func ErrorHandlerMiddleware(c *gin.Context) {
-
     c.Next()
     if len(c.Errors) < 1 {
         return
     }
     firstError := c.Errors[0].Err
 
-    switch e := firstError.(type) {
-        case CustomError: 
-            c.JSON(e.StatusCode, e.Msg)
-        default:
-            c.JSON(http.StatusInternalServerError, e.Error())
+    if err, ok := firstError.(*CustomError); ok {
+        c.JSON(err.StatusCode, err.Msg)
+    } else {
+        c.JSON(http.StatusInternalServerError, err.Error())
     }
 }
 
-func WrapBasicError(err error) *CustomError {
+func WrapBasicError(err error) error {
 
     if err == nil {
         return nil

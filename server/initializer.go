@@ -1,6 +1,7 @@
 package server
 
 import (
+	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/server/auth"
 	"github.com/Jack-Gitter/tunes/server/posts"
 	"github.com/Jack-Gitter/tunes/server/users"
@@ -10,13 +11,13 @@ import (
 func InitializeHttpServer() *gin.Engine {
     r := gin.Default()
 
-    r.GET("/login", auth.Login)
-    r.GET("/loginCallback", auth.LoginCallback)
+    r.GET("/login", customerrors.ErrorHandlerMiddleware, auth.Login)
+    r.GET("/loginCallback", customerrors.ErrorHandlerMiddleware, auth.LoginCallback)
 
-    r.POST("/refreshJWT", auth.RefreshJWT)
+    r.POST("/refreshJWT", customerrors.ErrorHandlerMiddleware, auth.RefreshJWT)
 
-    r.GET("/users/:spotifyID", auth.ValidateUserJWT, users.GetUserById)
-    r.GET("/currentUser", auth.ValidateUserJWT, users.GetCurrentUser)
+    r.GET("/users/:spotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.GetUserById)
+    r.GET("/currentUser", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.GetCurrentUser)
     r.GET("/currentUser/followers", auth.ValidateUserJWT, users.GetFollowers)
     r.GET("/users/:spotifyID/followers/", auth.ValidateUserJWT, users.GetFollowersByID)
     r.POST("/currentUser/follow/:otherUserSpotifyID", auth.ValidateUserJWT,  users.FollowerUser)

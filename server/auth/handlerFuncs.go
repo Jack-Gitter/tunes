@@ -29,21 +29,24 @@ func LoginCallback(c *gin.Context) {
     accessTokenResponse, err := helpers.RetrieveInitialAccessToken(c.Query("code"))
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
     userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponse.Access_token)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
     user, err := db.UpsertUser(userProfileResponse.Display_name, userProfileResponse.Id)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -55,14 +58,17 @@ func LoginCallback(c *gin.Context) {
         user.Role) 
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
+
 
     refreshString, err := helpers.CreateRefreshJWT(accessTokenResponse.Refresh_token)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -76,12 +82,14 @@ func ValidateUserJWT(c *gin.Context) {
     
     header := strings.Split(c.GetHeader("Authorization"), " ")
     if len(header) < 2 {
-        c.AbortWithError(http.StatusBadRequest, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "not enough values in the auth header"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "not enough values in the auth header"})
+        c.Abort()
         return
     }
 
     if strings.ToLower(header[0]) != "bearer" {
-        c.AbortWithError(http.StatusBadRequest, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid auth type"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid auth type"})
+        c.Abort()
         return
     }
 
@@ -90,7 +98,8 @@ func ValidateUserJWT(c *gin.Context) {
     token, err := helpers.ValidateAccessToken(jwtTokenString)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     } 
 
@@ -104,6 +113,7 @@ func ValidateUserJWT(c *gin.Context) {
     c.Set("spotifyUsername", username)
     c.Set("spotifyAccessToken", spotifyAccessToken)
     
+    fmt.Println("validation complete")
     c.Next()
 }
 
@@ -112,21 +122,25 @@ func RefreshJWT(c *gin.Context) {
     refresh_jwt, err := c.Cookie("REFRESH_JWT")
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
     refresh_token, e := helpers.ValidateRefreshToken(refresh_jwt)
 
     if e != nil {
-        c.AbortWithError(-1, e)
+        c.Error(e)
+        c.Abort()
+        return
     }
 
     spotifyRefreshToken := refresh_token.Claims.(*requests.RefreshJWTClaims).RefreshToken
     accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -137,14 +151,16 @@ func RefreshJWT(c *gin.Context) {
     userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponseBody.Access_token)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
     userDBResponse, err := db.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -157,7 +173,8 @@ func RefreshJWT(c *gin.Context) {
     )
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -171,7 +188,8 @@ func ValidateAdminUser(c *gin.Context) {
     role, found := c.Get("userRole")
 
     if !found {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, "No role specified for the current user in the database")
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "no role specified for user in db"})
+        c.Abort()
         return
     }
 
@@ -180,7 +198,8 @@ func ValidateAdminUser(c *gin.Context) {
         return
     }
 
-    c.AbortWithStatusJSON(http.StatusForbidden, "Only admins are allowed to access this endpoint")
+    c.Error(customerrors.CustomError{StatusCode: http.StatusForbidden, Msg: "only admins"})
+    c.Abort()
     return
 
 }

@@ -20,27 +20,31 @@ func CreatePostForCurrentUser(c *gin.Context) {
 
 
     if !spotifyIDExists || !spotifyAccessTokenExists || !spotifyUsernameExists {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Abort()
         return
     }
 
     createPostDTO := &requests.CreatePostDTO{}
     err := c.ShouldBindBodyWithJSON(createPostDTO)
 
-    if createPostDTO.Rating < 0 || createPostDTO.Rating > 5 {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"})
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
         return
     }
 
-    if err != nil {
-        c.AbortWithError(-1, customerrors.WrapBasicError(err))
+    if createPostDTO.Rating < 0 || createPostDTO.Rating > 5 {
+        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"})
+        c.Abort()
         return
     }
 
     spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(createPostDTO.SongID, spotifyAccessToken.(string))
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -63,7 +67,8 @@ func CreatePostForCurrentUser(c *gin.Context) {
     )
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -78,14 +83,16 @@ func LikePost(c *gin.Context) {
     songID := c.Param("songID")
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Abort()
         return
     }
 
     err := db.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, true)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -100,14 +107,16 @@ func DislikePost(c *gin.Context) {
     songID := c.Param("songID")
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Abort()
         return
     }
 
     err := db.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, false)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -123,7 +132,8 @@ func GetAllPostsForUserByID(c *gin.Context) {
     posts, err := getAllPosts(spotifyID, createdAt)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -135,14 +145,16 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
     createdAt := c.Query("createdAt")
 
     if !spotifyIDExists {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt lookup"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt lookup"})
+        c.Abort()
         return
     }
 
     posts, err := getAllPosts(spotifyID.(string), createdAt)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -157,7 +169,8 @@ func GetPostBySpotifyIDAndSongID(c *gin.Context) {
     post, err := db.GetUserPostByID(songID, spotifyID)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -170,14 +183,16 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
     songID := c.Param("songID")
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
+        c.Abort()
         return
     }
 
     post, err := db.GetUserPostByID(songID, currentUserSpotifyID.(string))
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -191,7 +206,8 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
     requestorSpotifyID, found := c.Get("spotifyID")
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
+        c.Abort()
         return
     }
 
@@ -199,14 +215,16 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
     songID := c.Param("songID")
 
     if requestorSpotifyID != spotifyID {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "canot do that"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "canot do that"})
+        c.Abort()
         return
     }
 
     err := db.DeletePost(songID, spotifyID)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -221,7 +239,8 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
     requestorSpotifyID, found := c.Get("spotifyID")
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Abort()
         return
     }
     songID := c.Param("songID")
@@ -229,7 +248,8 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
     err := db.DeletePost(songID, requestorSpotifyID.(string))
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -248,24 +268,28 @@ func UpdateCurrentUserPost(c *gin.Context) {
     err := c.ShouldBindBodyWithJSON(updatePostReq)
 
     if err != nil {
-        c.AbortWithError(-1, customerrors.WrapBasicError(err))
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
         return
     }
 
     if !exists || !uexists {
-        c.AbortWithError(-1, err)
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad body"})
+        c.Abort()
         return
     }
 
     if updatePostReq.Text == nil && updatePostReq.Rating == nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
     preview, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating, spotifyUsername.(string))
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 

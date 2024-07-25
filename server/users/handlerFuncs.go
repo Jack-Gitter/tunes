@@ -2,6 +2,7 @@ package users
 
 import (
 	"net/http"
+
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -16,7 +17,8 @@ func GetUserById(c *gin.Context) {
     user, err := db.GetUserFromDbBySpotifyID(spotifyID)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -29,19 +31,22 @@ func UnFollowUser(c *gin.Context) {
     spotifyID, found := c.Get("spotifyID")
 
     if otherUserSpotifyID == spotifyID {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Unfollowing not reflexive"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Unfollowing not reflexive"})
+        c.Abort()
         return
     }
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Middleware issue" })
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Middleware issue" })
+        c.Abort()
         return
     }
 
     err := db.UnfollowUser(spotifyID.(string), otherUserSpotifyID)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -60,7 +65,8 @@ func GetFollowersByID(c *gin.Context) {
     followersPaginated, err := db.GetFollowers(spotifyID, paginationKey)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -74,7 +80,8 @@ func GetFollowers(c *gin.Context) {
     paginationKey := c.Query("spotifyID")
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Jwt issue"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Jwt issue"})
+        c.Abort()
         return
     }
 
@@ -85,7 +92,8 @@ func GetFollowers(c *gin.Context) {
     followersPaginated, err := db.GetFollowers(spotifyID.(string), paginationKey)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -99,19 +107,22 @@ func FollowerUser(c *gin.Context) {
     spotifyID, found := c.Get("spotifyID")
 
     if otherUserSpotifyID == spotifyID {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad JSON body"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad JSON body"})
+        c.Abort()
         return
     }
 
     if !found {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JWT fuckup"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JWT fuckup"})
+        c.Abort()
         return
     }
 
     err := db.FollowUser(spotifyID.(string), otherUserSpotifyID)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -126,14 +137,16 @@ func GetCurrentUser(c *gin.Context) {
     spotifyID, spotifyIdExists := c.Get("spotifyID")
 
     if !spotifyIdExists {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Jwtfuckup"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Jwtfuckup"})
+        c.Abort()
         return
     }
 
     user, err := db.GetUserFromDbBySpotifyID(spotifyID.(string))
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -147,26 +160,30 @@ func UpdateUserBySpotifyID(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
 
     if !found || spotifyID == "" {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JwtFuckup"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JwtFuckup"})
+        c.Abort()
         return
     }
 
     err := c.ShouldBindBodyWithJSON(userUpdateRequest)
 
     if err != nil {
-        c.AbortWithError(-1, customerrors.WrapBasicError(err))
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
         return
     }
 
     if userUpdateRequest.Bio == nil && userUpdateRequest.Role == nil {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "give a body"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "give a body"})
+        c.Abort()
         return
     }
 
     resp, e := updateUser(spotifyID, userUpdateRequest, userRole.(responses.Role))
 
     if e != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -181,26 +198,30 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     spotifyID, spotifyIdExists := c.Get("spotifyID")
 
     if !found || !spotifyIdExists {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JwtFuckup"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JwtFuckup"})
+        c.Abort()
         return
     }
 
     err := c.ShouldBindBodyWithJSON(userUpdateRequest)
 
     if err != nil {
-        c.AbortWithError(-1, customerrors.WrapBasicError(err))
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
         return
     }
 
     if userUpdateRequest.Bio == nil && userUpdateRequest.Role == nil {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad body"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad body"})
+        c.Abort()
         return
     }
 
     resp, e := updateUser(spotifyID.(string), userUpdateRequest, userRole.(responses.Role))
 
     if e != nil {
-        c.AbortWithError(-1, e)
+        c.Error(e)
+        c.Abort()
         return
     }
 
@@ -212,14 +233,16 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 func DeleteCurrentUser(c *gin.Context) {
     spotifyID, spotifyIdExists := c.Get("spotifyID")
     if !spotifyIdExists {
-        c.AbortWithError(-1, customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Bad"})
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Bad"})
+        c.Abort()
         return
     }
 
     err := db.DeleteUserByID(spotifyID.(string))
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
@@ -233,7 +256,8 @@ func DeleteUserBySpotifyID(c *gin.Context) {
     err := db.DeleteUserByID(spotifyID)
 
     if err != nil {
-        c.AbortWithError(-1, err)
+        c.Error(err)
+        c.Abort()
         return
     }
 
