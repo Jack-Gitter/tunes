@@ -1,18 +1,18 @@
 tunes todos:
 
-errors:
-    handle all errors in two places -- one in the db. We want to wrap errors thrown by sql. 
-    our custom error has an http status code associated with it, and the actual error object thrown
-
-
 golang stufff
     wtf are type assertions really?
     
+testing: 
+    actually in depth tests of what the fuck it is that I have!!!
+
 endpoints: 
     general: 
         clean up endpoint names
     user
+        followers pagination -- broken
     posts
+        postpreviewpagination -- broken
         like another post
         unlike a post
     comments

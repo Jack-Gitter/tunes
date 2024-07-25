@@ -59,7 +59,6 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
         args = append(args, updatedUser.Bio)
         query += fmt.Sprintf("bio = $%d", varNum)
         varNum += 1 
-
     } 
     if updatedUser.Role != nil {
         args = append(args, updatedUser.Role)

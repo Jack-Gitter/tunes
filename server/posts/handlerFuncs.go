@@ -283,6 +283,11 @@ func UpdateCurrentUserPost(c *gin.Context) {
         return
     }
 
+    if updatePostReq.Text == nil && updatePostReq.Rating == nil {
+        c.JSON(http.StatusBadGateway, "must provide at least one param to update with patch")
+        return
+    }
+
     preview, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating, spotifyUsername.(string))
 
     if err != nil {

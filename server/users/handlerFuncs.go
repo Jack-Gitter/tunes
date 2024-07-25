@@ -186,6 +186,11 @@ func UpdateUserBySpotifyID(c *gin.Context) {
         return
     }
 
+    if userUpdateRequest.Bio == nil && userUpdateRequest.Role == nil {
+        c.JSON(http.StatusBadRequest, "Must provide at least one parameter to chage")
+        return
+    }
+
     resp, err := updateUser(spotifyID, userUpdateRequest, userRole.(responses.Role))
 
     if err != nil {
@@ -218,6 +223,11 @@ func UpdateCurrentUserProperties(c *gin.Context) {
     if err != nil {
         fmt.Println(err.Error())
         c.JSON(http.StatusBadRequest, "Invalid JSON body")
+        return
+    }
+
+    if userUpdateRequest.Bio == nil && userUpdateRequest.Role == nil {
+        c.JSON(http.StatusBadRequest, "Must provide at least one parameter to chage")
         return
     }
 
