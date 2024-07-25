@@ -81,7 +81,7 @@ func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.Upd
     userResponse.Bio = bio.String
 
     if err != nil {
-        return nil, customerrors.WrapBasicError(sql.ErrNoRows)
+        return nil, customerrors.WrapBasicError(err)
     }
 
     return userResponse, nil
