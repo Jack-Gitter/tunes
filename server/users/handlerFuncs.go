@@ -271,7 +271,7 @@ func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestD
     }
 
     if userUpdateRequest.Role != nil && !responses.IsValidRole(*userUpdateRequest.Role) {
-        return nil, &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "get your shit together"}
+        return nil, &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Invalid Role"}
     }
 
     return db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
