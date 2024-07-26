@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	db "github.com/Jack-Gitter/tunes/db/helpers"
+	"github.com/Jack-Gitter/tunes/db/helpers"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
@@ -128,7 +128,7 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
 
     } 
 
-    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         return nil, err
@@ -239,7 +239,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
         return nil
     }
 
-    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := heleprs.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         return nil, err
