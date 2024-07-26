@@ -1,21 +1,21 @@
 tunes todos:
 
 endpoints: 
-    middleware: 
-        validation middleware that takes in an object, and does c.bindwithjson. we can also test business logic there. if it errors, then we error and abort
-    general: 
-        clean up endpoint names
     user
         followers pagination -- broken
     posts
         removeVote endpoint 
         postpreviewpagination -- broken
-        update getPost and userPostPreviews to get the users who have liked the posts
+        update getPostPreviews to find the user likes!
     comments
         create
         read (paginated)
         update
         delete
+    errors: 
+        clean up the middleware
+    general: 
+        clean up endpoint names
         
 caching:
     redis 
