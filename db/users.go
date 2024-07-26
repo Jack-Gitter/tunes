@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	db "github.com/Jack-Gitter/tunes/db/helpers"
+	"github.com/Jack-Gitter/tunes/db/helpers"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -238,7 +238,7 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
         return nil
     }
 
-    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         return nil, err
