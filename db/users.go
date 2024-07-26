@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
+
+	db "github.com/Jack-Gitter/tunes/db/helpers"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -158,66 +161,89 @@ func FollowUser(spotifyID string, otherUserSpotifyID string) error {
 
 func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
     
-	tx, err := DB.Driver.BeginTx(context.Background(), nil)
+    paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
 
-	if err != nil {
-		return nil, customerrors.WrapBasicError(err)
-	}
+    transaction := func() error {
+        tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
-	defer tx.Rollback()
-	query := `SELECT spotifyid FROM users WHERE spotifyid = $1`
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
 
-	row, err := tx.Exec(query, spotifyID)
+        defer tx.Rollback()
 
-	if err != nil {
-		return nil, customerrors.WrapBasicError(err)
-	}
+        _, err = tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
 
-	count, err := row.RowsAffected()
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
 
-	if err != nil {
-		return nil, customerrors.WrapBasicError(err)
-	}
+        query := `SELECT spotifyid FROM users WHERE spotifyid = $1`
 
-	if count < 1 {
-		return nil, customerrors.WrapBasicError(sql.ErrNoRows)
-	}
+        row, err := tx.Exec(query, spotifyID)
 
-	query = `
-            SELECT users.spotifyid, users.username, users.bio, users.userrole 
-            FROM followers 
-            INNER JOIN  users 
-            ON users.spotifyid = followers.userfollowed 
-            WHERE followers.userfollowed = $1 AND users.spotifyid < $2 ORDER BY users.spotifyid LIMIT 25 `
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
 
-	rows, err := tx.Query(query, spotifyID, paginationKey)
+        count, err := row.RowsAffected()
 
-	if err != nil {
-		return nil, customerrors.WrapBasicError(err)
-	}
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
 
-	userResponses := []responses.User{}
+        if count < 1 {
+            return customerrors.WrapBasicError(sql.ErrNoRows)
+        }
 
-	for rows.Next() {
-		user := responses.User{}
-		err := rows.Scan(&user.SpotifyID, &user.Username, &user.Bio, &user.Role)
-		if err != nil {
-			return nil, customerrors.WrapBasicError(err)
-		}
-		userResponses = append(userResponses, user)
-	}
+        time.Sleep(time.Second * 5)
 
-    paginationResponse := &responses.PaginationResponse[[]responses.User, string]{DataResponse: userResponses, PaginationKey: "zzzzzzzzzzzzzzzzzzzzzzzzzz"}
+        query = `
+                SELECT users.spotifyid, users.username, users.bio, users.userrole 
+                FROM followers 
+                INNER JOIN  users 
+                ON users.spotifyid = followers.userfollowed 
+                WHERE followers.userfollowed = $1 AND users.spotifyid < $2 ORDER BY users.spotifyid LIMIT 25 `
 
-	if len(userResponses) > 0 {
-		paginationResponse.PaginationKey = userResponses[len(userResponses)-1].SpotifyID
-	} 
+        rows, err := tx.Query(query, spotifyID, paginationKey)
 
-	err = tx.Commit()
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
 
-	if err != nil {
-		return nil, customerrors.WrapBasicError(err)
-	}
+        userResponses := []responses.User{}
+
+        for rows.Next() {
+            user := responses.User{}
+            err := rows.Scan(&user.SpotifyID, &user.Username, &user.Bio, &user.Role)
+            if err != nil {
+                return customerrors.WrapBasicError(err)
+            }
+            userResponses = append(userResponses, user)
+        }
+
+        paginationResponse.DataResponse = userResponses
+        paginationResponse.PaginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
+
+        if len(userResponses) > 0 {
+            paginationResponse.PaginationKey = userResponses[len(userResponses)-1].SpotifyID
+        } 
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        return nil
+    }
+
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
+
+    if err != nil {
+        return nil, err
+    }
+    
 
 	return paginationResponse, nil
 }
