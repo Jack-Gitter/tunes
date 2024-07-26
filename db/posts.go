@@ -45,19 +45,64 @@ func CreatePost(spotifyID string, songID string, songName string, albumID string
 /* ===================== READ =====================  */
 
 func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
+
+    tx, err := DB.Driver.BeginTx(context.Background(), nil)
+
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    defer tx.Rollback()
+
     query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
                 FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`
 
-    row := DB.Driver.QueryRow(query, spotifyID, postID)
+
+    row := tx.QueryRow(query, spotifyID, postID)
 
     post := &responses.Post{}
     albumArtUri := sql.NullString{}
-    err := row.Scan(&albumArtUri, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
+    err = row.Scan(&albumArtUri, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
     post.AlbumArtURI = albumArtUri.String
 
     if err != nil {
         return nil, customerrors.WrapBasicError(err)
     }
+
+    query2 := `SELECT post_votes.voterspotifyid, users.username, post_votes.liked FROM post_votes INNER JOIN users ON post_votes.voterspotifyid = users.spotifyid
+                WHERE post_votes.posterspotifyid = $1 AND post_votes.postsongid = $2 `
+
+    rows, err := tx.Query(query2, spotifyID, postID)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    likes := []responses.UserIdentifer{}
+    dislikes := []responses.UserIdentifer{}
+    for rows.Next() {
+        userID := &responses.UserIdentifer{}
+        liked := true
+        err := rows.Scan(&userID.SpotifyID, &userID.Username, &liked)
+        if err != nil {
+            return nil, customerrors.WrapBasicError(err)
+        }
+        if liked {
+            likes = append(likes, *userID)
+        } else {
+            dislikes = append(dislikes, *userID)
+        }
+    }
+
+    post.Likes = likes
+    post.Dislikes = dislikes
+
+    err = tx.Commit()
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    } 
 
     return post, nil
 }

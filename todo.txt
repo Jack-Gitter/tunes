@@ -10,8 +10,7 @@ endpoints:
     posts
         removeVote endpoint 
         postpreviewpagination -- broken
-        like another post -- make sure to update postpreview to get the likes/dislikes
-        unlike a post  -- make sure to update post preview to get the likes/dislikes
+        update getPost and userPostPreviews to get the users who have liked the posts
     comments
         create
         read (paginated)
