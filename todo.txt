@@ -2,9 +2,8 @@ tunes todos:
 
 endpoints: 
     general: 
-        clean up endpoint names
         clean up the PATCH endpoints 
-        isolation level really should be repeatable read
+        isolation level really should be repeatable read 
             make a method that retries transactions -- call the method x times, and loop. If the method returns an error, then we loop again with backoff
         
     user

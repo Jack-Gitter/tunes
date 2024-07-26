@@ -157,6 +157,7 @@ func FollowUser(spotifyID string, otherUserSpotifyID string) error {
 }
 
 func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
+    
 	tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
 	if err != nil {
