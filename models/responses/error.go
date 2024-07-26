@@ -1,5 +1,5 @@
 package responses
 
 type ReponseError struct {
-    Error string
+	Error string
 }

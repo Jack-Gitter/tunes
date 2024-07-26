@@ -1,6 +1,6 @@
 package requests
 
 type RefreshJWTDTO struct {
-    AccessToken string
-    RefreshToken string
+	AccessToken  string
+	RefreshToken string
 }

@@ -6,15 +6,15 @@ import (
 )
 
 type JWTClaims struct {
-    SpotifyID string
-    AccessToken string
-    AccessTokenExpiresAt int
-    UserRole responses.Role
-    Username string
-    jwt.RegisteredClaims
+	SpotifyID            string
+	AccessToken          string
+	AccessTokenExpiresAt int
+	UserRole             responses.Role
+	Username             string
+	jwt.RegisteredClaims
 }
 
 type RefreshJWTClaims struct {
-    RefreshToken string
-    jwt.RegisteredClaims
+	RefreshToken string
+	jwt.RegisteredClaims
 }

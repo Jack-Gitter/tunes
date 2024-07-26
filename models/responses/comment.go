@@ -1,5 +1,5 @@
 package responses
 
 type Comment struct {
-    text string
+	text string
 }
