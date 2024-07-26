@@ -4,12 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+//	"net/http"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db/helpers"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 

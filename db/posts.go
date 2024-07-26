@@ -239,7 +239,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
         return nil
     }
 
-    err := heleprs.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         return nil, err
