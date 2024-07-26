@@ -16,7 +16,6 @@ func InitializeHttpServer() *gin.Engine {
 
     r.POST("/refreshJWT", customerrors.ErrorHandlerMiddleware, auth.RefreshJWT)
 
-    // all user endpoints tested and good!
     r.GET("/users/:spotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.GetUserById)
     r.GET("/currentUser", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.GetCurrentUser)
     r.GET("/currentUser/followers", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, users.GetFollowers)
@@ -31,8 +30,6 @@ func InitializeHttpServer() *gin.Engine {
 
     r.GET("/posts/:spotifyID/:songID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, posts.GetPostBySpotifyIDAndSongID)
     r.GET("/currentUserPosts/:songID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, posts.GetPostCurrentUserBySongID)
-
-    // fix pagniation
     r.GET("/currentUserPostPreviews/", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, posts.GetAllPostsForCurrentUser)
     r.GET("/specificUserPostPreviews/:spotifyID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, posts.GetAllPostsForUserByID)
     r.POST("/posts", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, posts.CreatePostForCurrentUser)

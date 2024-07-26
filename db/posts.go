@@ -5,8 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
-
-	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
 )
@@ -154,7 +153,6 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
 
     postPreviewsResponse := []responses.PostPreview{}
 
-    // for each post, we're going to have to get the posts likes and dislikes. We neeeeeed this in a transaction -- which isolation level? -- should be repeatable read for this
     for rows.Next() {
         post := responses.PostPreview{}
         albumArtUri := sql.NullString{}
@@ -352,8 +350,19 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int, user
 
 
 func LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, liked bool) error {
-    query := "INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) values ($1, $2, $3, $4, $5, $6) ON CONFLICT (voterspotifyid, posterspotifyid, postsongid) DO UPDATE SET updatedat=$5, liked=$6"
-    res, err := DB.Driver.Exec(query, spotifyID, posterSpotifyID, songID, time.Now().UTC(), time.Now().UTC(), liked)
+
+    query := `INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) 
+              VALUES ($1, $2, $3, $4, $5, $6) 
+              ON CONFLICT (voterspotifyid, posterspotifyid, postsongid) 
+              DO UPDATE SET updatedat=$5, liked=$6`
+
+    res, err := DB.Driver.Exec(query, 
+                               spotifyID, 
+                               posterSpotifyID, 
+                               songID, 
+                               time.Now().UTC(), 
+                               time.Now().UTC(), 
+                               liked)
 
     if err != nil {
         return customerrors.WrapBasicError(err)
