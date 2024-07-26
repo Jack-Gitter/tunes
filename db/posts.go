@@ -55,6 +55,12 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
 
     defer tx.Rollback()
 
+    _, err = tx.Exec(`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
     query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
                 FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`
 
@@ -144,6 +150,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
 
     postPreviewsResponse := []responses.PostPreview{}
 
+    // for each post, we're going to have to get the posts likes and dislikes. We neeeeeed this in a transaction -- which isolation level? -- should be repeatable read for this
     for rows.Next() {
         post := responses.PostPreview{}
         albumArtUri := sql.NullString{}
