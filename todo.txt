@@ -4,7 +4,6 @@ endpoints:
     user
     posts
         removeVote endpoint 
-        update getPostPreviews to find the user likes!
     comments
         create
         read (paginated)

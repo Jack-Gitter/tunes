@@ -216,6 +216,29 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
     return paginationResponse, nil
 }
 
+func RemoveVote(voterSpotifyID string, posterSpotifyID string, songID string) error {
+    query := `DELETE FROM post_votes WHERE voterspotifyid = $1 AND posterspotifyid = $2 AND postsongid = $3`
+    res, err := DB.Driver.Exec(query, voterSpotifyID, posterSpotifyID, songID)
+
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    rows, err := res.RowsAffected()
+
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    if rows < 1 {
+        return customerrors.WrapBasicError(sql.ErrNoRows)
+    }
+
+    return nil
+}
+
+
+
 func GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, error){
     query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
                 FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`

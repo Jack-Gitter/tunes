@@ -1,7 +1,6 @@
 package posts
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -294,6 +293,28 @@ func UpdateCurrentUserPost(c *gin.Context) {
     c.JSON(http.StatusOK, preview)
 }
 
+func RemovePostVote(c *gin.Context) {
+    voterSpotifyID, found := c.Get("spotifyID")
+    posterSpotifyID := c.Param("posterSpotifyID")
+    songID := c.Param("songID")
+
+    if !found {
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "forgot to set JWT"})
+    }
+
+    err := db.RemoveVote(voterSpotifyID.(string), posterSpotifyID, songID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    c.Status(http.StatusNoContent)
+
+}
+
+
 func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
     var t time.Time 
     if createdAt == "" {
@@ -302,8 +323,7 @@ func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationRespo
         t, _ = time.Parse(time.RFC3339, createdAt)
     }
 
-    fmt.Println(t)
-
     return db.GetUserPostsPreviewsByUserID(spotifyID, t)
 
 }
+

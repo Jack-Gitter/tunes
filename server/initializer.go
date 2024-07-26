@@ -41,6 +41,7 @@ func InitializeHttpServer() *gin.Engine {
     r.PATCH("/currentUserPosts/:songID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, posts.UpdateCurrentUserPost)
     r.DELETE("/posts/:spotifyID/:songID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, auth.ValidateAdminUser, posts.DeletePostBySpotifyIDAndSongID)
     r.DELETE("/currentUserPosts/:songID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT,  posts.DeletePostForCurrentUserBySongID)
+    r.DELETE("/removeCurrentUserVote/:posterSpotifyID/:songID", customerrors.ErrorHandlerMiddleware, auth.ValidateUserJWT, posts.RemovePostVote)
 
     return r
 }
