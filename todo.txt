@@ -2,7 +2,10 @@ tunes todos:
 
 endpoints: 
     general: 
-        clean up the PATCH endpoints -- is there any way that I can generate those queries better???
+        clean up endpoint names
+        clean up the PATCH endpoints 
+        isolation level really should be repeatable read -- do we want to do this?
+        
     user
     posts
     comments
@@ -10,10 +13,6 @@ endpoints:
         read (paginated)
         update
         delete
-    errors: 
-        clean up the middleware
-    general: 
-        clean up endpoint names
         
 caching:
     redis 
