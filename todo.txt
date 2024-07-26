@@ -1,9 +1,10 @@
 tunes todos:
 
 endpoints: 
+    general: 
+        clean up the PATCH endpoints -- is there any way that I can generate those queries better???
     user
     posts
-        removeVote endpoint 
     comments
         create
         read (paginated)

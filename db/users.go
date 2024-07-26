@@ -4,8 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-
-	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
@@ -13,20 +12,22 @@ import (
 
 /* =================== CREATE ================== */
 
-func UpsertUser(username string, spotifyID string) (*responses.User, error) {
+func UpsertUserOnLogin(username string, spotifyID string) (*responses.User, error) {
 	query := "INSERT INTO users (spotifyid, username, userrole) values ($1, $2, 'BASIC') ON CONFLICT (spotifyID) DO UPDATE SET username=$2 RETURNING bio, userrole"
 	row := DB.Driver.QueryRow(query, spotifyID, username)
 
 	userResponse := &responses.User{}
 	userResponse.Username = username
 	userResponse.SpotifyID = spotifyID
+
 	bio := sql.NullString{}
 	err := row.Scan(&bio, &userResponse.Role)
-	userResponse.Bio = bio.String
 
 	if err != nil {
 		return nil, customerrors.WrapBasicError(err)
 	}
+
+	userResponse.Bio = bio.String
 
 	return userResponse, nil
 }
@@ -38,13 +39,15 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, error) {
 	row := DB.Driver.QueryRow(query, spotifyID)
 
 	userResponse := &responses.User{}
+
 	bio := sql.NullString{}
 	err := row.Scan(&userResponse.SpotifyID, &userResponse.Username, &userResponse.Role, &bio)
-	userResponse.Bio = bio.String
 
 	if err != nil {
 		return nil, customerrors.WrapBasicError(err)
 	}
+
+	userResponse.Bio = bio.String
 
 	return userResponse, nil
 }
@@ -203,15 +206,11 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
 		userResponses = append(userResponses, user)
 	}
 
-	paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
-	paginationResponse.DataResponse = userResponses
+    paginationResponse := &responses.PaginationResponse[[]responses.User, string]{DataResponse: userResponses, PaginationKey: "zzzzzzzzzzzzzzzzzzzzzzzzzz"}
 
 	if len(userResponses) > 0 {
-		lastUser := userResponses[len(userResponses)-1]
-		paginationResponse.PaginationKey = lastUser.SpotifyID
-	} else {
-		paginationResponse.PaginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
-	}
+		paginationResponse.PaginationKey = userResponses[len(userResponses)-1].SpotifyID
+	} 
 
 	err = tx.Commit()
 

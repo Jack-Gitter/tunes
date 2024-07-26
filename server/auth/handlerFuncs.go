@@ -42,7 +42,7 @@ func LoginCallback(c *gin.Context) {
 		return
 	}
 
-	user, err := db.UpsertUser(userProfileResponse.Display_name, userProfileResponse.Id)
+	user, err := db.UpsertUserOnLogin(userProfileResponse.Display_name, userProfileResponse.Id)
 
 	if err != nil {
 		c.Error(err)
