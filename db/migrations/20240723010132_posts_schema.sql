@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE posts (
-	posterSpotifyID varchar(255) references users(spotifyid) ON DELETE CASCADE NOT NULL,
+	posterSpotifyID varchar(255) references users(spotifyid) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
 	songID varchar(255) NOT NULL,
     PRIMARY KEY (posterSpotifyID, songID),
 	createdAt timestamp with time zone NOT NULL,

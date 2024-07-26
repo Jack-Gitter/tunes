@@ -63,7 +63,19 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
 
     post := &responses.Post{}
     albumArtUri := sql.NullString{}
-    err = row.Scan(&albumArtUri, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
+
+    err = row.Scan(&albumArtUri, 
+                   &post.AlbumID, 
+                   &post.AlbumName, 
+                   &post.CreatedAt, 
+                   &post.Rating, 
+                   &post.SongID, 
+                   &post.SongName, 
+                   &post.Text, 
+                   &post.UpdatedAt, 
+                   &post.SpotifyID, 
+                   &post.Username)
+
     post.AlbumArtURI = albumArtUri.String
 
     if err != nil {
@@ -126,9 +138,7 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
     if err != nil {
         return nil, customerrors.WrapBasicError(err)
     }
-
     
-    createdAt = createdAt.Round(time.Microsecond)
     query = ` SELECT posts.albumarturi, posts.albumid, posts.albumname, posts.createdat, posts.rating, posts.songid, posts.songname, posts.review, posts.updatedat, posts.posterspotifyid, users.username
             FROM posts 
             INNER JOIN users 
@@ -150,10 +160,43 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
         albumArtUri := sql.NullString{}
         err := rows.Scan(&albumArtUri, &post.AlbumID, &post.AlbumName, &post.CreatedAt, &post.Rating, &post.SongID, &post.SongName, &post.Text, &post.UpdatedAt, &post.SpotifyID, &post.Username)
         post.AlbumArtURI = albumArtUri.String
+        post.Likes = []responses.UserIdentifer{}
+        post.Dislikes = []responses.UserIdentifer{}
+
         if err != nil {
             return nil, customerrors.WrapBasicError(err)
         }
+
         postPreviewsResponse = append(postPreviewsResponse, post)
+    }
+
+    for i := 0; i < len(postPreviewsResponse); i++ {
+        query = `SELECT post_votes.voterspotifyid, users.username, post_votes.liked FROM post_votes 
+                INNER JOIN users ON users.spotifyid = post_votes.voterspotifyid 
+                WHERE post_votes.posterspotifyid = $1 AND post_votes.postsongid = $2`
+
+        votes, err := tx.Query(query, postPreviewsResponse[i].SpotifyID, postPreviewsResponse[i].SongID)
+
+        if err != nil {
+            return nil, customerrors.WrapBasicError(err)
+        }
+
+        for votes.Next() {
+            vote := responses.UserIdentifer{}
+            liked := true
+            err := votes.Scan(&vote.SpotifyID, &vote.Username, &liked)
+
+            if err != nil {
+                return nil, customerrors.WrapBasicError(err)
+            }
+
+            if liked {
+                fmt.Println(vote)
+                postPreviewsResponse[i].Likes = append(postPreviewsResponse[i].Likes, vote)
+            } else {
+                postPreviewsResponse[i].Dislikes = append(postPreviewsResponse[i].Dislikes, vote)
+            }
+        }
     }
 
     paginationResponse := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{}

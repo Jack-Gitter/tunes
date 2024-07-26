@@ -2,10 +2,8 @@ tunes todos:
 
 endpoints: 
     user
-        followers pagination -- broken
     posts
         removeVote endpoint 
-        postpreviewpagination -- broken
         update getPostPreviews to find the user likes!
     comments
         create

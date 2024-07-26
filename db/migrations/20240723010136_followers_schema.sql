@@ -1,8 +1,8 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE FOLLOWERS (
-	follower varchar(255) references users(spotifyid) ON DELETE CASCADE NOT NULL,
-	userFollowed varchar(255) references users(spotifyid) ON DELETE CASCADE NOT NULL,
+	follower varchar(255) references users(spotifyid) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+	userFollowed varchar(255) references users(spotifyid) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
 	PRIMARY KEY (follower, userFollowed)
 );
 -- +goose StatementEnd

@@ -1,6 +1,7 @@
 package posts
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -66,14 +67,15 @@ func CreatePostForCurrentUser(c *gin.Context) {
         spotifyUsername.(string),
     )
 
-    resp.Likes = []responses.UserIdentifer{}
-    resp.Dislikes = []responses.UserIdentifer{}
-
     if err != nil {
         c.Error(err)
         c.Abort()
         return
     }
+
+    resp.Likes = []responses.UserIdentifer{}
+    resp.Dislikes = []responses.UserIdentifer{}
+
 
 
     c.JSON(http.StatusOK, resp)
@@ -297,8 +299,10 @@ func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationRespo
     if createdAt == "" {
         t = time.Now().UTC()
     } else {
-        t, _ = time.Parse(time.UTC.String(), createdAt)
+        t, _ = time.Parse(time.RFC3339, createdAt)
     }
+
+    fmt.Println(t)
 
     return db.GetUserPostsPreviewsByUserID(spotifyID, t)
 
