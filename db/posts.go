@@ -55,12 +55,6 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
 
     defer tx.Rollback()
 
-    _, err = tx.Exec(`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`)
-
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
-
     query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
                 FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`
 
