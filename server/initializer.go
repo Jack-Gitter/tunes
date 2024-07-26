@@ -11,7 +11,7 @@ import (
 func InitializeHttpServer() *gin.Engine {
 	r := gin.Default()
 
-    baseGroup := r.Group("/", customerrors.ErrorHandlerMiddleware)
+    baseGroup := r.Group("", customerrors.ErrorHandlerMiddleware)
     {
         loginGroup := baseGroup.Group("/login") 
         {
