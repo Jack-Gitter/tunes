@@ -33,7 +33,11 @@ func GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*spoti
     defer resp.Body.Close()
     
     if resp.StatusCode != 200 {
-        return nil, customerrors.WrapBasicError(errors.New("spotify request for a song failed without 200"))
+        if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+            return nil, &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Invalid spotify song information"}
+        } else {
+            return nil, customerrors.WrapBasicError(errors.New("spotify request for a song failed without 200"))
+        }
     }
 
     spotifySongResponse := &spotifyresponses.SongResponse{}

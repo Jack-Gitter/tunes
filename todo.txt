@@ -21,9 +21,10 @@ endpoints:
     user
         followers pagination -- broken
     posts
+        remotevote endpoint 
         postpreviewpagination -- broken
-        like another post
-        unlike a post
+        like another post -- make sure to update postpreview to get the likes/dislikes
+        unlike a post  -- make sure to update post preview to get the likes/dislikes
     comments
         create
         read (paginated)

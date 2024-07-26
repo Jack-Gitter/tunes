@@ -1,11 +1,11 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE post_votes (
-    voterspotifyID varchar(255) references users(spotifyid) NOT NULL,
+    voterspotifyID varchar(255) references users(spotifyid) ON DELETE CASCADE NOT NULL,
     posterSpotifyID varchar(255) NOT NULL,
     postsongID varchar(255) NOT NULL,
     PRIMARY KEY (voterspotifyID, posterSpotifyID, postsongid),
-    FOREIGN KEY (posterSpotifyID, postsongID) references posts(posterspotifyid, songid),
+    FOREIGN KEY (posterSpotifyID, postsongID) references posts(posterspotifyid, songid) ON DELETE CASCADE,
 	createdAt timestamp with time zone NOT NULL,
     updatedAt timestamp with time zone NOT NULL,
     liked boolean NOT NULL

@@ -66,6 +66,9 @@ func CreatePostForCurrentUser(c *gin.Context) {
         spotifyUsername.(string),
     )
 
+    resp.Likes = []responses.UserIdentifer{}
+    resp.Dislikes = []responses.UserIdentifer{}
+
     if err != nil {
         c.Error(err)
         c.Abort()
@@ -203,22 +206,9 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
 
 func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 
-    requestorSpotifyID, found := c.Get("spotifyID")
-
-    if !found {
-        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuckin jwt"})
-        c.Abort()
-        return
-    }
-
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")
 
-    if requestorSpotifyID != spotifyID {
-        c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "canot do that"})
-        c.Abort()
-        return
-    }
 
     err := db.DeletePost(songID, spotifyID)
 
@@ -281,6 +271,12 @@ func UpdateCurrentUserPost(c *gin.Context) {
 
     if updatePostReq.Text == nil && updatePostReq.Rating == nil {
         c.Error(err)
+        c.Abort()
+        return
+    }
+
+    if (updatePostReq.Rating != nil) && *updatePostReq.Rating > 5 || *updatePostReq.Rating < 0 {
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Value must be between 0 and 5 for raitng"})
         c.Abort()
         return
     }

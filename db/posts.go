@@ -244,7 +244,7 @@ func LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, 
     res, err := DB.Driver.Exec(query, spotifyID, posterSpotifyID, songID, time.Now().UTC(), time.Now().UTC(), liked)
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
     rows, err := res.RowsAffected() 
