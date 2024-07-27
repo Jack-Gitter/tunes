@@ -1,7 +1,6 @@
 package users
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Jack-Gitter/tunes/db"
@@ -162,13 +161,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
 		return
 	}
 
-	err := c.ShouldBindBodyWithJSON(userUpdateRequest)
-
-	if err != nil {
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad JSON Body"})
-		c.Abort()
-		return
-	}
+	c.ShouldBindBodyWithJSON(userUpdateRequest)
 
 	if userUpdateRequest.Bio == nil && userUpdateRequest.Role == nil {
 		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "give a body"})
@@ -198,14 +191,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 		return
 	}
 
-	err := c.ShouldBindBodyWithJSON(userUpdateRequest)
-
-	if err != nil {
-        fmt.Println("here!")
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad JSON Body"})
-		c.Abort()
-		return
-	}
+	c.ShouldBindBodyWithJSON(userUpdateRequest)
 
 	if userUpdateRequest.Bio == nil && userUpdateRequest.Role == nil {
 		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad body"})

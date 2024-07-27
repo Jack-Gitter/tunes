@@ -25,13 +25,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
 	}
 
 	createPostDTO := &requests.CreatePostDTO{}
-	err := c.ShouldBindBodyWithJSON(createPostDTO)
-
-	if err != nil {
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad JSON Body"})
-		c.Abort()
-		return
-	}
+	c.ShouldBindBodyWithJSON(createPostDTO)
 
 	if createPostDTO.Rating < 0 || createPostDTO.Rating > 5 {
 		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"})
@@ -245,22 +239,16 @@ func UpdateCurrentUserPost(c *gin.Context) {
 	songID := c.Param("songID")
 	updatePostReq := &requests.UpdatePostRequestDTO{}
 
-	err := c.ShouldBindBodyWithJSON(updatePostReq)
-
-	if err != nil {
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad JSON Body"})
-		c.Abort()
-		return
-	}
+	c.ShouldBindBodyWithJSON(updatePostReq)
 
 	if !exists || !uexists {
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad body"})
+		c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "no jwt"})
 		c.Abort()
 		return
 	}
 
 	if updatePostReq.Text == nil && updatePostReq.Rating == nil {
-		c.Error(err)
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"})
 		c.Abort()
 		return
 	}

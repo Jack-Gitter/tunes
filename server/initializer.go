@@ -2,6 +2,8 @@ package server
 
 import (
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/requests"
+	"github.com/Jack-Gitter/tunes/models/validation"
 	"github.com/Jack-Gitter/tunes/server/auth"
 	"github.com/Jack-Gitter/tunes/server/posts"
 	"github.com/Jack-Gitter/tunes/server/users"
@@ -31,12 +33,12 @@ func InitializeHttpServer() *gin.Engine {
                 userGroup.GET("/:spotifyID/followers", users.GetFollowersByID)
                 userGroup.POST("/current/follow/:otherUserSpotifyID", users.FollowerUser)
                 userGroup.POST("/current/unfollow/:otherUserSpotifyID", users.UnFollowUser)
-                userGroup.PATCH("/current", users.UpdateCurrentUserProperties)
+                userGroup.PATCH("/current", validation.ValidateData[requests.UpdateUserRequestDTO](), users.UpdateCurrentUserProperties)
                 userGroup.DELETE("/current", users.DeleteCurrentUser)
 
                 adminOnly := userGroup.Group("", auth.ValidateAdminUser)
                 {
-                    adminOnly.PATCH("/:spotifyID",  users.UpdateUserBySpotifyID)
+                    adminOnly.PATCH("/:spotifyID", validation.ValidateData[requests.UpdateUserRequestDTO](), users.UpdateUserBySpotifyID)
                     adminOnly.DELETE("/:spotifyID", users.DeleteUserBySpotifyID)
                 }
 
@@ -52,7 +54,7 @@ func InitializeHttpServer() *gin.Engine {
                 postGroup.POST("/", posts.CreatePostForCurrentUser)
                 postGroup.POST("/likes/:spotifyID/:songID", posts.LikePost)
                 postGroup.POST("/dislikes/:spotifyID/:songID", posts.DislikePost)
-                postGroup.PATCH("/current/:songID", posts.UpdateCurrentUserPost)
+                postGroup.PATCH("/current/:songID", validation.ValidateData[requests.UpdatePostRequestDTO](), posts.UpdateCurrentUserPost)
                 postGroup.DELETE("/current/:songID", posts.DeletePostForCurrentUserBySongID)
                 postGroup.DELETE("/votes/current/:posterSpotifyID/:songID",  posts.RemovePostVote)
 
