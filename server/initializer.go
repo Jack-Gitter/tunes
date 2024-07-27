@@ -1,8 +1,11 @@
 package server
 
 import (
+	"net/http"
+
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
+	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/models/validation"
 	"github.com/Jack-Gitter/tunes/server/auth"
 	"github.com/Jack-Gitter/tunes/server/posts"
@@ -38,7 +41,17 @@ func InitializeHttpServer() *gin.Engine {
 
                 adminOnly := userGroup.Group("", auth.ValidateAdminUser)
                 {
-                    adminOnly.PATCH("/:spotifyID", validation.ValidateData[requests.UpdateUserRequestDTO](), users.UpdateUserBySpotifyID)
+                    adminOnly.PATCH("/:spotifyID", validation.ValidateData(
+                    func(req requests.UpdateUserRequestDTO) error {
+                        if req.Bio == nil && req.Role == nil {
+                            return customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"}
+                        }
+                        if req.Role != nil && ! responses.IsValidRole(*req.Role) {
+                            return customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Invalid role"}
+                        }
+                        return nil
+                    },
+                    ), users.UpdateUserBySpotifyID)
                     adminOnly.DELETE("/:spotifyID", users.DeleteUserBySpotifyID)
                 }
 
