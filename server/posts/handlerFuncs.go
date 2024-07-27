@@ -265,12 +265,6 @@ func UpdateCurrentUserPost(c *gin.Context) {
 		return
 	}
 
-	if (updatePostReq.Rating != nil) && *updatePostReq.Rating > 5 || *updatePostReq.Rating < 0 {
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Value must be between 0 and 5 for raitng"})
-		c.Abort()
-		return
-	}
-
 	preview, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating, spotifyUsername.(string))
 
 	if err != nil {
