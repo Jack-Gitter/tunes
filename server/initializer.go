@@ -41,17 +41,7 @@ func InitializeHttpServer() *gin.Engine {
 
                 adminOnly := userGroup.Group("", auth.ValidateAdminUser)
                 {
-                    adminOnly.PATCH("/:spotifyID", validation.ValidateData(
-                    func(req requests.UpdateUserRequestDTO) error {
-                        if req.Bio == nil && req.Role == nil {
-                            return customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"}
-                        }
-                        if req.Role != nil && ! responses.IsValidRole(*req.Role) {
-                            return customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Invalid role"}
-                        }
-                        return nil
-                    },
-                    ), users.UpdateUserBySpotifyID)
+                    adminOnly.PATCH("/:spotifyID", validation.ValidateData[requests.UpdateUserRequestDTO](requests.ValidateUserRequestDTO), users.UpdateUserBySpotifyID)
                     adminOnly.DELETE("/:spotifyID", users.DeleteUserBySpotifyID)
                 }
 
