@@ -2,7 +2,7 @@ tunes todos:
 
 endpoints: 
     general: 
-        clean up the PATCH endpoints 
+        clean up the PATCH endpoints -- make a query builder?
         
     data validation: 
         for specific things like roles and rating, make the json objects that take them in validate it with c.bindwithjson
