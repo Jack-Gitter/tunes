@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Jack-Gitter/tunes/models/customErrors"
-	"github.com/lib/pq"
 )
 
 func RunTransactionWithExponentialBackoff(transFunc func() error, retryTimes int) error {
@@ -22,18 +21,16 @@ func RunTransactionWithExponentialBackoff(transFunc func() error, retryTimes int
 
         if err != nil {
             switch err := err.(type) {
-                case *pq.Error:
-                    if err.Code == "40001" {
+                case *customerrors.CustomError: 
+                    if err.StatusCode == 40001 {
                         fmt.Println("we are backing off!!!")
                         val := math.Pow(100, backoff)
                         backoff+=1
                         time.Sleep(time.Millisecond * time.Duration(val))
                         continue
                     } else {
-                        return customerrors.WrapBasicError(err)
+                        return err
                     }
-                case *customerrors.CustomError: 
-                    return err
                 default: 
                     return failureError
             }

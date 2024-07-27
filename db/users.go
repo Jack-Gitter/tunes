@@ -11,7 +11,6 @@ import (
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
-	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -183,6 +182,7 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
         query := `SELECT spotifyid FROM users WHERE spotifyid = $1`
 
         row, err := tx.Exec(query, spotifyID)
+
 
         if err != nil {
             return customerrors.WrapBasicError(err)

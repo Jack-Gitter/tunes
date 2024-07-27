@@ -67,6 +67,10 @@ func wrapPostgresDriverErrors(err error, customError *CustomError) bool {
 			customError.StatusCode = http.StatusNotFound
 			customError.Msg = "DB key constraint violated"
             return true
+        case "40001": 
+            customError.StatusCode = 40001
+            customError.Msg = "retry transaction!"
+            return true
 		}
 	}
     return false
