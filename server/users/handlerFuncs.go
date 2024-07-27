@@ -1,12 +1,14 @@
 package users
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func GetUserById(c *gin.Context) {
@@ -199,6 +201,7 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 	err := c.ShouldBindBodyWithJSON(userUpdateRequest)
 
 	if err != nil {
+        fmt.Println("here!")
 		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad JSON Body"})
 		c.Abort()
 		return
@@ -258,9 +261,9 @@ func DeleteUserBySpotifyID(c *gin.Context) {
 
 func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO) (*responses.User, error) {
 
-	if userUpdateRequest.Role != nil && !responses.IsValidRole(*userUpdateRequest.Role) {
+	/*if userUpdateRequest.Role != nil && !responses.IsValidRole(*userUpdateRequest.Role) {
 		return nil, &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Invalid Role"}
-	}
+	}*/
 
 	return db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
 

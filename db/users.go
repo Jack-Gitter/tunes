@@ -4,9 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-//	"net/http"
-	"time"
-
 	"github.com/Jack-Gitter/tunes/db/helpers"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -197,8 +194,6 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
         if count < 1 {
             return customerrors.WrapBasicError(sql.ErrNoRows)
         }
-
-        time.Sleep(time.Second * 5)
 
         query = `
                 SELECT users.spotifyid, users.username, users.bio, users.userrole 

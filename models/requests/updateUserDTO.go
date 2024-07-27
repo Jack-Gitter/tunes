@@ -6,5 +6,5 @@ import "github.com/Jack-Gitter/tunes/models/responses"
 // to properly determine whether or not users have requested to update or change a resource
 type UpdateUserRequestDTO struct {
 	Bio  *string
-	Role *responses.Role
+	Role *responses.Role `binding:"required,oneof=ADMIN MODERATOR BASIC"`
 }
