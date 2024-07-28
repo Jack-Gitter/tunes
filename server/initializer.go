@@ -33,12 +33,12 @@ func InitializeHttpServer() *gin.Engine {
                 userGroup.GET("/:spotifyID/followers", users.GetFollowersByID)
                 userGroup.POST("/current/follow/:otherUserSpotifyID", users.FollowerUser)
                 userGroup.POST("/current/unfollow/:otherUserSpotifyID", users.UnFollowUser)
-                userGroup.PATCH("/current", validation.ValidateData[requests.UpdateUserRequestDTO](requests.ValidateUserRequestDTO), users.UpdateCurrentUserProperties)
+                userGroup.PATCH("/current", validation.ValidateData(requests.ValidateUserRequestDTO), users.UpdateCurrentUserProperties)
                 userGroup.DELETE("/current", users.DeleteCurrentUser)
 
                 adminOnly := userGroup.Group("", auth.ValidateAdminUser)
                 {
-                    adminOnly.PATCH("/:spotifyID", validation.ValidateData[requests.UpdateUserRequestDTO](requests.ValidateUserRequestDTO), users.UpdateUserBySpotifyID)
+                    adminOnly.PATCH("/:spotifyID", validation.ValidateData(requests.ValidateUserRequestDTO), users.UpdateUserBySpotifyID)
                     adminOnly.DELETE("/:spotifyID", users.DeleteUserBySpotifyID)
                 }
 
@@ -51,10 +51,10 @@ func InitializeHttpServer() *gin.Engine {
                 postGroup.GET("/current/:songID", posts.GetPostCurrentUserBySongID)
                 postGroup.GET("/previews/users/current", posts.GetAllPostsForCurrentUser)
                 postGroup.GET("/previews/users/:spotifyID", posts.GetAllPostsForUserByID)
-                postGroup.POST("/", validation.ValidateData[requests.CreatePostDTO](requests.ValidateCreatePostDTO),  posts.CreatePostForCurrentUser)
+                postGroup.POST("/", validation.ValidateData(requests.ValidateCreatePostDTO),  posts.CreatePostForCurrentUser)
                 postGroup.POST("/likes/:spotifyID/:songID", posts.LikePost)
                 postGroup.POST("/dislikes/:spotifyID/:songID", posts.DislikePost)
-                postGroup.PATCH("/current/:songID", validation.ValidateData[requests.UpdatePostRequestDTO](requests.ValidateUpdatePostRequestDTO), posts.UpdateCurrentUserPost)
+                postGroup.PATCH("/current/:songID", validation.ValidateData(requests.ValidateUpdatePostRequestDTO), posts.UpdateCurrentUserPost)
                 postGroup.DELETE("/current/:songID", posts.DeletePostForCurrentUserBySongID)
                 postGroup.DELETE("/votes/current/:posterSpotifyID/:songID",  posts.RemovePostVote)
 
