@@ -68,7 +68,7 @@ func InitializeHttpServer() *gin.Engine {
 
             commentGroup := authGroup.Group("/comments")
             {
-                commentGroup.POST("/", validation.ValidateData[requests.CreateCommentDTO](), comments.CreateComment)
+                commentGroup.POST("/:spotifyID/:songID", validation.ValidateData[requests.CreateCommentDTO](), comments.CreateComment)
             }
         }
     }
