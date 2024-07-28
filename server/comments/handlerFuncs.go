@@ -51,3 +51,19 @@ func DeleteComment(c *gin.Context) {
 
     c.Status(http.StatusNoContent)
 }
+
+func GetComment(c *gin.Context)  {
+
+    commentID := c.Param("commentID") 
+
+    comment, err := db.GetComment(commentID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    c.JSON(http.StatusOK, comment)
+
+}

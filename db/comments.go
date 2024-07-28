@@ -47,6 +47,28 @@ func DeleteComment(commentID string) error {
 
     return nil
 
+}
 
+func GetComment(commentID string) (*responses.Comment, error) {
+
+    query := `SELECT commentid, commentorspotifyid, posterspotifyid, songid, commenttext, likes, dislikes FROM comments WHERE commentid = $1`
+
+    res := DB.Driver.QueryRow(query, commentID)
+
+    commentResponse := &responses.Comment{}
+
+    err := res.Scan(&commentResponse.CommentID, 
+                &commentResponse.CommentorID, 
+                &commentResponse.PostSpotifyID, 
+                &commentResponse.SongID, 
+                &commentResponse.CommentText, 
+                &commentResponse.Likes,
+                &commentResponse.Dislikes)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    return commentResponse, nil
 
 }
