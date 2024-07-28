@@ -187,12 +187,6 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 
 	c.ShouldBindBodyWithJSON(userUpdateRequest)
 
-	if userUpdateRequest.Bio == nil && userUpdateRequest.Role == nil {
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Bad body"})
-		c.Abort()
-		return
-	}
-
 	resp, e := updateUser(spotifyID.(string), userUpdateRequest)
 
 	if e != nil {

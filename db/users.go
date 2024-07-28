@@ -57,35 +57,20 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, error) {
 
 /* PROPERTY UPDATES */
 func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error) {
+
     updateUserMap := make(map[string]any)
+    mapstructure.Decode(updatedUser, &updateUserMap)
+
+    fmt.Println(updateUserMap)
     conditionals := make(map[string]any)
     conditionals["spotifyID"] = spotifyID
-    mapstructure.Decode(updatedUser, &updateUserMap)
-    test := helpers.PatchQueryBuilder("users", updateUserMap, conditionals)
-    fmt.Println(test)
 
-	query := "UPDATE users SET "
-	args := []any{}
-	varNum := 1
-	if updatedUser.Bio != nil {
-		args = append(args, updatedUser.Bio)
-		query += fmt.Sprintf("bio = $%d", varNum)
-		varNum += 1
-	}
-	if updatedUser.Role != nil {
-		args = append(args, updatedUser.Role)
-		if varNum > 1 {
-			query += fmt.Sprintf(", userrole = $%d", varNum)
-		} else {
-			query += fmt.Sprintf("userrole = $%d", varNum)
-		}
-		varNum += 1
-	}
+    returning := []string{"bio", "userrole", "spotifyid", "username"}
 
-	query += fmt.Sprintf(" WHERE spotifyID = $%d RETURNING bio, userrole, spotifyid, username", varNum)
-	args = append(args, spotifyID)
+    query, values := helpers.PatchQueryBuilder("users", updateUserMap, conditionals, returning)
+    fmt.Println(query)
 
-	res := DB.Driver.QueryRow(query, args...)
+	res := DB.Driver.QueryRow(query, values...)
 
 	userResponse := &responses.User{}
 	bio := sql.NullString{}

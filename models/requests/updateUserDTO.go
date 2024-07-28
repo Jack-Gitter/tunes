@@ -11,14 +11,14 @@ import (
 // to properly determine whether or not users have requested to update or change a resource
 type UpdateUserRequestDTO struct {
 	Bio  *string
-	Role *responses.Role 
+	UserRole *responses.Role 
 }
 
 func ValidateUserRequestDTO(req UpdateUserRequestDTO) error {
-    if req.Bio == nil && req.Role == nil {
+    if req.Bio == nil && req.UserRole == nil {
         return customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"}
     }
-    if req.Role != nil && ! responses.IsValidRole(*req.Role) {
+    if req.UserRole != nil && ! responses.IsValidRole(*req.UserRole) {
         return customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Invalid role"}
     }
     return nil
