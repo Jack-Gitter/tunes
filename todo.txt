@@ -4,9 +4,12 @@ endpoints:
     user
     posts
     comments
+    create a comment_votes table which has a fk to commentID, a fk to users(spotifyID),and a liked boolean
+        likeComment
+        dislikeComment
+        removeCommentVote
         read (paginated)
         update
-        delete
 
 documentation: 
     readme
