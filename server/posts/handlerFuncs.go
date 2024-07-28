@@ -27,12 +27,6 @@ func CreatePostForCurrentUser(c *gin.Context) {
 	createPostDTO := &requests.CreatePostDTO{}
 	c.ShouldBindBodyWithJSON(createPostDTO)
 
-	if createPostDTO.Rating < 0 || createPostDTO.Rating > 5 {
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"})
-		c.Abort()
-		return
-	}
-
 	spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(createPostDTO.SongID, spotifyAccessToken.(string))
 
 	if err != nil {
