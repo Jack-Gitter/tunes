@@ -7,12 +7,12 @@ import (
 )
 
 type UpdatePostRequestDTO struct {
-    Rating *int `binding:"gte=0,lte=5"`
-	Text   *string  
+    Rating *int 
+	Review   *string  
 }
 
 func ValidateUpdatePostRequestDTO(req UpdatePostRequestDTO) error {
-    if req.Rating == nil && req.Text == nil {
+    if req.Rating == nil && req.Review == nil {
         return customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "one of the fields must be defined"}
     }
     if req.Rating != nil && (*req.Rating < 0 || *req.Rating > 5) {

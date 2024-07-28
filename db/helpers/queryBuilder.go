@@ -27,11 +27,11 @@ func PatchQueryBuilder(table string, setParams map[string]any, whereParams map[s
     if len(whereParams) != 0 {
         query += ` WHERE`
         for key, value := range whereParams {
-            query += fmt.Sprintf(` %s = $%d,`, key, paramCount)
+            query += fmt.Sprintf(` %s = $%d AND`, key, paramCount)
             paramCount+=1
             values = append(values, value)
         }
-        query = query[:len(query)-1]
+        query = query[:len(query)-3]
     }
 
 

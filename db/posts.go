@@ -8,8 +8,10 @@ import (
 
 	"github.com/Jack-Gitter/tunes/db/helpers"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
+	"github.com/mitchellh/mapstructure"
 )
 
 /* ===================== CREATE =====================  */
@@ -326,9 +328,21 @@ func DeletePost(songID string, spotifyID string) error {
 }
 
 /* PROPERTY UPDATES */
-func UpdatePost(spotifyID string, songID string, text *string, rating *int, username string) (*responses.PostPreview, error) {
+func UpdatePost(spotifyID string, songID string, updatePostRequest *requests.UpdatePostRequestDTO, username string) (*responses.PostPreview, error) {
 
-	query := "UPDATE posts SET "
+    updatedPostRequestMap := make(map[string]any)
+    mapstructure.Decode(updatePostRequest, &updatedPostRequestMap)
+
+    conditionals := make(map[string]any)
+    conditionals["posterspotifyid"] = spotifyID
+    conditionals["songid"] = songID
+
+    returning := []string{"albumarturi", "albumid", "albumname", "createdat", "rating", "songid", "songname", "review", "updatedat", "posterspotifyid"}
+
+    query, vals := helpers.PatchQueryBuilder("posts", updatedPostRequestMap, conditionals, returning)
+    fmt.Println(query)
+
+	/*query := "UPDATE posts SET "
 
 	val := 1
 	vals := []any{}
@@ -352,7 +366,7 @@ func UpdatePost(spotifyID string, songID string, text *string, rating *int, user
     WHERE posterspotifyid = $%d AND songid = $%d RETURNING 
     albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid
     `, val, val+1)
-	vals = append(vals, spotifyID, songID)
+	vals = append(vals, spotifyID, songID)*/
 
 	res := DB.Driver.QueryRow(query, vals...)
 

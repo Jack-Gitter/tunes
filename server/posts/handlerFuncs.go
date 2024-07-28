@@ -241,13 +241,7 @@ func UpdateCurrentUserPost(c *gin.Context) {
 		return
 	}
 
-	if updatePostReq.Text == nil && updatePostReq.Rating == nil {
-        c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"})
-		c.Abort()
-		return
-	}
-
-	preview, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq.Text, updatePostReq.Rating, spotifyUsername.(string))
+	preview, err := db.UpdatePost(spotifyID.(string), songID, updatePostReq, spotifyUsername.(string))
 
 	if err != nil {
 		c.Error(err)
