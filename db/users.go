@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/Jack-Gitter/tunes/db/helpers"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	_ "github.com/lib/pq"
+	"github.com/mitchellh/mapstructure"
 )
 
 /* =================== CREATE ================== */
@@ -55,6 +57,13 @@ func GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, error) {
 
 /* PROPERTY UPDATES */
 func UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error) {
+    updateUserMap := make(map[string]any)
+    conditionals := make(map[string]any)
+    conditionals["spotifyID"] = spotifyID
+    mapstructure.Decode(updatedUser, &updateUserMap)
+    test := helpers.PatchQueryBuilder("users", updateUserMap, conditionals)
+    fmt.Println(test)
+
 	query := "UPDATE users SET "
 	args := []any{}
 	varNum := 1

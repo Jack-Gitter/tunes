@@ -3,7 +3,7 @@ package helpers
 import "fmt"
 
 
-func PatchQueryBuilder(table string, setParams map[string]interface{}, whereParams map[string]interface{}) string {
+func PatchQueryBuilder(table string, setParams map[string]any, whereParams map[string]any) string {
 
     paramCount := 0
     query := fmt.Sprintf(`UPDATE %s SET`, table)
@@ -15,13 +15,15 @@ func PatchQueryBuilder(table string, setParams map[string]interface{}, wherePara
         } 
     }
 
-    query = query[:len(query)-1]
+    if query[len(query)-1:] == "," {
+        query = query[:len(query)-1]
+    }
 
     if len(whereParams) == 0 {
         return query
     }
 
-    query += `WHERE`
+    query += ` WHERE`
 
     for key, value := range whereParams {
         if value != nil {

@@ -241,10 +241,6 @@ func DeleteUserBySpotifyID(c *gin.Context) {
 
 func updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO) (*responses.User, error) {
 
-	/*if userUpdateRequest.Role != nil && !responses.IsValidRole(*userUpdateRequest.Role) {
-		return nil, &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Invalid Role"}
-	}*/
-
 	return db.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
 
 }

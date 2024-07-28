@@ -3,7 +3,7 @@ package requests
 import (
 	"net/http"
 
-	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/responses"
 )
 
