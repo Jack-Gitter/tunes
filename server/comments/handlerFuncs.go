@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Jack-Gitter/tunes/db"
-	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/gin-gonic/gin"
 )
@@ -35,7 +35,19 @@ func CreateComment(c *gin.Context) {
 
     c.JSON(http.StatusOK, comment)
 
+}
 
+func DeleteComment(c *gin.Context) {
 
+    commentID := c.Param("commentID")
 
+    err := db.DeleteComment(commentID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    c.Status(http.StatusNoContent)
 }

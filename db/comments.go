@@ -1,6 +1,7 @@
 package db
 
 import (
+	"net/http"
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -21,6 +22,31 @@ func CreateComment(commentorID string, posterID string, songID string, commentTe
     }
 
     return commentResp, nil
+
+
+}
+
+func DeleteComment(commentID string) error {
+    query := `DELETE FROM comments WHERE commentid = $1`
+
+    resp, err := DB.Driver.Exec(query, commentID)
+
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    rows, err := resp.RowsAffected()
+
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    if rows < 1 {
+        return customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "resource not found"}
+    }
+
+    return nil
+
 
 
 }
