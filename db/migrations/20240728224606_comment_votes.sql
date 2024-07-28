@@ -1,9 +1,9 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE comment_votes (
-    commentid int references comments(commentid), 
+    commentid int references comments(commentid) ON DELETE CASCADE ON UPDATE CASCADE, 
     liked boolean, 
-    voterspotifyid varchar(255) references users(spotifyid),
+    voterspotifyid varchar(255) references users(spotifyid) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY(commentid, voterspotifyid)
 )
 -- +goose StatementEnd
