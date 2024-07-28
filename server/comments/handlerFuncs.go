@@ -52,6 +52,28 @@ func DeleteComment(c *gin.Context) {
     c.Status(http.StatusNoContent)
 }
 
+func DeleteCurrentUserComment(c *gin.Context) {
+
+    commentID := c.Param("commentID")
+    spotifyID, exists := c.Get("spotifyID")
+
+    if !exists {
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
+        c.Abort()
+        return
+    }
+
+    err := db.DeleteCurrentUserComment(commentID, spotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    c.Status(http.StatusNoContent)
+}
+
 func GetComment(c *gin.Context)  {
 
     commentID := c.Param("commentID") 
@@ -67,3 +89,72 @@ func GetComment(c *gin.Context)  {
     c.JSON(http.StatusOK, comment)
 
 }
+
+func LikeComment(c *gin.Context) {
+    commentID := c.Param("commentID")
+    spotifyID, exists := c.Get("spotifyID")
+
+    if !exists {
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuck"})
+        c.Abort()
+        return
+    }
+
+
+    err := db.LikeComment(commentID, spotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return 
+    }
+
+    c.Status(http.StatusNoContent)
+
+}
+
+func DislikeComment(c *gin.Context) {
+    commentID := c.Param("commentID")
+    spotifyID, exists := c.Get("spotifyID")
+
+    if !exists {
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuck"})
+        c.Abort()
+        return
+    }
+
+
+    err := db.DislikeComment(commentID, spotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return 
+    }
+
+    c.Status(http.StatusNoContent)
+}
+
+func RemoveCommentVote(c *gin.Context) {
+
+    commentID := c.Param("commentID")
+    spotifyID, exists := c.Get("spotifyID")
+
+    if !exists {
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuck"})
+        c.Abort()
+        return
+    }
+
+    err := db.RemoveCommentVote(commentID, spotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+    
+    c.Status(http.StatusNoContent)
+
+}
+
