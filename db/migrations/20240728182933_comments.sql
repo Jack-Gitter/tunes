@@ -1,6 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE comments (
+    commentsID SERIAL PRIMARY KEY,
     commentorspotifyid varchar(255) references users(spotifyid) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     posterspotifyid varchar(255),
     songid varchar(255),
