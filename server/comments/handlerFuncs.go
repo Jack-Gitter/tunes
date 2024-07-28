@@ -1,12 +1,39 @@
 package comments
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/Jack-Gitter/tunes/db"
+	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/requests"
+	"github.com/gin-gonic/gin"
+)
 
 func CreateComment(c *gin.Context) {
 
-    c.Get("spotifyID")
-    c.Param("spotifyID")
-    c.Param("songID")
+    commentorID, exists := c.Get("spotifyID")
+    posterID := c.Param("spotifyID")
+    songID := c.Param("songID")
+
+    createCommentDTO := &requests.CreateCommentDTO{}
+
+    c.ShouldBindBodyWithJSON(createCommentDTO)
+
+    if !exists {
+        c.Error(customerrors.CustomError{StatusCode: http.StatusBadGateway, Msg: "JWT elmsss"})
+        c.Abort()
+        return
+    }
+
+    comment, err := db.CreateComment(commentorID.(string), posterID, songID, createCommentDTO.CommentText)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    c.JSON(http.StatusOK, comment)
 
 
 

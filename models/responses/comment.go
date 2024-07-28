@@ -1,5 +1,13 @@
 package responses
 
 type Comment struct {
-	text string
+
+    Likes int
+    Dislikes int
+	CommentText string
+    CommentorID string
+    PostSpotifyID string
+    SongID string
+    
+
 }

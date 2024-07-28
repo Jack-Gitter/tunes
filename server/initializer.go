@@ -5,6 +5,7 @@ import (
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/validation"
 	"github.com/Jack-Gitter/tunes/server/auth"
+	"github.com/Jack-Gitter/tunes/server/comments"
 	"github.com/Jack-Gitter/tunes/server/posts"
 	"github.com/Jack-Gitter/tunes/server/users"
 	"github.com/gin-gonic/gin"
@@ -63,6 +64,11 @@ func InitializeHttpServer() *gin.Engine {
                     adminOnly.DELETE("/:spotifyID/:songID", posts.DeletePostBySpotifyIDAndSongID)
                 }
 
+            }
+
+            commentGroup := authGroup.Group("/comments")
+            {
+                commentGroup.POST("/", validation.ValidateData[requests.CreateCommentDTO](), comments.CreateComment)
             }
         }
     }
