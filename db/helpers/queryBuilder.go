@@ -1,6 +1,9 @@
 package helpers
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 
 func PatchQueryBuilder(table string, setParams map[string]any, whereParams map[string]any) string {
@@ -9,7 +12,7 @@ func PatchQueryBuilder(table string, setParams map[string]any, whereParams map[s
     query := fmt.Sprintf(`UPDATE %s SET`, table)
 
     for key, value := range setParams {
-        if value != nil {
+        if !reflect.ValueOf(value).IsNil() {
             query += fmt.Sprintf(` %s = $%d,`, key, paramCount)
             paramCount+=1
         } 
@@ -26,7 +29,7 @@ func PatchQueryBuilder(table string, setParams map[string]any, whereParams map[s
     query += ` WHERE`
 
     for key, value := range whereParams {
-        if value != nil {
+        if !reflect.ValueOf(value).IsNil() {
             query += fmt.Sprintf(` %s = $%d,`, key, paramCount)
             paramCount+=1
         }
