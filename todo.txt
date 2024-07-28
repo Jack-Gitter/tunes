@@ -1,9 +1,6 @@
 tunes todos:
 
 endpoints: 
-    general: 
-        clean up the PATCH endpoints -- make a query builder?
-
     user
     posts
     comments
