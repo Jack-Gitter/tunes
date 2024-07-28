@@ -37,7 +37,7 @@ func InitializeHttpServer() *gin.Engine {
                 userGroup.PATCH("/current", validation.ValidateData(requests.ValidateUserRequestDTO), users.UpdateCurrentUserProperties)
                 userGroup.DELETE("/current", users.DeleteCurrentUser)
 
-                adminOnly := userGroup.Group("", auth.ValidateAdminUser)
+                adminOnly := userGroup.Group("/admin", auth.ValidateAdminUser)
                 {
                     adminOnly.PATCH("/:spotifyID", validation.ValidateData(requests.ValidateUserRequestDTO), users.UpdateUserBySpotifyID)
                     adminOnly.DELETE("/:spotifyID", users.DeleteUserBySpotifyID)
@@ -59,7 +59,7 @@ func InitializeHttpServer() *gin.Engine {
                 postGroup.DELETE("/current/:songID", posts.DeletePostForCurrentUserBySongID)
                 postGroup.DELETE("/votes/current/:posterSpotifyID/:songID",  posts.RemovePostVote)
 
-                adminOnly := postGroup.Group("", auth.ValidateAdminUser)
+                adminOnly := postGroup.Group("/admin", auth.ValidateAdminUser)
                 {
                     adminOnly.DELETE("/:spotifyID/:songID", posts.DeletePostBySpotifyIDAndSongID)
                 }
@@ -76,7 +76,7 @@ func InitializeHttpServer() *gin.Engine {
                 commentGroup.DELETE("/current/:commentID", comments.DeleteCurrentUserComment)
                 commentGroup.DELETE("/votes/current/:commentID", comments.RemoveCommentVote)
 
-                adminOnly := postGroup.Group("", auth.ValidateAdminUser)
+                adminOnly := commentGroup.Group("/admin", auth.ValidateAdminUser)
                 {
                     adminOnly.DELETE("/:commentID", comments.DeleteComment)
                 }
