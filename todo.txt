@@ -4,10 +4,13 @@ endpoints:
     user
     posts
     comments
-        create
         read (paginated)
         update
         delete
+
+documentation: 
+    readme
+    swagger?
         
 caching:
     redis 
