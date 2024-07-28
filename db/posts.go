@@ -342,32 +342,6 @@ func UpdatePost(spotifyID string, songID string, updatePostRequest *requests.Upd
     query, vals := helpers.PatchQueryBuilder("posts", updatedPostRequestMap, conditionals, returning)
     fmt.Println(query)
 
-	/*query := "UPDATE posts SET "
-
-	val := 1
-	vals := []any{}
-	if text != nil {
-		query += fmt.Sprintf("review = $%d", val)
-		val += 1
-		vals = append(vals, text)
-	}
-
-	if rating != nil {
-		if val > 1 {
-			query += fmt.Sprintf(", rating = $%d", val)
-		} else {
-			query += fmt.Sprintf("rating = $%d", val)
-		}
-		vals = append(vals, rating)
-		val += 1
-	}
-
-	query += fmt.Sprintf(`
-    WHERE posterspotifyid = $%d AND songid = $%d RETURNING 
-    albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid
-    `, val, val+1)
-	vals = append(vals, spotifyID, songID)*/
-
 	res := DB.Driver.QueryRow(query, vals...)
 
 	postPreview := &responses.PostPreview{}
