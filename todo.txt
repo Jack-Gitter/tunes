@@ -3,9 +3,6 @@ tunes todos:
 endpoints: 
     general: 
         clean up the PATCH endpoints -- make a query builder?
-        
-    data validation: 
-        data validation for create post -- need this!
 
     user
     posts
