@@ -53,7 +53,7 @@ func InitializeHttpServer() *gin.Engine {
                 postGroup.GET("/previews/users/:spotifyID", posts.GetAllPostsForUserByID)
                 postGroup.POST("/", posts.CreatePostForCurrentUser)
                 postGroup.POST("/likes/:spotifyID/:songID", posts.LikePost)
-                postGroup.POST("/dislikes/:spotifyID/:songID", validation.ValidateData[requests.UpdatePostRequestDTO](requests.ValidateUpdatePostRequestDTO), posts.DislikePost)
+                postGroup.POST("/dislikes/:spotifyID/:songID", posts.DislikePost)
                 postGroup.PATCH("/current/:songID", validation.ValidateData[requests.UpdatePostRequestDTO](), posts.UpdateCurrentUserPost)
                 postGroup.DELETE("/current/:songID", posts.DeletePostForCurrentUserBySongID)
                 postGroup.DELETE("/votes/current/:posterSpotifyID/:songID",  posts.RemovePostVote)

@@ -5,8 +5,7 @@ endpoints:
         clean up the PATCH endpoints -- make a query builder?
         
     data validation: 
-        for specific things like roles and rating, make the json objects that take them in validate it with c.bindwithjson
-        make a middleware that takes in the data, and then does c.bindwithjson. if it fails, dont call the next middleware. if it doesn't, pass that data to the next function
+        data validation for create post -- need this!
 
     user
     posts
