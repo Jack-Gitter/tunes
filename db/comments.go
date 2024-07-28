@@ -42,7 +42,7 @@ func DeleteComment(commentID string) error {
     }
 
     if rows < 1 {
-        return customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "resource not found"}
+        return &customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "resource not found"}
     }
 
     return nil
