@@ -7,17 +7,23 @@ endpoints:
     comments
         update
 
-documentation: 
-    readme
-    swagger?
-        
+dockerize:
+    postgres
+    redis
+
+
 caching:
     redis 
         read up on caching techniques!!! 
 
-dockerize:
-    postgres
-    redis
+documentation: 
+    readme
+    swagger?
+
+
+testing:
+    implement tests -- e2e test with testing library!
+    implement a git workflow to run tests on push
 
 admin: 
     cors
@@ -25,11 +31,3 @@ admin:
 caching questions: 
     i validate cadhe on every data change — what about data race with get and data change where data change clears cache but get reaches db first and caches data?
     also updating cache after db writes — we have one post then another which changes a value. A hits db first then b, but b writes to cache first then a. how to prevent?
-
-testing:
-    implement tests -- e2e test with testing library!
-    implement a git workflow to run tests on push
-
-general: 
-    swagger?
-    rework file structure?
