@@ -416,9 +416,12 @@ func GetPostCommentsPaginated(spotifyID string, songID string, paginationKey tim
     }
 
     query := `SELECT commentid, commentorspotifyid, posterspotifyid, songid, commenttext, createdat, updatedat 
-              WHERE posterspotifyid = $1 AND songid = $2 AND createdAt < $3 LIMIT 25 `
+              FROM comments
+              WHERE posterspotifyid = $1 AND songid = $2 AND createdAt < $3 
+              ORDER BY createdat DESC 
+              LIMIT 25 `
 
-    rows, err := tx.Query(query, spotifyID, songID)
+    rows, err := tx.Query(query, spotifyID, songID, paginationKey)
 
     if err != nil {
         return nil, customerrors.WrapBasicError(err)
@@ -430,7 +433,7 @@ func GetPostCommentsPaginated(spotifyID string, songID string, paginationKey tim
     for rows.Next() {
 
         comment := &responses.Comment{}
-        err := rows.Scan(comment.CommentID, comment.CommentorID, comment.PostSpotifyID, comment.SongID, comment.CommentText, comment.CreatedAt, comment.UpdatedAt)
+        err := rows.Scan(&comment.CommentID, &comment.CommentorID, &comment.PostSpotifyID, &comment.SongID, &comment.CommentText, &comment.CreatedAt, &comment.UpdatedAt)
 
         if err != nil {
             return nil, customerrors.WrapBasicError(err)

@@ -1,6 +1,7 @@
 tunes todos:
 
 endpoints: 
+    wrap all transactions in the retry loop?
     user
     posts
         getPostsComments -- paginated

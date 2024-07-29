@@ -12,12 +12,12 @@ import (
 
 func CreateComment(commentorID string, posterID string, songID string, commentText string) (*responses.Comment, error){
 
-    query := `INSERT INTO comments (commentorspotifyid, posterspotifyid, songid, commenttext, likes, dislikes, createdAt, updatedAt) values ($1, $2, $3, $4, $5, $6, $7, $7) RETURNING commentid, commentorspotifyid, posterspotifyid, songid, commenttext, likes, dislikes`
+    query := `INSERT INTO comments (commentorspotifyid, posterspotifyid, songid, commenttext, createdAt, updatedAt) values ($1, $2, $3, $4, $5, $5) RETURNING commentid, commentorspotifyid, posterspotifyid, songid, commenttext`
 
-    res := DB.Driver.QueryRow(query, commentorID, posterID, songID, commentText, 0, 0)
+    res := DB.Driver.QueryRow(query, commentorID, posterID, songID, commentText, time.Now().UTC())
 
     commentResp := &responses.Comment{}
-    err := res.Scan(&commentResp.CommentID, &commentResp.CommentorID, &commentResp.PostSpotifyID, &commentResp.SongID, &commentResp.CommentText, &commentResp.Likes, &commentResp.Dislikes, time.Now().UTC())
+    err := res.Scan(&commentResp.CommentID, &commentResp.CommentorID, &commentResp.PostSpotifyID, &commentResp.SongID, &commentResp.CommentText)
 
     if err != nil {
         return nil, customerrors.WrapBasicError(err)
