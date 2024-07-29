@@ -7,6 +7,7 @@ type Comment struct {
     Dislikes int
 	CommentText string
     CommentorID string
+    CommentorUsername string
     PostSpotifyID string
     SongID string
     

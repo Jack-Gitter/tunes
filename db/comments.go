@@ -89,7 +89,9 @@ func GetComment(commentID string) (*responses.Comment, error) {
         return nil, customerrors.WrapBasicError(err)
     }
 
-    query := `SELECT commentid, commentorspotifyid, posterspotifyid, songid, commenttext FROM comments WHERE commentid = $1`
+    query := `SELECT comments.commentid, comments.commentorspotifyid, comments.posterspotifyid, comments.songid, comments.commenttext, users.username 
+              FROM comments INNER JOIN users ON commentorspotifyid = spotifyid 
+              WHERE commentid = $1`
 
     res := tx.QueryRow(query, commentID)
 
@@ -99,7 +101,8 @@ func GetComment(commentID string) (*responses.Comment, error) {
                 &commentResponse.CommentorID, 
                 &commentResponse.PostSpotifyID, 
                 &commentResponse.SongID, 
-                &commentResponse.CommentText)
+                &commentResponse.CommentText,
+                &commentResponse.CommentorUsername)
                 
 
     if err != nil {
