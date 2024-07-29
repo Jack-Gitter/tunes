@@ -285,6 +285,26 @@ func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationRespo
 
 }
 
-func GetPostCommentsPaginated() (responses.PaginationResponse[responses.Comment], error) {
+func GetPostCommentsPaginated(c *gin.Context) {
+    spotifyID := c.Param("spotifyID")
+    songID := c.Param("songID")
+    createdAt := c.Query("createdAt")
 
+    var t time.Time
+
+	if createdAt == "" {
+		t = time.Now().UTC()
+	} else {
+		t, _ = time.Parse(time.RFC3339, createdAt)
+	}
+
+    resp, err := db.GetPostCommentsPaginated(spotifyID, songID, t)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    c.JSON(http.StatusFound, resp)
 }

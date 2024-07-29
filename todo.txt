@@ -20,6 +20,9 @@ caching:
         read up on caching techniques!!! 
 
 
+sql: 
+    if i do a join where i only have 1 post but many comments that relate to that post, what data gets returned
+
 
 testing:
     implement tests -- e2e test with testing library!
