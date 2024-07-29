@@ -2,11 +2,15 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/Jack-Gitter/tunes/db/helpers"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
+	"github.com/mitchellh/mapstructure"
 )
 
 
@@ -216,5 +220,70 @@ func RemoveCommentVote(commentID string, spotifyID string) error {
     }
 
     return nil
+
+}
+
+func UpdateComment(commentID string, updateCommentDTO *requests.UpdateCommentDTO) (*responses.Comment, error) {
+
+    updateCommentMap := make(map[string]any)
+    mapstructure.Decode(updateCommentDTO, &updateCommentMap)
+
+    conditionals := make(map[string]any)
+    conditionals["commentid"] = commentID
+
+    returning := []string{"commentid", "commentorspotifyid", "posterspotifyid", "songid", "commenttext", "createdat", "updatedat"}
+
+    query, vals := helpers.PatchQueryBuilder("comments", updateCommentMap, conditionals, returning)
+
+    fmt.Println(query)
+    tx, err := DB.Driver.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    defer tx.Rollback()
+    
+    comment := &responses.Comment{}
+
+    row := tx.QueryRow(query, vals...)
+    err = row.Scan(&comment.CommentID, &comment.CommentorID, &comment.PostSpotifyID, &comment.SongID, &comment.CommentText, &comment.CreatedAt, &comment.UpdatedAt)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    query = `SELECT liked FROM comment_votes WHERE commentid = $1`
+
+    rows, err := tx.Query(query, commentID)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    likes := 0
+    dislikes := 0
+    for rows.Next() {
+       val := true 
+       err := rows.Scan(&val)
+       if err != nil {
+           return nil, customerrors.WrapBasicError(err)
+       }
+       if val {
+           likes +=1
+       } else {
+           dislikes+=1
+       }
+    }
+    comment.Likes = likes
+    comment.Dislikes = dislikes
+
+    err = tx.Commit()
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    return comment, nil
 
 }

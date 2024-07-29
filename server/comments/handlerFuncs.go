@@ -158,3 +158,21 @@ func RemoveCommentVote(c *gin.Context) {
 
 }
 
+func UpdateComment(c *gin.Context) {
+
+    commentID := c.Param("commentID")
+    updateCommentDTO := &requests.UpdateCommentDTO{}
+    c.ShouldBindBodyWithJSON(updateCommentDTO)
+    
+
+    resp, err := db.UpdateComment(commentID, updateCommentDTO)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    c.JSON(http.StatusOK, resp)
+
+}

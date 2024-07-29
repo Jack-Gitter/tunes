@@ -52,7 +52,7 @@ func InitializeHttpServer() *gin.Engine {
                 postGroup.GET("/current/:songID", posts.GetPostCurrentUserBySongID)
                 postGroup.GET("/previews/users/current", posts.GetAllPostsForCurrentUser)
                 postGroup.GET("/previews/users/:spotifyID", posts.GetAllPostsForUserByID)
-                postGroup.GET("/posts/comments/:spotifyID/:songID", posts.GetPostCommentsPaginated)
+                postGroup.GET("/comments/:spotifyID/:songID", posts.GetPostCommentsPaginated)
                 postGroup.POST("/", validation.ValidateData(requests.ValidateCreatePostDTO),  posts.CreatePostForCurrentUser)
                 postGroup.POST("/likes/:spotifyID/:songID", posts.LikePost)
                 postGroup.POST("/dislikes/:spotifyID/:songID", posts.DislikePost)
@@ -74,6 +74,7 @@ func InitializeHttpServer() *gin.Engine {
                 commentGroup.POST("/:spotifyID/:songID", validation.ValidateData[requests.CreateCommentDTO](), comments.CreateComment)
                 commentGroup.POST("/like/:commentID", comments.LikeComment)
                 commentGroup.POST("/dislike/:commentID", comments.DislikeComment)
+                commentGroup.PATCH("/current/:commentID", validation.ValidateData(requests.ValidateUpdateCommentDTO), comments.UpdateComment)
                 commentGroup.DELETE("/current/:commentID", comments.DeleteCurrentUserComment)
                 commentGroup.DELETE("/votes/current/:commentID", comments.RemoveCommentVote)
 

@@ -340,7 +340,6 @@ func UpdatePost(spotifyID string, songID string, updatePostRequest *requests.Upd
     returning := []string{"albumarturi", "albumid", "albumname", "createdat", "rating", "songid", "songname", "review", "updatedat", "posterspotifyid"}
 
     query, vals := helpers.PatchQueryBuilder("posts", updatedPostRequestMap, conditionals, returning)
-    fmt.Println(query)
 
 	res := DB.Driver.QueryRow(query, vals...)
 

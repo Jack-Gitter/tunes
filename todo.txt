@@ -1,10 +1,12 @@
 tunes todos:
 
 endpoints: 
-    wrap all transactions in the retry loop?
+    general
+        wrap all transactions in the retry loop?
+        when parsing times, catch error and throw
+        patch updates dont update the updatedat time field in DB
     user
     posts
-        getPostsComments -- paginated
     comments
         update
 
