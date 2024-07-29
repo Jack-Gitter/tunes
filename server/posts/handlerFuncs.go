@@ -284,3 +284,7 @@ func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationRespo
 	return db.GetUserPostsPreviewsByUserID(spotifyID, t)
 
 }
+
+func GetPostCommentsPaginated() (responses.PaginationResponse[responses.Comment], error) {
+
+}

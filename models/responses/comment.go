@@ -1,5 +1,7 @@
 package responses
 
+import "time"
+
 type Comment struct {
 
     CommentID int
@@ -9,6 +11,8 @@ type Comment struct {
     CommentorID string
     CommentorUsername string
     PostSpotifyID string
+    CreatedAt time.Time
+    UpdatedAt time.Time
     SongID string
     
 

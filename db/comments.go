@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"net/http"
+	"time"
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/responses"
@@ -11,12 +12,12 @@ import (
 
 func CreateComment(commentorID string, posterID string, songID string, commentText string) (*responses.Comment, error){
 
-    query := `INSERT INTO comments (commentorspotifyid, posterspotifyid, songid, commenttext, likes, dislikes) values ($1, $2, $3, $4, $5, $6) RETURNING commentid, commentorspotifyid, posterspotifyid, songid, commenttext, likes, dislikes`
+    query := `INSERT INTO comments (commentorspotifyid, posterspotifyid, songid, commenttext, likes, dislikes, createdAt, updatedAt) values ($1, $2, $3, $4, $5, $6, $7, $7) RETURNING commentid, commentorspotifyid, posterspotifyid, songid, commenttext, likes, dislikes`
 
     res := DB.Driver.QueryRow(query, commentorID, posterID, songID, commentText, 0, 0)
 
     commentResp := &responses.Comment{}
-    err := res.Scan(&commentResp.CommentID, &commentResp.CommentorID, &commentResp.PostSpotifyID, &commentResp.SongID, &commentResp.CommentText, &commentResp.Likes, &commentResp.Dislikes)
+    err := res.Scan(&commentResp.CommentID, &commentResp.CommentorID, &commentResp.PostSpotifyID, &commentResp.SongID, &commentResp.CommentText, &commentResp.Likes, &commentResp.Dislikes, time.Now().UTC())
 
     if err != nil {
         return nil, customerrors.WrapBasicError(err)
@@ -89,7 +90,7 @@ func GetComment(commentID string) (*responses.Comment, error) {
         return nil, customerrors.WrapBasicError(err)
     }
 
-    query := `SELECT comments.commentid, comments.commentorspotifyid, comments.posterspotifyid, comments.songid, comments.commenttext, users.username 
+    query := `SELECT comments.commentid, comments.commentorspotifyid, comments.posterspotifyid, comments.songid, comments.commenttext, comments.createdat, comments.updatedat, users.username 
               FROM comments INNER JOIN users ON commentorspotifyid = spotifyid 
               WHERE commentid = $1`
 
@@ -102,6 +103,8 @@ func GetComment(commentID string) (*responses.Comment, error) {
                 &commentResponse.PostSpotifyID, 
                 &commentResponse.SongID, 
                 &commentResponse.CommentText,
+                &commentResponse.CreatedAt,
+                &commentResponse.UpdatedAt,
                 &commentResponse.CommentorUsername)
                 
 
