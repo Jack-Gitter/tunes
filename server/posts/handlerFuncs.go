@@ -274,11 +274,17 @@ func RemovePostVote(c *gin.Context) {
 }
 
 func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
-	var t time.Time
-	if createdAt == "" {
-		t = time.Now().UTC()
-	} else {
-		t, _ = time.Parse(time.RFC3339, createdAt)
+
+	var t time.Time = time.Now().UTC()
+    var err error
+
+	if createdAt != "" {
+        t, err = time.Parse(time.RFC3339, createdAt)
+
+        if err != nil {
+            return nil, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"}
+        }
+
 	}
 
 	return db.GetUserPostsPreviewsByUserID(spotifyID, t)
@@ -291,11 +297,16 @@ func GetPostCommentsPaginated(c *gin.Context) {
     createdAt := c.Query("createdAt")
 
     var t time.Time
+    var err error
 
-	if createdAt == "" {
-		t = time.Now().UTC()
-	} else {
-		t, _ = time.Parse(time.RFC3339, createdAt)
+	if createdAt != "" {
+		t, err = time.Parse(time.RFC3339, createdAt)
+
+        if err != nil {
+            c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"})
+            c.Abort()
+            return
+        }
 	}
 
     resp, err := db.GetPostCommentsPaginated(spotifyID, songID, t)
