@@ -72,6 +72,10 @@ func wrapPostgresDriverErrors(err error, customError *CustomError) bool {
             customError.StatusCode = 40001
             customError.Msg = "retry transaction!"
             return true
+        case "22P02": 
+            customError.StatusCode = http.StatusBadRequest
+            customError.Msg = "data could not be parsed into the correct format"
+            return true
 		}
 	}
     return false

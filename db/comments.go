@@ -89,7 +89,7 @@ func GetComment(commentID string) (*responses.Comment, error) {
         return nil, customerrors.WrapBasicError(err)
     }
 
-    query := `SELECT commentid, commentorspotifyid, posterspotifyid, songid, commenttext, FROM comments WHERE commentid = $1`
+    query := `SELECT commentid, commentorspotifyid, posterspotifyid, songid, commenttext FROM comments WHERE commentid = $1`
 
     res := tx.QueryRow(query, commentID)
 
@@ -101,6 +101,11 @@ func GetComment(commentID string) (*responses.Comment, error) {
                 &commentResponse.SongID, 
                 &commentResponse.CommentText)
                 
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
     query = `SELECT liked FROM comment_votes WHERE commentid = $1`
 
     row, err := tx.Query(query, commentID)
@@ -139,7 +144,7 @@ func GetComment(commentID string) (*responses.Comment, error) {
 
 func LikeComment(commentID string, spotifyID string)  error {
     
-    query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO NOTHING`
+    query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE set liked = $2`
 
     res, err := DB.Driver.Exec(query, commentID, true, spotifyID)
 
@@ -163,7 +168,7 @@ func LikeComment(commentID string, spotifyID string)  error {
 
 func DislikeComment(commentID string, spotifyID string) error {
     
-    query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE`
+    query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE SET liked = $2`
 
     res, err := DB.Driver.Exec(query, commentID, false, spotifyID)
 
@@ -188,7 +193,7 @@ func DislikeComment(commentID string, spotifyID string) error {
 func RemoveCommentVote(commentID string, spotifyID string) error {
     query := `DELETE FROM comment_votes WHERE commentid = $1 AND voterspotifyid = $2`
 
-    res, err := DB.Driver.Exec(query, commentID, false, spotifyID)
+    res, err := DB.Driver.Exec(query, commentID, spotifyID)
 
     if err != nil {
         return customerrors.WrapBasicError(err)
@@ -201,7 +206,7 @@ func RemoveCommentVote(commentID string, spotifyID string) error {
     }
 
     if rows < 1 {
-        return customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "comment not found"}
+        return &customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "comment vote not found"}
     }
 
     return nil
