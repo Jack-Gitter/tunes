@@ -7,18 +7,18 @@ endpoints:
     comments
         update
 
+documentation: 
+    swagger -- https://github.com/swaggo/gin-swagger
+    readme
+
 dockerize:
     postgres
     redis
-
 
 caching:
     redis 
         read up on caching techniques!!! 
 
-documentation: 
-    readme
-    swagger?
 
 
 testing:
