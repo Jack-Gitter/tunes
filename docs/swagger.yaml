@@ -115,6 +115,67 @@ paths:
       summary: Gets a users followers by their spotify ID
       tags:
       - Users
+  /users/current:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.User'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Retreives the current user
+      tags:
+      - Users
+  /users/current/follow/{otherUserSpotifyID}:
+    post:
+      consumes:
+      - application/json
+      description: Follows a user for the current user
+      parameters:
+      - description: Spotify ID of other user to follow
+        in: path
+        name: spotifyID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Follows a user for the current user
+      tags:
+      - Users
   /users/current/followers/:
     get:
       consumes:

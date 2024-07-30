@@ -150,6 +150,18 @@ func GetFollowers(c *gin.Context) {
 
 }
 
+// @Summary Follows a user for the current user
+// @Description Follows a user for the current user 
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param spotifyID path string false "Spotify ID of other user to follow"
+// @Success 204 
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current/follow/{otherUserSpotifyID} [post]
+// @Security Bearer
 func FollowerUser(c *gin.Context) {
 	otherUserSpotifyID := c.Param("otherUserSpotifyID")
 	spotifyID, found := c.Get("spotifyID")
@@ -178,6 +190,17 @@ func FollowerUser(c *gin.Context) {
 
 }
 
+// @Summary Retreives the current user
+// @Description Retrieves the current user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 200 {object} responses.User
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current [get]
+// @Security Bearer
 func GetCurrentUser(c *gin.Context) {
 
 	spotifyID, spotifyIdExists := c.Get("spotifyID")
