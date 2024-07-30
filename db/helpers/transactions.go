@@ -11,7 +11,7 @@ import (
 
 func RunTransactionWithExponentialBackoff(transFunc func() error, retryTimes int) error {
 
-    failureError := customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Failed after retrying SQL statement"}
+    failureError := &customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Failed after retrying SQL statement"}
     backoff := 1.0
 
     for i := 0; i < retryTimes; i++ {
