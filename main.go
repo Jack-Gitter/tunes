@@ -15,6 +15,11 @@ import (
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
+
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @description "Authorization header value"
 func main() {
 
 	godotenv.Load()

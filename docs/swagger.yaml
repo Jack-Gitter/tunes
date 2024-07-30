@@ -57,7 +57,15 @@ paths:
           description: Not Found
           schema:
             type: string
+      security:
+      - Bearer: []
       summary: Gets a tunes user by their spotify ID
       tags:
       - users
+securityDefinitions:
+  Bearer:
+    description: '"Authorization header value"'
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

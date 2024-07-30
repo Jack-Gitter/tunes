@@ -20,6 +20,11 @@ const docTemplate = `{
     "paths": {
         "/users/{spotifyID}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Gets a tunes user by their spotifyID",
                 "consumes": [
                     "application/json"
@@ -93,6 +98,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "\"Authorization header value\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     },
     "externalDocs": {

@@ -12,6 +12,11 @@
     "paths": {
         "/users/{spotifyID}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Gets a tunes user by their spotifyID",
                 "consumes": [
                     "application/json"
@@ -85,6 +90,14 @@
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "\"Authorization header value\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     },
     "externalDocs": {
