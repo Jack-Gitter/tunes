@@ -2,8 +2,7 @@ tunes todos:
 
 endpoints: 
     general
-        patch updates dont update the updatedat time field in DB
-        c.shouldbindURI? -- can/should make a middleware to validate path params using c.shouldbindURI
+        c.shouldbindURI? -- can/should make a middleware to validate path params using c.shouldbindURI -- yes, I'm being lazy asf
 
 documentation: 
     swagger -- https://github.com/swaggo/gin-swagger
