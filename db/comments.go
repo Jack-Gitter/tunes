@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -243,6 +242,10 @@ func UpdateComment(commentID string, updateCommentDTO *requests.UpdateCommentDTO
 
     updateCommentMap := make(map[string]any)
     mapstructure.Decode(updateCommentDTO, &updateCommentMap)
+
+    t := time.Now().UTC()
+    updateCommentMap["updatedat"] = &t
+    
 
     conditionals := make(map[string]any)
     conditionals["commentid"] = commentID

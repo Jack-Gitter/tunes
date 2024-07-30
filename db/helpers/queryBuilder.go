@@ -3,6 +3,7 @@ package helpers
 import (
 	"fmt"
 	"reflect"
+	"time"
 )
 
 
@@ -54,5 +55,10 @@ func getReflectValue(val reflect.Value) any {
     case reflect.String:
         return val.String()    
     }
+
+    if v, ok := val.Interface().(time.Time); ok {
+        return v
+    }
+
     panic("we don't know this reflected value")
 }

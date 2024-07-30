@@ -339,6 +339,9 @@ func UpdatePost(spotifyID string, songID string, updatePostRequest *requests.Upd
     updatedPostRequestMap := make(map[string]any)
     mapstructure.Decode(updatePostRequest, &updatedPostRequestMap)
 
+    t := time.Now().UTC()
+    updatedPostRequestMap["updatedat"] = &t
+
     conditionals := make(map[string]any)
     conditionals["posterspotifyid"] = spotifyID
     conditionals["songid"] = songID
