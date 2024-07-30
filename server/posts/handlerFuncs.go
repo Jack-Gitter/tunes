@@ -211,13 +211,13 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
-// @Summary Get a specific post
+// @Summary Get apath specific post
 // @Description Get a specific post
 // @Tags Posts
 // @Accept json
 // @Produce json
 // @Param spotifyID path string true "The user who posted the song"
-// @Param songID query string true "The songID of the posted song"
+// @Param songID path string true "The songID of the posted song"
 // @Success 200 {object} responses.PostPreview
 // @Failure 400 {string} string 
 // @Failure 404 {string} string 
@@ -240,6 +240,18 @@ func GetPostBySpotifyIDAndSongID(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
+// @Summary Get a specific post for the current user
+// @Description Get a specific post for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param songID path string true "The songID of the posted song"
+// @Success 200 {object} responses.PostPreview
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/current/{songID} [get]
+// @Security Bearer
 func GetPostCurrentUserBySongID(c *gin.Context) {
 
 	currentUserSpotifyID, found := c.Get("spotifyID")
@@ -262,6 +274,19 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
+// @Summary Deletes a specific post. Only accessible to admins
+// @Description Deletes a specific post. Only accessible to admins
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "The spotify ID of the user who posted the song"
+// @Param songID query string true "The songID of the posted song"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/{spotifyID}/{songID} [delete]
+// @Security Bearer
 func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
@@ -279,6 +304,18 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 
 }
 
+// @Summary Deletes a post made by the current user
+// @Description Deletes a post made by the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param songID path string true "The songID of the posted song"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/current/{songID} [delete]
+// @Security Bearer
 func DeletePostForCurrentUserBySongID(c *gin.Context) {
 
 	requestorSpotifyID, found := c.Get("spotifyID")
@@ -302,6 +339,19 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
 
 }
 
+// @Summary Updates a post made by the current user
+// @Description Updates a post made by the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param songID path string true "The songID of the posted song"
+// @Param UpdatePostDTO body requests.UpdatePostRequestDTO true "The fields to update"
+// @Success 200 {object} responses.PostPreview
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/current/{songID} [patch]
+// @Security Bearer
 func UpdateCurrentUserPost(c *gin.Context) {
 
 	spotifyID, exists := c.Get("spotifyID")
@@ -328,6 +378,19 @@ func UpdateCurrentUserPost(c *gin.Context) {
 	c.JSON(http.StatusOK, preview)
 }
 
+// @Summary Removes a vote for the current user on a post
+// @Description Removes a vote for the current user on a post
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param songID path string true "The songID of the posted song"
+// @Param posterSpotifyID path string true "The user who posted the post spotify ID"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/current/{posterSpotifyID}/{songID} [delete]
+// @Security Bearer
 func RemovePostVote(c *gin.Context) {
 	voterSpotifyID, found := c.Get("spotifyID")
 	posterSpotifyID := c.Param("posterSpotifyID")
@@ -367,6 +430,20 @@ func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationRespo
 
 }
 
+// @Summary Gets the comments of a post
+// @Description Gets the comments of a post
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param songID path string true "The songID of the posted song"
+// @Param spotifyID path string true "The user who posted the post spotify ID"
+// @Param createdAt query string false "Pagination Key. In the form of UTC timestamp"
+// @Success 200 {object} responses.PaginationResponse[[]responses.Comment, time.Time]
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/current/{songID} [delete]
+// @Security Bearer
 func GetPostCommentsPaginated(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")

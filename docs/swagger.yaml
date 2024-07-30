@@ -8,6 +8,45 @@ definitions:
       text:
         type: string
     type: object
+  requests.UpdatePostRequestDTO:
+    properties:
+      rating:
+        type: integer
+      review:
+        type: string
+    type: object
+  responses.Comment:
+    properties:
+      commentID:
+        type: integer
+      commentText:
+        type: string
+      commentorID:
+        type: string
+      commentorUsername:
+        type: string
+      createdAt:
+        type: string
+      dislikes:
+        type: integer
+      likes:
+        type: integer
+      postSpotifyID:
+        type: string
+      songID:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.PaginationResponse-array_responses_Comment-time_Time:
+    properties:
+      dataResponse:
+        items:
+          $ref: '#/definitions/responses.Comment'
+        type: array
+      paginationKey:
+        type: string
+    type: object
   responses.PaginationResponse-array_responses_User-string:
     properties:
       dataResponse:
@@ -126,6 +165,43 @@ paths:
       tags:
       - Posts
   /posts/{spotifyID}/{songID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a specific post. Only accessible to admins
+      parameters:
+      - description: The spotify ID of the user who posted the song
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      - description: The songID of the posted song
+        in: query
+        name: songID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Deletes a specific post. Only accessible to admins
+      tags:
+      - Posts
     get:
       consumes:
       - application/json
@@ -137,7 +213,7 @@ paths:
         required: true
         type: string
       - description: The songID of the posted song
-        in: query
+        in: path
         name: songID
         required: true
         type: string
@@ -162,7 +238,163 @@ paths:
             type: string
       security:
       - Bearer: []
-      summary: Get a specific post
+      summary: Get apath specific post
+      tags:
+      - Posts
+  /posts/current/{posterSpotifyID}/{songID}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a vote for the current user on a post
+      parameters:
+      - description: The songID of the posted song
+        in: path
+        name: songID
+        required: true
+        type: string
+      - description: The user who posted the post spotify ID
+        in: path
+        name: posterSpotifyID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Removes a vote for the current user on a post
+      tags:
+      - Posts
+  /posts/current/{songID}:
+    delete:
+      consumes:
+      - application/json
+      description: Gets the comments of a post
+      parameters:
+      - description: The songID of the posted song
+        in: path
+        name: songID
+        required: true
+        type: string
+      - description: The user who posted the post spotify ID
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      - description: Pagination Key. In the form of UTC timestamp
+        in: query
+        name: createdAt
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaginationResponse-array_responses_Comment-time_Time'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Gets the comments of a post
+      tags:
+      - Posts
+    get:
+      consumes:
+      - application/json
+      description: Get a specific post for the current user
+      parameters:
+      - description: The songID of the posted song
+        in: path
+        name: songID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PostPreview'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get a specific post for the current user
+      tags:
+      - Posts
+    patch:
+      consumes:
+      - application/json
+      description: Updates a post made by the current user
+      parameters:
+      - description: The songID of the posted song
+        in: path
+        name: songID
+        required: true
+        type: string
+      - description: The fields to update
+        in: body
+        name: UpdatePostDTO
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdatePostRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PostPreview'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Updates a post made by the current user
       tags:
       - Posts
   /posts/dislikes/{spotifyID}/{songID}:
