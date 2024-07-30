@@ -1,4 +1,13 @@
 definitions:
+  requests.CreatePostDTO:
+    properties:
+      rating:
+        type: integer
+      songID:
+        type: string
+      text:
+        type: string
+    type: object
   responses.PaginationResponse-array_responses_User-string:
     properties:
       dataResponse:
@@ -6,6 +15,39 @@ definitions:
           $ref: '#/definitions/responses.User'
         type: array
       paginationKey:
+        type: string
+    type: object
+  responses.PostPreview:
+    properties:
+      albumArtURI:
+        type: string
+      albumID:
+        type: string
+      albumName:
+        type: string
+      createdAt:
+        type: string
+      dislikes:
+        items:
+          $ref: '#/definitions/responses.UserIdentifer'
+        type: array
+      likes:
+        items:
+          $ref: '#/definitions/responses.UserIdentifer'
+        type: array
+      rating:
+        type: integer
+      songID:
+        type: string
+      songName:
+        type: string
+      spotifyID:
+        type: string
+      text:
+        type: string
+      updatedAt:
+        type: string
+      username:
         type: string
     type: object
   responses.Role:
@@ -29,6 +71,13 @@ definitions:
       username:
         type: string
     type: object
+  responses.UserIdentifer:
+    properties:
+      spotifyID:
+        type: string
+      username:
+        type: string
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -40,6 +89,42 @@ info:
   title: Tunes backend API
   version: "1.0"
 paths:
+  /posts:
+    post:
+      consumes:
+      - application/json
+      description: Creates a post for the current user
+      parameters:
+      - description: Information required to create a post
+        in: body
+        name: CreatePostDTO
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreatePostDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PostPreview'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Creates a post for the current user
+      tags:
+      - Posts
   /users/{spotifyID}:
     delete:
       consumes:
@@ -107,7 +192,6 @@ paths:
       summary: Gets a tunes user by their spotify ID
       tags:
       - Users
-      x-order: 1
     patch:
       consumes:
       - application/json
@@ -370,7 +454,6 @@ paths:
       summary: Unfollowers a user for the currently signed in user
       tags:
       - Users
-      x-order: 2
 securityDefinitions:
   Bearer:
     description: '"Authorization header value"'

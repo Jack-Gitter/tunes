@@ -3,7 +3,6 @@ package posts
 import (
 	"net/http"
 	"time"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -12,6 +11,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Creates a post for the current user
+// @Description Creates a post for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param CreatePostDTO body requests.CreatePostDTO true "Information required to create a post"
+// @Success 200 {object} responses.PostPreview
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts [post]
+// @Security Bearer
 func CreatePostForCurrentUser(c *gin.Context) {
 
 	spotifyID, spotifyIDExists := c.Get("spotifyID")

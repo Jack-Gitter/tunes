@@ -18,6 +18,63 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/posts": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Creates a post for the current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Creates a post for the current user",
+                "parameters": [
+                    {
+                        "description": "Information required to create a post",
+                        "name": "CreatePostDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreatePostDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PostPreview"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/users/current": {
             "get": {
                 "security": [
@@ -310,8 +367,7 @@ const docTemplate = `{
                             "type": "string"
                         }
                     }
-                },
-                "x-order": 2
+                }
             }
         },
         "/users/{spotifyID}": {
@@ -366,8 +422,7 @@ const docTemplate = `{
                             "type": "string"
                         }
                     }
-                },
-                "x-order": 1
+                }
             },
             "delete": {
                 "security": [
@@ -536,6 +591,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "requests.CreatePostDTO": {
+            "type": "object",
+            "properties": {
+                "rating": {
+                    "type": "integer"
+                },
+                "songID": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.PaginationResponse-array_responses_User-string": {
             "type": "object",
             "properties": {
@@ -546,6 +615,56 @@ const docTemplate = `{
                     }
                 },
                 "paginationKey": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PostPreview": {
+            "type": "object",
+            "properties": {
+                "albumArtURI": {
+                    "type": "string"
+                },
+                "albumID": {
+                    "type": "string"
+                },
+                "albumName": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dislikes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserIdentifer"
+                    }
+                },
+                "likes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserIdentifer"
+                    }
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "songID": {
+                    "type": "string"
+                },
+                "songName": {
+                    "type": "string"
+                },
+                "spotifyID": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -572,6 +691,17 @@ const docTemplate = `{
                 "role": {
                     "$ref": "#/definitions/responses.Role"
                 },
+                "spotifyID": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.UserIdentifer": {
+            "type": "object",
+            "properties": {
                 "spotifyID": {
                     "type": "string"
                 },
