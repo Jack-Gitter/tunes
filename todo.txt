@@ -8,8 +8,20 @@ endpoints:
             make a getFeed endpoint which gets all of the posts from the users followers and returns the top x most recent, make it paginated
 
 documentation: 
-    swagger -- https://github.com/swaggo/gin-swagger
+    swagger 
+        comments
+        login/auth endpoints
     readme
+        explain what this project is
+        explain auth -- double submit cookies
+        explain database schema
+        explain goose/database migrations
+        explain dockerization
+        explain error handling middleware
+        explain auth middleware
+        explain transaction retries/isolation level race conditions
+        explain JWT/spotify login
+        explain swagger usage 
 
 dockerize:
     postgres
