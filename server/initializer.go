@@ -9,6 +9,9 @@ import (
 	"github.com/Jack-Gitter/tunes/server/posts"
 	"github.com/Jack-Gitter/tunes/server/users"
 	"github.com/gin-gonic/gin"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+    _ "github.com/Jack-Gitter/tunes/docs"
 )
 
 func InitializeHttpServer() *gin.Engine {
@@ -86,6 +89,8 @@ func InitializeHttpServer() *gin.Engine {
             }
         }
     }
+
+    r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	return r
 }
