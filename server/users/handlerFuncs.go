@@ -2,13 +2,20 @@ package users
 
 import (
 	"net/http"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/gin-gonic/gin"
 )
+
+// @Summary get user by id
+// @Schemes
+// @Description gets a tunes user by their spotifyID
+// @Accept json
+// @Produce json
+// @Succes 200
+// @Router /users/:spotifyID [get]
 
 func GetUserById(c *gin.Context) {
 
