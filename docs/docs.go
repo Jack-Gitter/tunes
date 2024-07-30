@@ -9,36 +9,106 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "Jack Gitter",
+            "email": "jack.a.gitter@gmail.com"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/users/:spotifyID": {
+        "/users/{spotifyID}": {
             "get": {
-                "description": "gets a tunes user by their spotifyID",
+                "description": "Gets a tunes user by their spotifyID",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "get user by id",
-                "responses": {}
+                "tags": [
+                    "users"
+                ],
+                "summary": "Gets a tunes user by their spotify ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User Spotify ID",
+                        "name": "spotifyID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         }
+    },
+    "definitions": {
+        "responses.Role": {
+            "type": "string",
+            "enum": [
+                "BASIC",
+                "MODERATOR",
+                "ADMIN"
+            ],
+            "x-enum-varnames": [
+                "BASIC_USER",
+                "MODERATOR",
+                "ADMIN"
+            ]
+        },
+        "responses.User": {
+            "type": "object",
+            "properties": {
+                "bio": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/responses.Role"
+                },
+                "spotifyID": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "externalDocs": {
+        "description": "OpenAPI",
+        "url": "https://swagger.io/resources/open-api/"
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Tunes backend API",
+	Description:      "The backend REST API for Tunes",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

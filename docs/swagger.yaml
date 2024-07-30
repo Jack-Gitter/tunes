@@ -1,13 +1,63 @@
+definitions:
+  responses.Role:
+    enum:
+    - BASIC
+    - MODERATOR
+    - ADMIN
+    type: string
+    x-enum-varnames:
+    - BASIC_USER
+    - MODERATOR
+    - ADMIN
+  responses.User:
+    properties:
+      bio:
+        type: string
+      role:
+        $ref: '#/definitions/responses.Role'
+      spotifyID:
+        type: string
+      username:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
 info:
-  contact: {}
+  contact:
+    email: jack.a.gitter@gmail.com
+    name: Jack Gitter
+  description: The backend REST API for Tunes
+  title: Tunes backend API
+  version: "1.0"
 paths:
-  /users/:spotifyID:
+  /users/{spotifyID}:
     get:
       consumes:
       - application/json
-      description: gets a tunes user by their spotifyID
+      description: Gets a tunes user by their spotifyID
+      parameters:
+      - description: User Spotify ID
+        in: path
+        name: spotifyID
+        required: true
+        type: string
       produces:
       - application/json
-      responses: {}
-      summary: get user by id
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.User'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: Gets a tunes user by their spotify ID
+      tags:
+      - users
 swagger: "2.0"

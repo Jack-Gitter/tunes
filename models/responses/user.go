@@ -13,9 +13,9 @@ func IsValidRole(role Role) bool {
 }
 
 type User struct {
-	UserIdentifer `mapstructure:",squash"`
-	Bio           string
-	Role          Role
+    UserIdentifer `mapstructure:",squash"`
+    Bio           string
+    Role          Role
 }
 
 type UserIdentifer struct {

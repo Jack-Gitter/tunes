@@ -10,13 +10,16 @@ import (
 )
 
 // GetUserByID godoc
-// @Summary get user by id
-// @Schemes
-// @Description gets a tunes user by their spotifyID
+// @Summary Gets a tunes user by their spotify ID
+// @Description Gets a tunes user by their spotifyID
+// @Tags users
 // @Accept json
 // @Produce json
-// @Succes 200
-// @Router /users/:spotifyID [get]
+// @Param spotifyID path string true "User Spotify ID"
+// @Success 200 {object} responses.User 
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Router /users/{spotifyID} [get]
 func GetUserById(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")

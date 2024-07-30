@@ -9,6 +9,15 @@ import (
     _ "github.com/Jack-Gitter/tunes/docs"
 )
 
+// @title           Tunes backend API
+// @version         1.0
+// @description     The backend REST API for Tunes
+
+// @contact.name   Jack Gitter
+// @contact.email  jack.a.gitter@gmail.com
+
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
 func main() {
 
 	godotenv.Load()
