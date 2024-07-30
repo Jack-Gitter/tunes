@@ -125,6 +125,200 @@ paths:
       summary: Creates a post for the current user
       tags:
       - Posts
+  /posts/{spotifyID}/{songID}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific post
+      parameters:
+      - description: The user who posted the song
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      - description: The songID of the posted song
+        in: query
+        name: songID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PostPreview'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get a specific post
+      tags:
+      - Posts
+  /posts/dislikes/{spotifyID}/{songID}:
+    post:
+      consumes:
+      - application/json
+      description: Dislikes a post for the current user
+      parameters:
+      - description: Song ID of the post to dislike
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      - description: Spotify ID of the user who posted the song
+        in: path
+        name: songID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Dislikes a post for the current user
+      tags:
+      - Posts
+  /posts/likes/{spotifyID}/{songID}:
+    post:
+      consumes:
+      - application/json
+      description: Likes a post for the current user
+      parameters:
+      - description: Song ID of the post to like
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      - description: Spotify ID of the user who posted the song
+        in: path
+        name: songID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Likes a post for the current user
+      tags:
+      - Posts
+  /posts/previews/users/{spotifyID}:
+    get:
+      consumes:
+      - application/json
+      description: Get all of a users post previews
+      parameters:
+      - description: The user whos posts are recieved. Value is a spotify ID
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      - description: Pagination Key. Format is UTC timestamp
+        in: query
+        name: createdAt
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PostPreview'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get all of a users post previews
+      tags:
+      - Posts
+  /posts/previews/users/current:
+    get:
+      consumes:
+      - application/json
+      description: Get all of a users post previews
+      parameters:
+      - description: The user whos posts are recieved. Value is a spotify ID
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      - description: Pagination Key. Format is UTC timestamp
+        in: query
+        name: createdAt
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PostPreview'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get all of a users post previews
+      tags:
+      - Posts
   /users/{spotifyID}:
     delete:
       consumes:

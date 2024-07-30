@@ -77,6 +77,19 @@ func CreatePostForCurrentUser(c *gin.Context) {
 
 }
 
+// @Summary Likes a post for the current user
+// @Description Likes a post for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "Song ID of the post to like"
+// @Param songID path string true "Spotify ID of the user who posted the song"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/likes/{spotifyID}/{songID} [post]
+// @Security Bearer
 func LikePost(c *gin.Context) {
 	currentUserSpotifyID, found := c.Get("spotifyID")
 	spotifyID := c.Param("spotifyID")
@@ -99,6 +112,19 @@ func LikePost(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// @Summary Dislikes a post for the current user
+// @Description Dislikes a post for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "Song ID of the post to dislike"
+// @Param songID path string true "Spotify ID of the user who posted the song"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/dislikes/{spotifyID}/{songID} [post]
+// @Security Bearer
 func DislikePost(c *gin.Context) {
 
 	currentUserSpotifyID, found := c.Get("spotifyID")
@@ -122,6 +148,19 @@ func DislikePost(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// @Summary Get all of a users post previews
+// @Description Get all of a users post previews
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "The user whos posts are recieved. Value is a spotify ID"
+// @Param createdAt query string false "Pagination Key. Format is UTC timestamp"
+// @Success 200 {object} responses.PostPreview
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/previews/users/{spotifyID} [get]
+// @Security Bearer
 func GetAllPostsForUserByID(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
@@ -138,6 +177,19 @@ func GetAllPostsForUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
+// @Summary Get all of a users post previews
+// @Description Get all of a users post previews
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "The user whos posts are recieved. Value is a spotify ID"
+// @Param createdAt query string false "Pagination Key. Format is UTC timestamp"
+// @Success 200 {object} responses.PostPreview
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/previews/users/current [get]
+// @Security Bearer
 func GetAllPostsForCurrentUser(c *gin.Context) {
 	spotifyID, spotifyIDExists := c.Get("spotifyID")
 	createdAt := c.Query("createdAt")
@@ -159,6 +211,19 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
+// @Summary Get a specific post
+// @Description Get a specific post
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "The user who posted the song"
+// @Param songID query string true "The songID of the posted song"
+// @Success 200 {object} responses.PostPreview
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/{spotifyID}/{songID} [get]
+// @Security Bearer
 func GetPostBySpotifyIDAndSongID(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
