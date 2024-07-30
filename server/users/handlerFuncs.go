@@ -222,6 +222,18 @@ func GetCurrentUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// @Summary Updates a user by their spotify ID. Only accessable to admins
+// @Description Updates a user by their spotify ID. Only accessable to admins
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "Spotify ID of the user to update"
+// @Success 200 {object} responses.User
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/{spotifyID} [patch]
+// @Security Bearer
 func UpdateUserBySpotifyID(c *gin.Context) {
 
 	userUpdateRequest := &requests.UpdateUserRequestDTO{}
@@ -246,6 +258,17 @@ func UpdateUserBySpotifyID(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// @Summary Updates the current user
+// @Description Updates the current user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 200 {object} responses.User
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current [patch]
+// @Security Bearer
 func UpdateCurrentUserProperties(c *gin.Context) {
 
 	userUpdateRequest := &requests.UpdateUserRequestDTO{}
@@ -271,6 +294,17 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 
 }
 
+// @Summary Deletes the current user
+// @Description Deletes the current user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current [delete]
+// @Security Bearer
 func DeleteCurrentUser(c *gin.Context) {
 	spotifyID, spotifyIdExists := c.Get("spotifyID")
 	if !spotifyIdExists {
@@ -290,6 +324,18 @@ func DeleteCurrentUser(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// @Summary Deletes a user account by spotify ID
+// @Description Deletes a user account by spotify ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 204
+// @Param spotifyID path string true "Spotify ID of the user to delete"
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/{spotifyID} [delete]
+// @Security Bearer
 func DeleteUserBySpotifyID(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
