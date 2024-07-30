@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetUserByID godoc
 // @Summary get user by id
 // @Schemes
 // @Description gets a tunes user by their spotifyID
@@ -16,7 +17,6 @@ import (
 // @Produce json
 // @Succes 200
 // @Router /users/:spotifyID [get]
-
 func GetUserById(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")

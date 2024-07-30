@@ -1,4 +1,13 @@
 info:
   contact: {}
-paths: {}
+paths:
+  /users/:spotifyID:
+    get:
+      consumes:
+      - application/json
+      description: gets a tunes user by their spotifyID
+      produces:
+      - application/json
+      responses: {}
+      summary: get user by id
 swagger: "2.0"
