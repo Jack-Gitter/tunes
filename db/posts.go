@@ -150,6 +150,12 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
             return customerrors.WrapBasicError(err)
         }
 
+        _, err = tx.Exec(`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
         defer tx.Rollback()
 
         query := `SELECT spotifyid from USERS WHERE spotifyid = $1`
@@ -400,86 +406,95 @@ func LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, 
 
 func GetPostCommentsPaginated(spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error) {
 
-    tx, err := DB.Driver.BeginTx(context.Background(), nil)
+    paginationResponse := &responses.PaginationResponse[[]responses.Comment, time.Time]{PaginationKey: time.Now().UTC()}
+    transaction := func() error {
 
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
-
-    defer tx.Rollback()
-
-    _, err = tx.Exec(`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`)
-
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
-
-    query := `SELECT commentid, commentorspotifyid, posterspotifyid, songid, commenttext, createdat, updatedat 
-              FROM comments
-              WHERE posterspotifyid = $1 AND songid = $2 AND createdAt < $3 
-              ORDER BY createdat DESC 
-              LIMIT 25 `
-
-    rows, err := tx.Query(query, spotifyID, songID, paginationKey)
-
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
-
-    paginationResponse := &responses.PaginationResponse[[]responses.Comment, time.Time]{PaginationKey: time.Now(), DataResponse: []responses.Comment{}}
-    comments := []responses.Comment{}
-
-    for rows.Next() {
-
-        comment := &responses.Comment{}
-        err := rows.Scan(&comment.CommentID, &comment.CommentorID, &comment.PostSpotifyID, &comment.SongID, &comment.CommentText, &comment.CreatedAt, &comment.UpdatedAt)
+        tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
         if err != nil {
-            return nil, customerrors.WrapBasicError(err)
+            return customerrors.WrapBasicError(err)
         }
 
-        comments = append(comments, *comment)
+        defer tx.Rollback()
 
-    }
-
-    for i := 0; i < len(comments); i++ {
-
-        query = `SELECT liked FROM comment_votes WHERE commentid = $1`
-        rows, err := tx.Query(query, comments[i].CommentID)
+        _, err = tx.Exec(`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`)
 
         if err != nil {
-            return nil, customerrors.WrapBasicError(err)
+            return customerrors.WrapBasicError(err)
         }
 
-        likes := 0
-        dislikes := 0
+        query := `SELECT commentid, commentorspotifyid, posterspotifyid, songid, commenttext, createdat, updatedat 
+                  FROM comments
+                  WHERE posterspotifyid = $1 AND songid = $2 AND createdAt < $3 
+                  ORDER BY createdat DESC 
+                  LIMIT 25 `
+
+        rows, err := tx.Query(query, spotifyID, songID, paginationKey)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        paginationResponse := &responses.PaginationResponse[[]responses.Comment, time.Time]{PaginationKey: time.Now(), DataResponse: []responses.Comment{}}
+        comments := []responses.Comment{}
+
         for rows.Next() {
-           val := true 
-           err := rows.Scan(&val)
-           if err != nil {
-               return nil, customerrors.WrapBasicError(err)
-           }
-           if val {
-               likes +=1
-           } else {
-               dislikes+=1
-           }
+
+            comment := &responses.Comment{}
+            err := rows.Scan(&comment.CommentID, &comment.CommentorID, &comment.PostSpotifyID, &comment.SongID, &comment.CommentText, &comment.CreatedAt, &comment.UpdatedAt)
+
+            if err != nil {
+                return customerrors.WrapBasicError(err)
+            }
+
+            comments = append(comments, *comment)
+
         }
-           comments[i].Likes = likes
-           comments[i].Dislikes = dislikes
+
+        for i := 0; i < len(comments); i++ {
+
+            query = `SELECT liked FROM comment_votes WHERE commentid = $1`
+            rows, err := tx.Query(query, comments[i].CommentID)
+
+            if err != nil {
+                return customerrors.WrapBasicError(err)
+            }
+
+            likes := 0
+            dislikes := 0
+            for rows.Next() {
+               val := true 
+               err := rows.Scan(&val)
+               if err != nil {
+                   return customerrors.WrapBasicError(err)
+               }
+               if val {
+                   likes +=1
+               } else {
+                   dislikes+=1
+               }
+            }
+               comments[i].Likes = likes
+               comments[i].Dislikes = dislikes
+        }
+
+        paginationResponse.DataResponse = comments
+
+        if len(comments) > 0 {
+            paginationResponse.PaginationKey = comments[len(comments)-1].CreatedAt
+        }
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        return nil
     }
 
-    paginationResponse.DataResponse = comments
+    helpers.RunTransactionWithExponentialBackoff(transaction, 5) 
 
-    if len(comments) > 0 {
-        paginationResponse.PaginationKey = comments[len(comments)-1].CreatedAt
-    }
-
-    err = tx.Commit()
-
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
 
     return paginationResponse, nil
 }

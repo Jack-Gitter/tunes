@@ -80,72 +80,88 @@ func DeleteCurrentUserComment(commentID string, spotifyID string) error {
 }
 
 func GetComment(commentID string) (*responses.Comment, error) {
-    tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
-
-    defer tx.Rollback()
-
-    _, err = tx.Exec(`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`)
-
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
-
-    query := `SELECT comments.commentid, comments.commentorspotifyid, comments.posterspotifyid, comments.songid, comments.commenttext, comments.createdat, comments.updatedat, users.username 
-              FROM comments INNER JOIN users ON commentorspotifyid = spotifyid 
-              WHERE commentid = $1`
-
-    res := tx.QueryRow(query, commentID)
 
     commentResponse := &responses.Comment{}
 
-    err = res.Scan(&commentResponse.CommentID, 
-                &commentResponse.CommentorID, 
-                &commentResponse.PostSpotifyID, 
-                &commentResponse.SongID, 
-                &commentResponse.CommentText,
-                &commentResponse.CreatedAt,
-                &commentResponse.UpdatedAt,
-                &commentResponse.CommentorUsername)
-                
+    transaction := func() error {
 
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
+        tx, err := DB.Driver.BeginTx(context.Background(), nil)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        defer tx.Rollback()
+
+        _, err = tx.Exec(`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        query := `SELECT comments.commentid, comments.commentorspotifyid, comments.posterspotifyid, comments.songid, comments.commenttext, comments.createdat, comments.updatedat, users.username 
+                  FROM comments INNER JOIN users ON commentorspotifyid = spotifyid 
+                  WHERE commentid = $1`
+
+        res := tx.QueryRow(query, commentID)
+
+        commentResponse := &responses.Comment{}
+
+        err = res.Scan(&commentResponse.CommentID, 
+                    &commentResponse.CommentorID, 
+                    &commentResponse.PostSpotifyID, 
+                    &commentResponse.SongID, 
+                    &commentResponse.CommentText,
+                    &commentResponse.CreatedAt,
+                    &commentResponse.UpdatedAt,
+                    &commentResponse.CommentorUsername)
+                    
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        query = `SELECT liked FROM comment_votes WHERE commentid = $1`
+
+        row, err := tx.Query(query, commentID)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        likes := 0
+        dislikes := 0
+        for row.Next() {
+           val := true 
+           err := row.Scan(&val)
+           if err != nil {
+               return customerrors.WrapBasicError(err)
+           }
+           if val {
+               likes +=1
+           } else {
+               dislikes+=1
+           }
+        }
+
+        commentResponse.Likes = likes
+        commentResponse.Dislikes = dislikes
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        return nil
+
     }
 
-    query = `SELECT liked FROM comment_votes WHERE commentid = $1`
-
-    row, err := tx.Query(query, commentID)
-
+    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+    
     if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
-
-    likes := 0
-    dislikes := 0
-    for row.Next() {
-       val := true 
-       err := row.Scan(&val)
-       if err != nil {
-           return nil, customerrors.WrapBasicError(err)
-       }
-       if val {
-           likes +=1
-       } else {
-           dislikes+=1
-       }
-    }
-
-    commentResponse.Likes = likes
-    commentResponse.Dislikes = dislikes
-
-    err = tx.Commit()
-
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
+        return nil, err
     }
 
     return commentResponse, nil
@@ -235,54 +251,67 @@ func UpdateComment(commentID string, updateCommentDTO *requests.UpdateCommentDTO
 
     query, vals := helpers.PatchQueryBuilder("comments", updateCommentMap, conditionals, returning)
 
-    fmt.Println(query)
-    tx, err := DB.Driver.BeginTx(context.Background(), nil)
-
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
-
-    defer tx.Rollback()
-    
     comment := &responses.Comment{}
+    transaction := func() error {
 
-    row := tx.QueryRow(query, vals...)
-    err = row.Scan(&comment.CommentID, &comment.CommentorID, &comment.PostSpotifyID, &comment.SongID, &comment.CommentText, &comment.CreatedAt, &comment.UpdatedAt)
+        tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        _, err = tx.Exec(`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        defer tx.Rollback()
+        
+        comment := &responses.Comment{}
+
+        row := tx.QueryRow(query, vals...)
+        err = row.Scan(&comment.CommentID, &comment.CommentorID, &comment.PostSpotifyID, &comment.SongID, &comment.CommentText, &comment.CreatedAt, &comment.UpdatedAt)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        query = `SELECT liked FROM comment_votes WHERE commentid = $1`
+
+        rows, err := tx.Query(query, commentID)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        likes := 0
+        dislikes := 0
+        for rows.Next() {
+           val := true 
+           err := rows.Scan(&val)
+           if err != nil {
+               return customerrors.WrapBasicError(err)
+           }
+           if val {
+               likes +=1
+           } else {
+               dislikes+=1
+           }
+        }
+        comment.Likes = likes
+        comment.Dislikes = dislikes
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        return nil
     }
 
-    query = `SELECT liked FROM comment_votes WHERE commentid = $1`
-
-    rows, err := tx.Query(query, commentID)
-
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
-
-    likes := 0
-    dislikes := 0
-    for rows.Next() {
-       val := true 
-       err := rows.Scan(&val)
-       if err != nil {
-           return nil, customerrors.WrapBasicError(err)
-       }
-       if val {
-           likes +=1
-       } else {
-           dislikes+=1
-       }
-    }
-    comment.Likes = likes
-    comment.Dislikes = dislikes
-
-    err = tx.Commit()
-
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
+    helpers.RunTransactionWithExponentialBackoff(transaction, 5)
 
     return comment, nil
 
