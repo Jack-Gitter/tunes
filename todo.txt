@@ -4,6 +4,7 @@ endpoints:
     general
         wrap all transactions in the retry loop
         patch updates dont update the updatedat time field in DB
+        c.shouldbindURI? -- can/should make a middleware to validate path params using c.shouldbindURI
 
 documentation: 
     swagger -- https://github.com/swaggo/gin-swagger
