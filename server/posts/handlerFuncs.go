@@ -295,9 +295,10 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param spotifyID path string true "The spotify ID of the user who posted the song"
-// @Param songID query string true "The songID of the posted song"
+// @Param songID path string true "The songID of the posted song"
 // @Success 204
 // @Failure 400 {string} string 
+// @Failure 403 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /posts/admin/{spotifyID}/{songID} [delete]
@@ -402,7 +403,7 @@ func UpdateCurrentUserPost(c *gin.Context) {
 // @Param songID path string true "The songID of the posted song"
 // @Param posterSpotifyID path string true "The user who posted the post spotify ID"
 // @Success 204
-// @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /posts/votes/current/{posterSpotifyID}/{songID} [delete]

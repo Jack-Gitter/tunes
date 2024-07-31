@@ -559,7 +559,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "The songID of the posted song",
                         "name": "songID",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -569,6 +569,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "type": "string"
                         }
@@ -1112,8 +1118,8 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "string"
                         }
