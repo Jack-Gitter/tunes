@@ -424,7 +424,7 @@ paths:
       summary: Delete a vote on a comment for the current user
       tags:
       - Comments
-  /posts:
+  /posts/:
     post:
       consumes:
       - application/json
@@ -432,7 +432,7 @@ paths:
       parameters:
       - description: Information required to create a post
         in: body
-        name: CreatePostDTO
+        name: createPostDTO
         required: true
         schema:
           $ref: '#/definitions/requests.CreatePostDTO'

@@ -460,7 +460,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/posts": {
+        "/posts/": {
             "post": {
                 "security": [
                     {
@@ -481,7 +481,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Information required to create a post",
-                        "name": "CreatePostDTO",
+                        "name": "createPostDTO",
                         "in": "body",
                         "required": true,
                         "schema": {
