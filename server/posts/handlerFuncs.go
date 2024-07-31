@@ -22,6 +22,7 @@ import (
 // @Success 200 {object} responses.PostPreview
 // @Failure 400 {string} string
 // @Failure 404 {string} string
+// @Failure 409 {string} string
 // @Failure 500 {string} string
 // @Router /posts/ [post]
 // @Security Bearer
