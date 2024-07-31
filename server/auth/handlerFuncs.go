@@ -77,44 +77,19 @@ func LoginCallback(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func ValidateUserJWT(c *gin.Context) {
-
-	header := strings.Split(c.GetHeader("Authorization"), " ")
-	if len(header) < 2 {
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "not enough values in the auth header"})
-		c.Abort()
-		return
-	}
-
-	if strings.ToLower(header[0]) != "bearer" {
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid auth type"})
-		c.Abort()
-		return
-	}
-
-	jwtTokenString := header[1]
-
-	token, err := helpers.ValidateAccessToken(jwtTokenString)
-
-	if err != nil {
-		c.Error(err)
-		c.Abort()
-		return
-	}
-
-	spotifyID := token.Claims.(*requests.JWTClaims).SpotifyID
-	spotifyAccessToken := token.Claims.(*requests.JWTClaims).AccessToken
-	role := token.Claims.(*requests.JWTClaims).UserRole
-	username := token.Claims.(*requests.JWTClaims).Username
-
-	c.Set("spotifyID", spotifyID)
-	c.Set("userRole", role)
-	c.Set("spotifyUsername", username)
-	c.Set("spotifyAccessToken", spotifyAccessToken)
-
-	c.Next()
-}
-
+// @Summary Refreshes the current users JWT
+// @Description Refreshes the current users JWT
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param Cookie header string false "refresh JWT provided by login endpoint REFRESH_JWT=..."
+// @Param spotifyID path string true "User Spotify ID"
+// @Success 200 {object} responses.User 
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/{spotifyID} [get]
+// @Security Bearer
 func RefreshJWT(c *gin.Context) {
 
 	refresh_jwt, err := c.Cookie("REFRESH_JWT")
@@ -180,6 +155,45 @@ func RefreshJWT(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+func ValidateUserJWT(c *gin.Context) {
+
+	header := strings.Split(c.GetHeader("Authorization"), " ")
+	if len(header) < 2 {
+		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "not enough values in the auth header"})
+		c.Abort()
+		return
+	}
+
+	if strings.ToLower(header[0]) != "bearer" {
+		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid auth type"})
+		c.Abort()
+		return
+	}
+
+	jwtTokenString := header[1]
+
+	token, err := helpers.ValidateAccessToken(jwtTokenString)
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+	spotifyID := token.Claims.(*requests.JWTClaims).SpotifyID
+	spotifyAccessToken := token.Claims.(*requests.JWTClaims).AccessToken
+	role := token.Claims.(*requests.JWTClaims).UserRole
+	username := token.Claims.(*requests.JWTClaims).Username
+
+	c.Set("spotifyID", spotifyID)
+	c.Set("userRole", role)
+	c.Set("spotifyUsername", username)
+	c.Set("spotifyAccessToken", spotifyAccessToken)
+
+	c.Next()
+}
+
 
 func ValidateAdminUser(c *gin.Context) {
 
