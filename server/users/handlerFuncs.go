@@ -307,7 +307,6 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 204
-// @Failure 400 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/current [delete]

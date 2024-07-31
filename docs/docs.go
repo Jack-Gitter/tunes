@@ -1300,12 +1300,6 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
