@@ -11,6 +11,9 @@ documentation:
     swagger 
     users
         udpate role should not be allowed
+    posts
+        liking a post multiple times returns 204 rather than 409
+        disliking a post multiple times returns 204 rather than 409
     readme
         explain what this project is
         explain auth -- double submit cookies

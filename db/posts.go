@@ -433,13 +433,14 @@ func GetPostCommentsPaginated(spotifyID string, songID string, paginationKey tim
                   ORDER BY createdat DESC 
                   LIMIT 25 `
 
+
         rows, err := tx.Query(query, spotifyID, songID, paginationKey)
+
 
         if err != nil {
             return customerrors.WrapBasicError(err)
         }
 
-        paginationResponse := &responses.PaginationResponse[[]responses.Comment, time.Time]{PaginationKey: time.Now(), DataResponse: []responses.Comment{}}
         comments := []responses.Comment{}
 
         for rows.Next() {

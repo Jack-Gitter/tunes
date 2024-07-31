@@ -583,8 +583,8 @@ paths:
       summary: Deletes a specific post. Only accessible to admins
       tags:
       - Posts
-  /posts/current/{songID}:
-    delete:
+  /posts/comments/{spotifyID}/{songID}:
+    get:
       consumes:
       - application/json
       description: Gets the comments of a post
@@ -614,6 +614,10 @@ paths:
           description: Bad Request
           schema:
             type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
         "404":
           description: Not Found
           schema:
@@ -625,6 +629,39 @@ paths:
       security:
       - Bearer: []
       summary: Gets the comments of a post
+      tags:
+      - Posts
+  /posts/current/{songID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a post made by the current user
+      parameters:
+      - description: The songID of the posted song
+        in: path
+        name: songID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Deletes a post made by the current user
       tags:
       - Posts
     get:
@@ -644,8 +681,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.PostPreview'
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
           schema:
             type: string
         "404":
@@ -726,6 +763,10 @@ paths:
           description: Bad Request
           schema:
             type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
         "404":
           description: Not Found
           schema:
@@ -760,8 +801,8 @@ paths:
       responses:
         "204":
           description: No Content
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
           schema:
             type: string
         "404":
@@ -799,8 +840,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.PostPreview'
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
           schema:
             type: string
         "404":
@@ -822,11 +863,6 @@ paths:
       - application/json
       description: Get all of a users post previews
       parameters:
-      - description: The user whos posts are recieved. Value is a spotify ID
-        in: path
-        name: spotifyID
-        required: true
-        type: string
       - description: Pagination Key. Format is UTC timestamp
         in: query
         name: createdAt
@@ -842,8 +878,8 @@ paths:
           description: Bad Request
           schema:
             type: string
-        "404":
-          description: Not Found
+        "401":
+          description: Unauthorized
           schema:
             type: string
         "500":

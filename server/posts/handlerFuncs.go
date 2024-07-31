@@ -99,7 +99,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
 // @Param spotifyID path string true "Song ID of the post to like"
 // @Param songID path string true "Spotify ID of the user who posted the song"
 // @Success 204
-// @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /posts/likes/{spotifyID}/{songID} [post]
@@ -135,6 +135,7 @@ func LikePost(c *gin.Context) {
 // @Param songID path string true "Spotify ID of the user who posted the song"
 // @Success 204
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /posts/dislikes/{spotifyID}/{songID} [post]
@@ -170,7 +171,7 @@ func DislikePost(c *gin.Context) {
 // @Param spotifyID path string true "The user whos posts are recieved. Value is a spotify ID"
 // @Param createdAt query string false "Pagination Key. Format is UTC timestamp"
 // @Success 200 {object} responses.PostPreview
-// @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /posts/previews/users/{spotifyID} [get]
@@ -196,11 +197,10 @@ func GetAllPostsForUserByID(c *gin.Context) {
 // @Tags Posts
 // @Accept json
 // @Produce json
-// @Param spotifyID path string true "The user whos posts are recieved. Value is a spotify ID"
 // @Param createdAt query string false "Pagination Key. Format is UTC timestamp"
 // @Success 200 {object} responses.PostPreview
 // @Failure 400 {string} string 
-// @Failure 404 {string} string 
+// @Failure 401 {string} string 
 // @Failure 500 {string} string 
 // @Router /posts/previews/users/current [get]
 // @Security Bearer
@@ -262,7 +262,7 @@ func GetPostBySpotifyIDAndSongID(c *gin.Context) {
 // @Produce json
 // @Param songID path string true "The songID of the posted song"
 // @Success 200 {object} responses.PostPreview
-// @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /posts/current/{songID} [get]
@@ -436,7 +436,7 @@ func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationRespo
         t, err = time.Parse(time.RFC3339, createdAt)
 
         if err != nil {
-            return nil, customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"}
+            return nil, &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"}
         }
 
 	}
@@ -455,16 +455,17 @@ func getAllPosts(spotifyID string, createdAt string) (*responses.PaginationRespo
 // @Param createdAt query string false "Pagination Key. In the form of UTC timestamp"
 // @Success 200 {object} responses.PaginationResponse[[]responses.Comment, time.Time]
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
-// @Router /posts/current/{songID} [delete]
+// @Router /posts/comments/{spotifyID}/{songID} [get]
 // @Security Bearer
 func GetPostCommentsPaginated(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")
     createdAt := c.Query("createdAt")
 
-    var t time.Time
+    var t time.Time = time.Now().UTC()
     var err error
 
 	if createdAt != "" {
@@ -478,6 +479,7 @@ func GetPostCommentsPaginated(c *gin.Context) {
 	}
 
     resp, err := db.GetPostCommentsPaginated(spotifyID, songID, t)
+    fmt.Println(resp)
 
     if err != nil {
         c.Error(err)
@@ -485,5 +487,5 @@ func GetPostCommentsPaginated(c *gin.Context) {
         return
     }
 
-    c.JSON(http.StatusFound, resp)
+    c.JSON(http.StatusOK, resp)
 }
