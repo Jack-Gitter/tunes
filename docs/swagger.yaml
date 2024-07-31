@@ -866,8 +866,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.User'
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
           schema:
             type: string
         "404":
@@ -906,8 +906,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.PaginationResponse-array_responses_User-string'
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
           schema:
             type: string
         "404":
@@ -1034,12 +1034,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.User'
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
+        "401":
+          description: Unauthorized
           schema:
             type: string
         "500":
@@ -1094,7 +1090,7 @@ paths:
       parameters:
       - description: Spotify ID of other user to follow
         in: path
-        name: spotifyID
+        name: otherUserSpotifyID
         required: true
         type: string
       produces:
@@ -1108,6 +1104,10 @@ paths:
             type: string
         "404":
           description: Not Found
+          schema:
+            type: string
+        "409":
+          description: Conflict
           schema:
             type: string
         "500":
@@ -1141,8 +1141,8 @@ paths:
           description: Bad Request
           schema:
             type: string
-        "404":
-          description: Not Found
+        "401":
+          description: Unauthorized
           schema:
             type: string
         "500":
@@ -1172,6 +1172,10 @@ paths:
           description: No Content
         "400":
           description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
           schema:
             type: string
         "404":

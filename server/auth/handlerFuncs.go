@@ -160,7 +160,7 @@ func ValidateUserJWT(c *gin.Context) {
 
 	header := strings.Split(c.GetHeader("Authorization"), " ")
 	if len(header) < 2 {
-		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "not enough values in the auth header"})
+		c.Error(&customerrors.CustomError{StatusCode: http.StatusUnauthorized, Msg: "not enough values in the auth header"})
 		c.Abort()
 		return
 	}

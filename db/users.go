@@ -131,6 +131,7 @@ func UnfollowUser(spotifyID string, otherUserSpotifyID string) error {
 
 func FollowUser(spotifyID string, otherUserSpotifyID string) error {
 	query := "INSERT INTO followers (follower, userFollowed) VALUES ($1, $2)"
+    fmt.Println(spotifyID)
 
 	res, err := DB.Driver.Exec(query, spotifyID, otherUserSpotifyID)
 
@@ -203,13 +204,15 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
         }
 
         userResponses := []responses.User{}
+        bio := sql.NullString{}
 
         for rows.Next() {
             user := responses.User{}
-            err := rows.Scan(&user.SpotifyID, &user.Username, &user.Bio, &user.Role)
+            err := rows.Scan(&user.SpotifyID, &user.Username, &bio, &user.Role)
             if err != nil {
                 return customerrors.WrapBasicError(err)
             }
+            user.Bio = bio.String
             userResponses = append(userResponses, user)
         }
 

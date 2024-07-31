@@ -1259,14 +1259,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.User"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "string"
                         }
@@ -1398,7 +1392,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Spotify ID of other user to follow",
-                        "name": "spotifyID",
+                        "name": "otherUserSpotifyID",
                         "in": "path",
                         "required": true
                     }
@@ -1415,6 +1409,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "type": "string"
                         }
@@ -1467,8 +1467,8 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "string"
                         }
@@ -1515,6 +1515,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "string"
                         }
@@ -1568,8 +1574,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.User"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "string"
                         }
@@ -1629,8 +1635,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.PaginationResponse-array_responses_User-string"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "string"
                         }

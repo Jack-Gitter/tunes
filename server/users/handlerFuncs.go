@@ -1,7 +1,9 @@
 package users
 
 import (
+	"fmt"
 	"net/http"
+
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -15,10 +17,10 @@ import (
 // @Accept json
 // @Produce json
 // @Param spotifyID path string true "User Spotify ID"
-// @Success 200 {object} responses.User 
-// @Failure 400 {string} string 
-// @Failure 404 {string} string 
-// @Failure 500 {string} string 
+// @Success 200 {object} responses.User
+// @Failure 401 {string} string
+// @Failure 404 {string} string
+// @Failure 500 {string} string
 // @Router /users/{spotifyID} [get]
 // @Security Bearer
 func GetUserById(c *gin.Context) {
@@ -44,6 +46,7 @@ func GetUserById(c *gin.Context) {
 // @Param otherUserSpotifyID path string true "User to unfollow spotify ID"
 // @Success 204
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/current/unfollow/{otherUserSpotifyID} [delete]
@@ -85,7 +88,7 @@ func UnFollowUser(c *gin.Context) {
 // @Param spotifyID path string true "User spotify ID"
 // @Param spotifyID query string false "Pagination Key for follow up responses. This key is a spotify ID"
 // @Success 200 {object} responses.PaginationResponse[[]responses.User, string]
-// @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/{spotifyID}/followers/ [get]
@@ -118,7 +121,7 @@ func GetFollowersByID(c *gin.Context) {
 // @Param spotifyID query string false "Pagination Key for follow up responses. This key is a spotify ID"
 // @Success 200 {object} responses.PaginationResponse[[]responses.User, string]
 // @Failure 400 {string} string 
-// @Failure 404 {string} string 
+// @Failure 401 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/current/followers/ [get]
 // @Security Bearer
@@ -154,16 +157,19 @@ func GetFollowers(c *gin.Context) {
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param spotifyID path string true "Spotify ID of other user to follow"
+// @Param otherUserSpotifyID path string true "Spotify ID of other user to follow"
 // @Success 204 
 // @Failure 400 {string} string 
 // @Failure 404 {string} string 
+// @Failure 409 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/current/follow/{otherUserSpotifyID} [post]
 // @Security Bearer
 func FollowerUser(c *gin.Context) {
 	otherUserSpotifyID := c.Param("otherUserSpotifyID")
 	spotifyID, found := c.Get("spotifyID")
+
+    fmt.Println(otherUserSpotifyID)
 
 	if otherUserSpotifyID == spotifyID {
 		c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Following is not reflexive"})
@@ -195,8 +201,7 @@ func FollowerUser(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} responses.User
-// @Failure 400 {string} string 
-// @Failure 404 {string} string 
+// @Failure 401 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/current [get]
 // @Security Bearer
