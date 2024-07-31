@@ -37,6 +37,8 @@ func InitializeHttpServer() *gin.Engine {
                 userGroup.GET("/:spotifyID/followers", users.GetFollowersByID)
                 userGroup.POST("/current/follow/:otherUserSpotifyID", users.FollowerUser)
                 userGroup.DELETE("/current/unfollow/:otherUserSpotifyID", users.UnFollowUser)
+
+                // should not be able to update your role if you are not admin!
                 userGroup.PATCH("/current", validation.ValidateData(requests.ValidateUserRequestDTO), users.UpdateCurrentUserProperties)
                 userGroup.DELETE("/current", users.DeleteCurrentUser)
 

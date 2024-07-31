@@ -12,7 +12,7 @@ func ValidateData[T any](funcs ...func(T) error) func(c *gin.Context) {
         validationObject := new(T)
         err := c.ShouldBindBodyWithJSON(&validationObject)
         if err != nil {
-            c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: err.Error()})
+            c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "JSON Body does not conform to expected data model"})
             c.Abort()
             return
         }

@@ -45,7 +45,6 @@ func GetUserById(c *gin.Context) {
 // @Produce json
 // @Param otherUserSpotifyID path string true "User to unfollow spotify ID"
 // @Success 204
-// @Failure 400 {string} string 
 // @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
@@ -160,6 +159,7 @@ func GetFollowers(c *gin.Context) {
 // @Param otherUserSpotifyID path string true "Spotify ID of other user to follow"
 // @Success 204 
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 409 {string} string 
 // @Failure 500 {string} string 
@@ -202,6 +202,7 @@ func FollowerUser(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} responses.User
 // @Failure 401 {string} string 
+// @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/current [get]
 // @Security Bearer
@@ -271,7 +272,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
 // @Param UpdateUserDTO body requests.UpdateUserRequestDTO true "Information to update"
 // @Success 200 {object} responses.User
 // @Failure 400 {string} string 
-// @Failure 404 {string} string 
+// @Failure 401 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/current [patch]
 // @Security Bearer

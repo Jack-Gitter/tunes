@@ -9,8 +9,8 @@ general
 
 documentation: 
     swagger 
-        comments
-        login/auth endpoints
+    users
+        udpate role should not be allowed
     readme
         explain what this project is
         explain auth -- double submit cookies
