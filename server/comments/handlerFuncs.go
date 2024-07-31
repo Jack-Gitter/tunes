@@ -9,6 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Creates a comment for the current user
+// @Description Creates a comment for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param CreatePostDTO body requests.CreateCommentDTO true "Information required to create a commment"
+// @Param spotifyID path string true "spotifyID of poster"
+// @Param songID path string true "songID of post to make a comment on"
+// @Success 200 {object} responses.Comment
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /comments/{spotifyID}/{songID} [post]
+// @Security Bearer
 func CreateComment(c *gin.Context) {
 
     commentorID, exists := c.Get("spotifyID")
@@ -37,6 +51,18 @@ func CreateComment(c *gin.Context) {
 
 }
 
+// @Summary Deletes a comment Must be admin
+// @Description Deletes a comment. Must be admin
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param commentID path string true "Comment ID of comment to delete"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /comments/{commentID} [delete]
+// @Security Bearer
 func DeleteComment(c *gin.Context) {
 
     commentID := c.Param("commentID")
@@ -52,6 +78,18 @@ func DeleteComment(c *gin.Context) {
     c.Status(http.StatusNoContent)
 }
 
+// @Summary Deletes a comment for the current user
+// @Description Deletes a comment for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param commentID path string true "Comment ID of comment to delete"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /comments/current/{commentID} [delete]
+// @Security Bearer
 func DeleteCurrentUserComment(c *gin.Context) {
 
     commentID := c.Param("commentID")
@@ -74,6 +112,18 @@ func DeleteCurrentUserComment(c *gin.Context) {
     c.Status(http.StatusNoContent)
 }
 
+// @Summary Retrieves a comment
+// @Description Retrieves a comment
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param commentID path string true "Comment ID of comment to retrieve"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /comments/{commentID} [get]
+// @Security Bearer
 func GetComment(c *gin.Context)  {
 
     commentID := c.Param("commentID") 
@@ -90,6 +140,18 @@ func GetComment(c *gin.Context)  {
 
 }
 
+// @Summary Like a comment
+// @Description Like a comment
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param commentID path string true "Comment ID of comment to like"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /comments/like/{commentID} [post]
+// @Security Bearer
 func LikeComment(c *gin.Context) {
     commentID := c.Param("commentID")
     spotifyID, exists := c.Get("spotifyID")
@@ -113,6 +175,18 @@ func LikeComment(c *gin.Context) {
 
 }
 
+// @Summary Dislike a comment
+// @Description Dislike a comment
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param commentID path string true "Comment ID of comment to dislike"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /comments/dislike/{commentID} [post]
+// @Security Bearer
 func DislikeComment(c *gin.Context) {
     commentID := c.Param("commentID")
     spotifyID, exists := c.Get("spotifyID")
@@ -135,6 +209,18 @@ func DislikeComment(c *gin.Context) {
     c.Status(http.StatusNoContent)
 }
 
+// @Summary Delete a vote on a comment for the current user
+// @Description Delete a vote on a comment for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param commentID path string true "Comment ID of comment to remove the vote from"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /comments/votes/current/{commentID} [delete]
+// @Security Bearer
 func RemoveCommentVote(c *gin.Context) {
 
     commentID := c.Param("commentID")
@@ -158,6 +244,19 @@ func RemoveCommentVote(c *gin.Context) {
 
 }
 
+// @Summary Updates a comment for the current user
+// @Description Updates a comment for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param commentID path string true "Comment ID of comment to update"
+// @Param UpdateCommentDTO body requests.UpdateCommentDTO true "Comment data to update"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /comments/current/{commentID} [patch]
+// @Security Bearer
 func UpdateComment(c *gin.Context) {
 
     commentID := c.Param("commentID")

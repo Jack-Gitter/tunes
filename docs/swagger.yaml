@@ -1,4 +1,9 @@
 definitions:
+  requests.CreateCommentDTO:
+    properties:
+      commentText:
+        type: string
+    type: object
   requests.CreatePostDTO:
     properties:
       rating:
@@ -6,6 +11,11 @@ definitions:
       songID:
         type: string
       text:
+        type: string
+    type: object
+  requests.UpdateCommentDTO:
+    properties:
+      commentText:
         type: string
     type: object
   requests.UpdatePostRequestDTO:
@@ -128,6 +138,287 @@ info:
   title: Tunes backend API
   version: "1.0"
 paths:
+  /comments/{commentID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a comment. Must be admin
+      parameters:
+      - description: Comment ID of comment to delete
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Deletes a comment Must be admin
+      tags:
+      - Posts
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a comment
+      parameters:
+      - description: Comment ID of comment to retrieve
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Retrieves a comment
+      tags:
+      - Posts
+  /comments/{spotifyID}/{songID}:
+    post:
+      consumes:
+      - application/json
+      description: Creates a comment for the current user
+      parameters:
+      - description: Information required to create a commment
+        in: body
+        name: CreatePostDTO
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateCommentDTO'
+      - description: spotifyID of poster
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      - description: songID of post to make a comment on
+        in: path
+        name: songID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.Comment'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Creates a comment for the current user
+      tags:
+      - Posts
+  /comments/current/{commentID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a comment for the current user
+      parameters:
+      - description: Comment ID of comment to delete
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Deletes a comment for the current user
+      tags:
+      - Posts
+    patch:
+      consumes:
+      - application/json
+      description: Updates a comment for the current user
+      parameters:
+      - description: Comment ID of comment to update
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Comment data to update
+        in: body
+        name: UpdateCommentDTO
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateCommentDTO'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Updates a comment for the current user
+      tags:
+      - Posts
+  /comments/dislike/{commentID}:
+    post:
+      consumes:
+      - application/json
+      description: Dislike a comment
+      parameters:
+      - description: Comment ID of comment to dislike
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Dislike a comment
+      tags:
+      - Posts
+  /comments/like/{commentID}:
+    post:
+      consumes:
+      - application/json
+      description: Like a comment
+      parameters:
+      - description: Comment ID of comment to like
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Like a comment
+      tags:
+      - Posts
+  /comments/votes/current/{commentID}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a vote on a comment for the current user
+      parameters:
+      - description: Comment ID of comment to remove the vote from
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Delete a vote on a comment for the current user
+      tags:
+      - Posts
   /posts:
     post:
       consumes:
@@ -239,44 +530,6 @@ paths:
       security:
       - Bearer: []
       summary: Get apath specific post
-      tags:
-      - Posts
-  /posts/current/{posterSpotifyID}/{songID}:
-    delete:
-      consumes:
-      - application/json
-      description: Removes a vote for the current user on a post
-      parameters:
-      - description: The songID of the posted song
-        in: path
-        name: songID
-        required: true
-        type: string
-      - description: The user who posted the post spotify ID
-        in: path
-        name: posterSpotifyID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Removes a vote for the current user on a post
       tags:
       - Posts
   /posts/current/{songID}:
@@ -549,6 +802,44 @@ paths:
       security:
       - Bearer: []
       summary: Get all of a users post previews
+      tags:
+      - Posts
+  /posts/votes/current/{posterSpotifyID}/{songID}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a vote for the current user on a post
+      parameters:
+      - description: The songID of the posted song
+        in: path
+        name: songID
+        required: true
+        type: string
+      - description: The user who posted the post spotify ID
+        in: path
+        name: posterSpotifyID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Removes a vote for the current user on a post
       tags:
       - Posts
   /users/{spotifyID}:
