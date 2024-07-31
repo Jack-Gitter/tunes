@@ -236,6 +236,8 @@ func GetCurrentUser(c *gin.Context) {
 // @Param spotifyID path string true "Spotify ID of the user to update"
 // @Success 200 {object} responses.User
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 403 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/admin/{spotifyID} [patch]
@@ -337,7 +339,8 @@ func DeleteCurrentUser(c *gin.Context) {
 // @Produce json
 // @Success 204
 // @Param spotifyID path string true "Spotify ID of the user to delete"
-// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 403 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/admin/{spotifyID} [delete]
