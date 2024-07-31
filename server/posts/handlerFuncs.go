@@ -326,7 +326,7 @@ func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 // @Produce json
 // @Param songID path string true "The songID of the posted song"
 // @Success 204
-// @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /posts/current/{songID} [delete]
@@ -363,6 +363,7 @@ func DeletePostForCurrentUserBySongID(c *gin.Context) {
 // @Param UpdatePostDTO body requests.UpdatePostRequestDTO true "The fields to update"
 // @Success 200 {object} responses.PostPreview
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /posts/current/{songID} [patch]

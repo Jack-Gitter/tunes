@@ -59,10 +59,14 @@ func InitializeHttpServer() *gin.Engine {
                 postGroup.GET("/previews/users/:spotifyID", posts.GetAllPostsForUserByID)
                 postGroup.GET("/comments/:spotifyID/:songID", posts.GetPostCommentsPaginated)
                 postGroup.POST("/", validation.ValidateData(requests.ValidateCreatePostDTO),  posts.CreatePostForCurrentUser)
+                // should not be able to do so multiple times
                 postGroup.POST("/likes/:spotifyID/:songID", posts.LikePost)
                 postGroup.POST("/dislikes/:spotifyID/:songID", posts.DislikePost)
+                // the likes do not get returned here... :(
                 postGroup.PATCH("/current/:songID", validation.ValidateData(requests.ValidateUpdatePostRequestDTO), posts.UpdateCurrentUserPost)
                 postGroup.DELETE("/current/:songID", posts.DeletePostForCurrentUserBySongID)
+
+                // need to test from here down
                 postGroup.DELETE("/votes/current/:posterSpotifyID/:songID",  posts.RemovePostVote)
 
                 adminOnly := postGroup.Group("/admin", auth.ValidateAdminUser)
