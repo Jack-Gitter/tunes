@@ -7,15 +7,19 @@ import (
 )
 
 type CreatePostDTO struct {
-	SongID string
-	Rating int
-	Text   string
+	SongID *string
+	Rating *int
+	Text   *string
 }
 
 
 func ValidateCreatePostDTO(createPostDTO CreatePostDTO) error {
-    if createPostDTO.Rating < 0 || createPostDTO.Rating > 5 {
-        return &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"}
+    if createPostDTO.SongID == nil {
+        return &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Must provide a spotifyID"}
     }
+    if createPostDTO.Rating != nil && (*createPostDTO.Rating < 0 || *createPostDTO.Rating > 5) {
+        return &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Rating must be between 0 and 5"}
+    }
+
     return nil
 }

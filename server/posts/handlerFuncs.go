@@ -21,6 +21,7 @@ import (
 // @Param createPostDTO body requests.CreatePostDTO true "Information required to create a post"
 // @Success 200 {object} responses.PostPreview
 // @Failure 400 {string} string
+// @Failure 401 {string} string
 // @Failure 404 {string} string
 // @Failure 409 {string} string
 // @Failure 500 {string} string
@@ -42,7 +43,7 @@ func CreatePostForCurrentUser(c *gin.Context) {
 	c.ShouldBindBodyWithJSON(createPostDTO)
     fmt.Println(createPostDTO)
 
-	spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(createPostDTO.SongID, spotifyAccessToken.(string))
+	spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(*createPostDTO.SongID, spotifyAccessToken.(string))
 
 	if err != nil {
 		c.Error(err)
@@ -55,15 +56,24 @@ func CreatePostForCurrentUser(c *gin.Context) {
 		albumImage = spotifySongResponse.Album.Images[0].Url
 	}
 
+    if createPostDTO.Rating == nil {
+        rating := 0
+        createPostDTO.Rating = &rating
+    }
+    if createPostDTO.Text == nil {
+        text := ""
+        createPostDTO.Text = &text
+    }
+
 	resp, err := db.CreatePost(
 		spotifyID.(string),
-		createPostDTO.SongID,
+		*createPostDTO.SongID,
 		spotifySongResponse.Name,
 		spotifySongResponse.Album.Id,
 		spotifySongResponse.Album.Name,
 		albumImage,
-		createPostDTO.Rating,
-		createPostDTO.Text,
+		*createPostDTO.Rating,
+		*createPostDTO.Text,
 		time.Now().UTC(),
 		spotifyUsername.(string),
 	)
