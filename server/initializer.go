@@ -36,7 +36,7 @@ func InitializeHttpServer() *gin.Engine {
                 userGroup.GET("/current/followers", users.GetFollowers)
                 userGroup.GET("/:spotifyID/followers", users.GetFollowersByID)
                 userGroup.POST("/current/follow/:otherUserSpotifyID", users.FollowerUser)
-                userGroup.POST("/current/unfollow/:otherUserSpotifyID", users.UnFollowUser)
+                userGroup.DELETE("/current/unfollow/:otherUserSpotifyID", users.UnFollowUser)
                 userGroup.PATCH("/current", validation.ValidateData(requests.ValidateUserRequestDTO), users.UpdateCurrentUserProperties)
                 userGroup.DELETE("/current", users.DeleteCurrentUser)
 

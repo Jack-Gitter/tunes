@@ -61,7 +61,7 @@ func CreateComment(c *gin.Context) {
 // @Failure 400 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
-// @Router /comments/{commentID} [delete]
+// @Router /comments/admin/{commentID} [delete]
 // @Security Bearer
 func DeleteComment(c *gin.Context) {
 

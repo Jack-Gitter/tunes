@@ -285,7 +285,7 @@ func GetPostCurrentUserBySongID(c *gin.Context) {
 // @Failure 400 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
-// @Router /posts/{spotifyID}/{songID} [delete]
+// @Router /posts/admin/{spotifyID}/{songID} [delete]
 // @Security Bearer
 func DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 

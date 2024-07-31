@@ -41,13 +41,12 @@ func GetUserById(c *gin.Context) {
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param spotifyID path string true "User spotify ID"
 // @Param otherUserSpotifyID path string true "User to unfollow spotify ID"
 // @Success 204
 // @Failure 400 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
-// @Router /users/current/unfollow/{otherUserSpotifyID} [post]
+// @Router /users/current/unfollow/{otherUserSpotifyID} [delete]
 // @Security Bearer
 func UnFollowUser(c *gin.Context) {
 
@@ -155,7 +154,7 @@ func GetFollowers(c *gin.Context) {
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param spotifyID path string false "Spotify ID of other user to follow"
+// @Param spotifyID path string true "Spotify ID of other user to follow"
 // @Success 204 
 // @Failure 400 {string} string 
 // @Failure 404 {string} string 
@@ -227,12 +226,13 @@ func GetCurrentUser(c *gin.Context) {
 // @Tags Users
 // @Accept json
 // @Produce json
+// @Param UpdateUserDTO body requests.UpdateUserRequestDTO true "Information to update"
 // @Param spotifyID path string true "Spotify ID of the user to update"
 // @Success 200 {object} responses.User
 // @Failure 400 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
-// @Router /users/{spotifyID} [patch]
+// @Router /users/admin/{spotifyID} [patch]
 // @Security Bearer
 func UpdateUserBySpotifyID(c *gin.Context) {
 
@@ -263,6 +263,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
 // @Tags Users
 // @Accept json
 // @Produce json
+// @Param UpdateUserDTO body requests.UpdateUserRequestDTO true "Information to update"
 // @Success 200 {object} responses.User
 // @Failure 400 {string} string 
 // @Failure 404 {string} string 
@@ -334,7 +335,7 @@ func DeleteCurrentUser(c *gin.Context) {
 // @Failure 400 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
-// @Router /users/{spotifyID} [delete]
+// @Router /users/admin/{spotifyID} [delete]
 // @Security Bearer
 func DeleteUserBySpotifyID(c *gin.Context) {
 

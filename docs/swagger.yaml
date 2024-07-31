@@ -25,6 +25,13 @@ definitions:
       review:
         type: string
     type: object
+  requests.UpdateUserRequestDTO:
+    properties:
+      bio:
+        type: string
+      userRole:
+        $ref: '#/definitions/responses.Role'
+    type: object
   responses.Comment:
     properties:
       commentID:
@@ -136,38 +143,6 @@ info:
   version: "1.0"
 paths:
   /comments/{commentID}:
-    delete:
-      consumes:
-      - application/json
-      description: Deletes a comment. Must be admin
-      parameters:
-      - description: Comment ID of comment to delete
-        in: path
-        name: commentID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Deletes a comment Must be admin
-      tags:
-      - Comments
     get:
       consumes:
       - application/json
@@ -244,6 +219,39 @@ paths:
       security:
       - Bearer: []
       summary: Creates a comment for the current user
+      tags:
+      - Comments
+  /comments/admin/{commentID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a comment. Must be admin
+      parameters:
+      - description: Comment ID of comment to delete
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Deletes a comment Must be admin
       tags:
       - Comments
   /comments/current/{commentID}:
@@ -840,38 +848,6 @@ paths:
       tags:
       - Posts
   /users/{spotifyID}:
-    delete:
-      consumes:
-      - application/json
-      description: Deletes a user account by spotify ID
-      parameters:
-      - description: Spotify ID of the user to delete
-        in: path
-        name: spotifyID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Deletes a user account by spotify ID
-      tags:
-      - Users
     get:
       consumes:
       - application/json
@@ -904,40 +880,6 @@ paths:
       security:
       - Bearer: []
       summary: Gets a tunes user by their spotify ID
-      tags:
-      - Users
-    patch:
-      consumes:
-      - application/json
-      description: Updates a user by their spotify ID. Only accessable to admins
-      parameters:
-      - description: Spotify ID of the user to update
-        in: path
-        name: spotifyID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.User'
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Updates a user by their spotify ID. Only accessable to admins
       tags:
       - Users
   /users/{spotifyID}/followers/:
@@ -978,6 +920,79 @@ paths:
       security:
       - Bearer: []
       summary: Gets a users followers by their spotify ID
+      tags:
+      - Users
+  /users/admin/{spotifyID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a user account by spotify ID
+      parameters:
+      - description: Spotify ID of the user to delete
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Deletes a user account by spotify ID
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Updates a user by their spotify ID. Only accessable to admins
+      parameters:
+      - description: Information to update
+        in: body
+        name: UpdateUserDTO
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateUserRequestDTO'
+      - description: Spotify ID of the user to update
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.User'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Updates a user by their spotify ID. Only accessable to admins
       tags:
       - Users
   /users/current:
@@ -1039,6 +1054,13 @@ paths:
       consumes:
       - application/json
       description: Updates the current user
+      parameters:
+      - description: Information to update
+        in: body
+        name: UpdateUserDTO
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateUserRequestDTO'
       produces:
       - application/json
       responses:
@@ -1072,6 +1094,7 @@ paths:
       - description: Spotify ID of other user to follow
         in: path
         name: spotifyID
+        required: true
         type: string
       produces:
       - application/json
@@ -1131,16 +1154,11 @@ paths:
       tags:
       - Users
   /users/current/unfollow/{otherUserSpotifyID}:
-    post:
+    delete:
       consumes:
       - application/json
       description: Unfollowers a user for the currently signed in user
       parameters:
-      - description: User spotify ID
-        in: path
-        name: spotifyID
-        required: true
-        type: string
       - description: User to unfollow spotify ID
         in: path
         name: otherUserSpotifyID

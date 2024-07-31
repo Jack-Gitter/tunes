@@ -18,6 +18,58 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/comments/admin/{commentID}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Deletes a comment. Must be admin",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Deletes a comment Must be admin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID of comment to delete",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/comments/current/{commentID}": {
             "delete": {
                 "security": [
@@ -307,56 +359,6 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Comment ID of comment to retrieve",
-                        "name": "commentID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Deletes a comment. Must be admin",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Comments"
-                ],
-                "summary": "Deletes a comment Must be admin",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Comment ID of comment to delete",
                         "name": "commentID",
                         "in": "path",
                         "required": true
@@ -1116,6 +1118,120 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/admin/{spotifyID}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Deletes a user account by spotify ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Deletes a user account by spotify ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Spotify ID of the user to delete",
+                        "name": "spotifyID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Updates a user by their spotify ID. Only accessable to admins",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Updates a user by their spotify ID. Only accessable to admins",
+                "parameters": [
+                    {
+                        "description": "Information to update",
+                        "name": "UpdateUserDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateUserRequestDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Spotify ID of the user to update",
+                        "name": "spotifyID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/users/current": {
             "get": {
                 "security": [
@@ -1219,6 +1335,17 @@ const docTemplate = `{
                     "Users"
                 ],
                 "summary": "Updates the current user",
+                "parameters": [
+                    {
+                        "description": "Information to update",
+                        "name": "UpdateUserDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateUserRequestDTO"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1270,7 +1397,8 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Spotify ID of other user to follow",
                         "name": "spotifyID",
-                        "in": "path"
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1353,7 +1481,7 @@ const docTemplate = `{
             }
         },
         "/users/current/unfollow/{otherUserSpotifyID}": {
-            "post": {
+            "delete": {
                 "security": [
                     {
                         "Bearer": []
@@ -1371,13 +1499,6 @@ const docTemplate = `{
                 ],
                 "summary": "Unfollowers a user for the currently signed in user",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User spotify ID",
-                        "name": "spotifyID",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "User to unfollow spotify ID",
@@ -1433,109 +1554,6 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "User Spotify ID",
-                        "name": "spotifyID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.User"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Deletes a user account by spotify ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Deletes a user account by spotify ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Spotify ID of the user to delete",
-                        "name": "spotifyID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Updates a user by their spotify ID. Only accessable to admins",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Updates a user by their spotify ID. Only accessable to admins",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Spotify ID of the user to update",
                         "name": "spotifyID",
                         "in": "path",
                         "required": true
@@ -1670,6 +1688,17 @@ const docTemplate = `{
                 },
                 "review": {
                     "type": "string"
+                }
+            }
+        },
+        "requests.UpdateUserRequestDTO": {
+            "type": "object",
+            "properties": {
+                "bio": {
+                    "type": "string"
+                },
+                "userRole": {
+                    "$ref": "#/definitions/responses.Role"
                 }
             }
         },
