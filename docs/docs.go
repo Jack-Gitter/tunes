@@ -33,7 +33,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Deletes a comment for the current user",
                 "parameters": [
@@ -83,7 +83,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Updates a comment for the current user",
                 "parameters": [
@@ -144,7 +144,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Dislike a comment",
                 "parameters": [
@@ -196,7 +196,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Like a comment",
                 "parameters": [
@@ -248,7 +248,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Delete a vote on a comment for the current user",
                 "parameters": [
@@ -300,7 +300,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Retrieves a comment",
                 "parameters": [
@@ -350,7 +350,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Deletes a comment Must be admin",
                 "parameters": [
@@ -402,7 +402,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Creates a comment for the current user",
                 "parameters": [
@@ -1835,10 +1835,6 @@ const docTemplate = `{
             "name": "Authorization",
             "in": "header"
         }
-    },
-    "externalDocs": {
-        "description": "OpenAPI",
-        "url": "https://swagger.io/resources/open-api/"
     }
 }`
 

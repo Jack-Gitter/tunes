@@ -25,7 +25,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Deletes a comment for the current user",
                 "parameters": [
@@ -75,7 +75,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Updates a comment for the current user",
                 "parameters": [
@@ -136,7 +136,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Dislike a comment",
                 "parameters": [
@@ -188,7 +188,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Like a comment",
                 "parameters": [
@@ -240,7 +240,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Delete a vote on a comment for the current user",
                 "parameters": [
@@ -292,7 +292,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Retrieves a comment",
                 "parameters": [
@@ -342,7 +342,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Deletes a comment Must be admin",
                 "parameters": [
@@ -394,7 +394,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Comments"
                 ],
                 "summary": "Creates a comment for the current user",
                 "parameters": [
@@ -1827,9 +1827,5 @@
             "name": "Authorization",
             "in": "header"
         }
-    },
-    "externalDocs": {
-        "description": "OpenAPI",
-        "url": "https://swagger.io/resources/open-api/"
     }
 }

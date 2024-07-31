@@ -11,7 +11,7 @@ import (
 
 // @Summary Creates a comment for the current user
 // @Description Creates a comment for the current user
-// @Tags Posts
+// @Tags Comments
 // @Accept json
 // @Produce json
 // @Param CreatePostDTO body requests.CreateCommentDTO true "Information required to create a commment"
@@ -53,7 +53,7 @@ func CreateComment(c *gin.Context) {
 
 // @Summary Deletes a comment Must be admin
 // @Description Deletes a comment. Must be admin
-// @Tags Posts
+// @Tags Comments
 // @Accept json
 // @Produce json
 // @Param commentID path string true "Comment ID of comment to delete"
@@ -80,7 +80,7 @@ func DeleteComment(c *gin.Context) {
 
 // @Summary Deletes a comment for the current user
 // @Description Deletes a comment for the current user
-// @Tags Posts
+// @Tags Comments
 // @Accept json
 // @Produce json
 // @Param commentID path string true "Comment ID of comment to delete"
@@ -114,7 +114,7 @@ func DeleteCurrentUserComment(c *gin.Context) {
 
 // @Summary Retrieves a comment
 // @Description Retrieves a comment
-// @Tags Posts
+// @Tags Comments
 // @Accept json
 // @Produce json
 // @Param commentID path string true "Comment ID of comment to retrieve"
@@ -142,7 +142,7 @@ func GetComment(c *gin.Context)  {
 
 // @Summary Like a comment
 // @Description Like a comment
-// @Tags Posts
+// @Tags Comments
 // @Accept json
 // @Produce json
 // @Param commentID path string true "Comment ID of comment to like"
@@ -177,7 +177,7 @@ func LikeComment(c *gin.Context) {
 
 // @Summary Dislike a comment
 // @Description Dislike a comment
-// @Tags Posts
+// @Tags Comments
 // @Accept json
 // @Produce json
 // @Param commentID path string true "Comment ID of comment to dislike"
@@ -211,7 +211,7 @@ func DislikeComment(c *gin.Context) {
 
 // @Summary Delete a vote on a comment for the current user
 // @Description Delete a vote on a comment for the current user
-// @Tags Posts
+// @Tags Comments
 // @Accept json
 // @Produce json
 // @Param commentID path string true "Comment ID of comment to remove the vote from"
@@ -246,7 +246,7 @@ func RemoveCommentVote(c *gin.Context) {
 
 // @Summary Updates a comment for the current user
 // @Description Updates a comment for the current user
-// @Tags Posts
+// @Tags Comments
 // @Accept json
 // @Produce json
 // @Param commentID path string true "Comment ID of comment to update"

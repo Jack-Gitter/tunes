@@ -127,9 +127,6 @@ definitions:
       username:
         type: string
     type: object
-externalDocs:
-  description: OpenAPI
-  url: https://swagger.io/resources/open-api/
 info:
   contact:
     email: jack.a.gitter@gmail.com
@@ -170,7 +167,7 @@ paths:
       - Bearer: []
       summary: Deletes a comment Must be admin
       tags:
-      - Posts
+      - Comments
     get:
       consumes:
       - application/json
@@ -202,7 +199,7 @@ paths:
       - Bearer: []
       summary: Retrieves a comment
       tags:
-      - Posts
+      - Comments
   /comments/{spotifyID}/{songID}:
     post:
       consumes:
@@ -248,7 +245,7 @@ paths:
       - Bearer: []
       summary: Creates a comment for the current user
       tags:
-      - Posts
+      - Comments
   /comments/current/{commentID}:
     delete:
       consumes:
@@ -281,7 +278,7 @@ paths:
       - Bearer: []
       summary: Deletes a comment for the current user
       tags:
-      - Posts
+      - Comments
     patch:
       consumes:
       - application/json
@@ -319,7 +316,7 @@ paths:
       - Bearer: []
       summary: Updates a comment for the current user
       tags:
-      - Posts
+      - Comments
   /comments/dislike/{commentID}:
     post:
       consumes:
@@ -352,7 +349,7 @@ paths:
       - Bearer: []
       summary: Dislike a comment
       tags:
-      - Posts
+      - Comments
   /comments/like/{commentID}:
     post:
       consumes:
@@ -385,7 +382,7 @@ paths:
       - Bearer: []
       summary: Like a comment
       tags:
-      - Posts
+      - Comments
   /comments/votes/current/{commentID}:
     delete:
       consumes:
@@ -418,7 +415,7 @@ paths:
       - Bearer: []
       summary: Delete a vote on a comment for the current user
       tags:
-      - Posts
+      - Comments
   /posts:
     post:
       consumes:
