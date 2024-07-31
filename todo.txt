@@ -5,7 +5,7 @@ endpoints:
         users
             make a getFeed endpoint which gets all of the posts from the users followers and returns the top x most recent, make it paginated
 general 
-    get rid of magic numbers in error handling
+    get rid of magic numbers in error handling -- easy
 
 documentation: 
     swagger 
