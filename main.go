@@ -13,9 +13,6 @@ import (
 // @contact.name   Jack Gitter
 // @contact.email  jack.a.gitter@gmail.com
 
-// @externalDocs.description  OpenAPI
-// @externalDocs.url          https://swagger.io/resources/open-api/
-
 // @securityDefinitions.apikey Bearer
 // @in header
 // @name Authorization
