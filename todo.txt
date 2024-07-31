@@ -2,10 +2,10 @@ tunes todos:
 
 endpoints: 
     general
-        c.shouldbindURI? -- can/should make a middleware to validate path params using c.shouldbindURI -- yes, I'm being lazy asf
-            make a generic middleware which takes in an object, and then does c.shouldbinduri on it also takes in a function to call stuff on... prety much same as existing
         users
             make a getFeed endpoint which gets all of the posts from the users followers and returns the top x most recent, make it paginated
+general 
+    get rid of magic numbers in error handling
 
 documentation: 
     swagger 
@@ -22,6 +22,7 @@ documentation:
         explain transaction retries/isolation level race conditions
         explain JWT/spotify login
         explain swagger usage 
+        caching/redis approach
 
 dockerize:
     postgres
