@@ -502,6 +502,12 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -1102,11 +1108,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.PostPreview"
+                            "$ref": "#/definitions/responses.Post"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "string"
                         }
@@ -1793,6 +1805,56 @@ const docTemplate = `{
                     }
                 },
                 "paginationKey": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.Post": {
+            "type": "object",
+            "properties": {
+                "albumArtURI": {
+                    "type": "string"
+                },
+                "albumID": {
+                    "type": "string"
+                },
+                "albumName": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dislikes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserIdentifer"
+                    }
+                },
+                "likes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserIdentifer"
+                    }
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "songID": {
+                    "type": "string"
+                },
+                "songName": {
+                    "type": "string"
+                },
+                "spotifyID": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

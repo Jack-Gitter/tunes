@@ -51,6 +51,7 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
     post := &responses.Post{}
 
     transaction := func() error {
+
         tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
         if err != nil {
@@ -72,7 +73,6 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
 
         row := tx.QueryRow(query, spotifyID, postID)
 
-        post := &responses.Post{}
         albumArtUri := sql.NullString{}
 
         err = row.Scan(&albumArtUri,
@@ -107,16 +107,16 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
         }
 
         for rows.Next() {
-            userID := &responses.UserIdentifer{}
+            userID := responses.UserIdentifer{}
             liked := true
             err := rows.Scan(&userID.SpotifyID, &userID.Username, &liked)
             if err != nil {
                 return customerrors.WrapBasicError(err)
             }
             if liked {
-                post.Likes = append(post.Likes, *userID)
+                post.Likes = append(post.Likes, userID)
             } else {
-                post.Dislikes = append(post.Dislikes, *userID)
+                post.Dislikes = append(post.Dislikes, userID)
             }
         }
 
@@ -125,6 +125,8 @@ func GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
         if err != nil {
             return customerrors.WrapBasicError(err)
         }
+
+        fmt.Println(post)
 
         return nil
 
@@ -224,7 +226,6 @@ func GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*respo
                     return customerrors.WrapBasicError(err)
                 }
                 if liked {
-                    fmt.Println(vote)
                     postPreviewsResponse[i].Likes = append(postPreviewsResponse[i].Likes, vote)
                 } else {
                     postPreviewsResponse[i].Dislikes = append(postPreviewsResponse[i].Dislikes, vote)

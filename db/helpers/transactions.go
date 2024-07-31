@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"math"
 	"net/http"
 	"time"
@@ -16,14 +15,12 @@ func RunTransactionWithExponentialBackoff(transFunc func() error, retryTimes int
 
     for i := 0; i < retryTimes; i++ {
 
-        fmt.Println("trying transaction!")
         err := transFunc()
 
         if err != nil {
             switch err := err.(type) {
                 case *customerrors.CustomError: 
                     if err.StatusCode == 40001 {
-                        fmt.Println("we are backing off!!!")
                         val := math.Pow(100, backoff)
                         backoff+=1
                         time.Sleep(time.Millisecond * time.Duration(val))

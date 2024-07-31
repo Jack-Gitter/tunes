@@ -232,8 +232,9 @@ func GetAllPostsForCurrentUser(c *gin.Context) {
 // @Produce json
 // @Param spotifyID path string true "The user who posted the song"
 // @Param songID path string true "The songID of the posted song"
-// @Success 200 {object} responses.PostPreview
+// @Success 200 {object} responses.Post
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /posts/{spotifyID}/{songID} [get]

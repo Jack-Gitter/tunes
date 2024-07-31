@@ -73,6 +73,39 @@ definitions:
       paginationKey:
         type: string
     type: object
+  responses.Post:
+    properties:
+      albumArtURI:
+        type: string
+      albumID:
+        type: string
+      albumName:
+        type: string
+      createdAt:
+        type: string
+      dislikes:
+        items:
+          $ref: '#/definitions/responses.UserIdentifer'
+        type: array
+      likes:
+        items:
+          $ref: '#/definitions/responses.UserIdentifer'
+        type: array
+      rating:
+        type: integer
+      songID:
+        type: string
+      songName:
+        type: string
+      spotifyID:
+        type: string
+      text:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
   responses.PostPreview:
     properties:
       albumArtURI:
@@ -447,6 +480,10 @@ paths:
           description: Bad Request
           schema:
             type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
         "404":
           description: Not Found
           schema:
@@ -486,9 +523,13 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.PostPreview'
+            $ref: '#/definitions/responses.Post'
         "400":
           description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
           schema:
             type: string
         "404":
