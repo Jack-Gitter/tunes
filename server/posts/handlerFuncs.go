@@ -472,7 +472,7 @@ func GetPostCommentsPaginated(c *gin.Context) {
 		t, err = time.Parse(time.RFC3339, createdAt)
 
         if err != nil {
-            c.Error(customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"})
+            c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"})
             c.Abort()
             return
         }
