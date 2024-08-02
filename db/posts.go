@@ -338,41 +338,102 @@ func DeletePost(songID string, spotifyID string) error {
 /* PROPERTY UPDATES */
 func UpdatePost(spotifyID string, songID string, updatePostRequest *requests.UpdatePostRequestDTO, username string) (*responses.PostPreview, error) {
 
-    updatedPostRequestMap := make(map[string]any)
-    mapstructure.Decode(updatePostRequest, &updatedPostRequestMap)
+    postPreview := &responses.PostPreview{}
 
-    t := time.Now().UTC()
-    updatedPostRequestMap["updatedat"] = &t
+    transaction := func() error {
+        tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
-    conditionals := make(map[string]any)
-    conditionals["posterspotifyid"] = spotifyID
-    conditionals["songid"] = songID
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
 
-    returning := []string{"albumarturi", "albumid", "albumname", "createdat", "rating", "songid", "songname", "review", "updatedat", "posterspotifyid"}
+        _, err = tx.Exec(`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`)
 
-    query, vals := helpers.PatchQueryBuilder("posts", updatedPostRequestMap, conditionals, returning)
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
 
-	res := DB.Driver.QueryRow(query, vals...)
+        defer tx.Rollback()
+        updatedPostRequestMap := make(map[string]any)
+        mapstructure.Decode(updatePostRequest, &updatedPostRequestMap)
 
-	postPreview := &responses.PostPreview{}
-	albumArtUri := sql.NullString{}
-	err := res.Scan(&albumArtUri,
-		&postPreview.AlbumID,
-		&postPreview.AlbumName,
-		&postPreview.CreatedAt,
-		&postPreview.Rating,
-		&postPreview.SongID,
-		&postPreview.SongName,
-		&postPreview.Text,
-		&postPreview.UpdatedAt,
-		&postPreview.SpotifyID)
+        t := time.Now().UTC()
+        updatedPostRequestMap["updatedat"] = &t
 
-	postPreview.Username = username
-	postPreview.AlbumArtURI = albumArtUri.String
+        conditionals := make(map[string]any)
+        conditionals["posterspotifyid"] = spotifyID
+        conditionals["songid"] = songID
 
-	if err != nil {
-		return nil, customerrors.WrapBasicError(err)
-	}
+        returning := []string{"albumarturi", "albumid", "albumname", "createdat", "rating", "songid", "songname", "review", "updatedat", "posterspotifyid"}
+
+        query, vals := helpers.PatchQueryBuilder("posts", updatedPostRequestMap, conditionals, returning)
+
+        res := DB.Driver.QueryRow(query, vals...)
+
+        albumArtUri := sql.NullString{}
+        err = res.Scan(&albumArtUri,
+            &postPreview.AlbumID,
+            &postPreview.AlbumName,
+            &postPreview.CreatedAt,
+            &postPreview.Rating,
+            &postPreview.SongID,
+            &postPreview.SongName,
+            &postPreview.Text,
+            &postPreview.UpdatedAt,
+            &postPreview.SpotifyID)
+
+        postPreview.Username = username
+        postPreview.AlbumArtURI = albumArtUri.String
+
+        query = `SELECT post_votes.voterspotifyid, users.username, post_votes.liked FROM post_votes 
+                INNER JOIN users ON users.spotifyid = post_votes.voterspotifyid 
+                WHERE post_votes.posterspotifyid = $1 AND post_votes.postsongid = $2`
+
+        votes, err := DB.Driver.Query(query, spotifyID, songID)
+
+        likes := []responses.UserIdentifer{}
+        dislikes := []responses.UserIdentifer{}
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        for votes.Next() {
+            vote := responses.UserIdentifer{}
+            liked := true
+            err := votes.Scan(&vote.SpotifyID, &vote.Username, &liked)
+            if err != nil {
+                return customerrors.WrapBasicError(err)
+            }
+            if liked {
+                likes = append(likes, vote)
+            } else {
+                dislikes = append(dislikes, vote)
+            }
+        }
+
+        postPreview.Likes = likes
+        postPreview.Dislikes = dislikes
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        return nil
+
+    }
+
+    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+
+    if err != nil {
+        return nil, err
+    }
 
 	return postPreview, nil
 }
