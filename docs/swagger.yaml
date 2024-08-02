@@ -406,6 +406,10 @@ paths:
           description: Not Found
           schema:
             type: string
+        "409":
+          description: Conflict
+          schema:
+            type: string
         "500":
           description: Internal Server Error
           schema:
@@ -441,6 +445,10 @@ paths:
             type: string
         "404":
           description: Not Found
+          schema:
+            type: string
+        "409":
+          description: Conflict
           schema:
             type: string
         "500":
@@ -807,6 +815,10 @@ paths:
           description: Not Found
           schema:
             type: string
+        "409":
+          description: Conflict
+          schema:
+            type: string
         "500":
           description: Internal Server Error
           schema:
@@ -843,6 +855,10 @@ paths:
             type: string
         "404":
           description: Not Found
+          schema:
+            type: string
+        "409":
+          description: Conflict
           schema:
             type: string
         "500":
