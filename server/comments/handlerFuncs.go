@@ -123,6 +123,7 @@ func DeleteCurrentUserComment(c *gin.Context) {
 // @Produce json
 // @Param commentID path string true "Comment ID of comment to retrieve"
 // @Success 204
+// @Failure 400 {string} string 
 // @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
