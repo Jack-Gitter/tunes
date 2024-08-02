@@ -275,6 +275,7 @@ func UpdateUserBySpotifyID(c *gin.Context) {
 // @Success 200 {object} responses.User
 // @Failure 400 {string} string 
 // @Failure 401 {string} string 
+// @Failure 403 {string} string 
 // @Failure 500 {string} string 
 // @Router /users/current [patch]
 // @Security Bearer
