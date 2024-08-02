@@ -382,6 +382,10 @@ func UpdatePost(spotifyID string, songID string, updatePostRequest *requests.Upd
             &postPreview.UpdatedAt,
             &postPreview.SpotifyID)
 
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
         postPreview.Username = username
         postPreview.AlbumArtURI = albumArtUri.String
 
