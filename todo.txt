@@ -9,11 +9,8 @@ general
 documentation: 
     swagger 
     comments
-        liking comment multiple times returns 204 rather than 409
-        disliking comment multiple times returns 204 rather than 409
+        patch comment does not return commentors username
     posts
-        liking a post multiple times returns 204 rather than 409
-        disliking a post multiple times returns 204 rather than 409
         patching a post the likes and dislikes do not get returned
     readme
         explain what this project is
