@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/gin-gonic/gin"
 )
 
 type CreatePostDTO struct {
@@ -13,7 +14,7 @@ type CreatePostDTO struct {
 }
 
 
-func ValidateCreatePostDTO(createPostDTO CreatePostDTO) error {
+func ValidateCreatePostDTO(createPostDTO CreatePostDTO, c *gin.Context) error {
     if createPostDTO.SongID == nil {
         return &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Must provide a spotifyID"}
     }

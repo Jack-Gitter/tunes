@@ -282,21 +282,14 @@ func UpdateCurrentUserProperties(c *gin.Context) {
 
 	userUpdateRequest := &requests.UpdateUserRequestDTO{}
 	spotifyID, spotifyIdExists := c.Get("spotifyID")
-	userRole, userRoleExists := c.Get("userRole")
 
-	if !spotifyIdExists || !userRoleExists {
+	if !spotifyIdExists {
 		c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "JwtFuckup"})
 		c.Abort()
 		return
 	}
 
 	c.ShouldBindBodyWithJSON(userUpdateRequest)
-
-    if userUpdateRequest.UserRole != nil && requests.CanSetRole(userRole.(responses.Role), *userUpdateRequest.UserRole) {
-        c.Error(&customerrors.CustomError{StatusCode: http.StatusForbidden, Msg: "Cannot promote yourself"})
-        c.Abort()
-        return
-    }
 
 	resp, e := updateUser(spotifyID.(string), userUpdateRequest)
 

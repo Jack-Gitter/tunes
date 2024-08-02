@@ -8,12 +8,9 @@ general
 
 documentation: 
     swagger 
-    users
-        udpate role should not be allowed
     comments
         liking comment multiple times returns 204 rather than 409
         disliking comment multiple times returns 204 rather than 409
-        integer out of range for integer primary keys in pq -- make the value bigger in the db
     posts
         liking a post multiple times returns 204 rather than 409
         disliking a post multiple times returns 204 rather than 409

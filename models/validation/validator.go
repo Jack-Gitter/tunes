@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ValidateData[T any](funcs ...func(T) error) func(c *gin.Context) {
+func ValidateData[T any](funcs ...func(T, *gin.Context) error) func(c *gin.Context) {
 
     return func(c *gin.Context) {
         validationObject := new(T)
@@ -18,7 +18,7 @@ func ValidateData[T any](funcs ...func(T) error) func(c *gin.Context) {
         }
 
         for _, function := range funcs {
-            err := function(*validationObject)
+            err := function(*validationObject, c)
             if err != nil {
                 c.Error(err)
                 c.Abort()

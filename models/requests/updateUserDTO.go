@@ -5,6 +5,7 @@ import (
 
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/responses"
+	"github.com/gin-gonic/gin"
 )
 
 // the body fields must be pointers, because the zero value for pointers is nill. We will be able
@@ -14,12 +15,20 @@ type UpdateUserRequestDTO struct {
 	UserRole *responses.Role 
 }
 
-func ValidateUserRequestDTO(req UpdateUserRequestDTO) error {
+func ValidateUserRequestDTO(req UpdateUserRequestDTO, c *gin.Context) error {
+    userRole, found := c.Get("userRole")
+
+    if !found {
+        return &customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "jwt mess"}
+    }
     if req.Bio == nil && req.UserRole == nil {
-        return customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"}
+        return &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad body"}
     }
     if req.UserRole != nil && !responses.IsValidRole(*req.UserRole) {
-        return customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Invalid role"}
+        return &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "Invalid role"}
+    }
+    if req.UserRole != nil && !CanSetRole(userRole.(responses.Role), *req.UserRole) {
+        return &customerrors.CustomError{StatusCode: http.StatusForbidden, Msg: "Cannot upgrade your own role"}
     }
     return nil
 }
