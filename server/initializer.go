@@ -66,7 +66,6 @@ func InitializeHttpServer() *gin.Engine {
                 postGroup.PATCH("/current/:songID", validation.ValidateData(requests.ValidateUpdatePostRequestDTO), posts.UpdateCurrentUserPost)
                 postGroup.DELETE("/current/:songID", posts.DeletePostForCurrentUserBySongID)
 
-                // need to test from here down
                 postGroup.DELETE("/votes/current/:posterSpotifyID/:songID",  posts.RemovePostVote)
 
                 adminOnly := postGroup.Group("/admin", auth.ValidateAdminUser)
