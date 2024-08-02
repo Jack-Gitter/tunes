@@ -75,17 +75,17 @@ func InitializeHttpServer() *gin.Engine {
             {
 
                 commentGroup.GET("/:commentID",  validation.ValidatePathParams[requests.CommentIDPathParams](), comments.GetComment)
-                commentGroup.POST("/:spotifyID/:songID", validation.ValidateData[requests.CreateCommentDTO](), comments.CreateComment)
+                commentGroup.POST("/:spotifyID/:songID", validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData[requests.CreateCommentDTO](), comments.CreateComment)
                 commentGroup.POST("/like/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.LikeComment)
-                commentGroup.POST("/dislike/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams]() ,comments.DislikeComment)
-                commentGroup.PATCH("/current/:commentID", validation.ValidateData(requests.ValidateUpdateCommentDTO), comments.UpdateComment)
-                commentGroup.DELETE("/current/:commentID", validation.ValidateData(requests.ValidateUpdateCommentDTO), comments.DeleteCurrentUserComment)
+                commentGroup.POST("/dislike/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.DislikeComment)
+                commentGroup.PATCH("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData(requests.ValidateUpdateCommentDTO), comments.UpdateComment)
+                commentGroup.DELETE("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.DeleteCurrentUserComment)
 
-                commentGroup.DELETE("/votes/current/:commentID", comments.RemoveCommentVote)
+                commentGroup.DELETE("/votes/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.RemoveCommentVote)
 
                 adminOnly := commentGroup.Group("/admin", auth.ValidateAdminUser)
                 {
-                    adminOnly.DELETE("/:commentID", comments.DeleteComment)
+                    adminOnly.DELETE("/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.DeleteComment)
                 }
 
             }
