@@ -7,6 +7,8 @@ endpoints:
 general 
 
 documentation: 
+    comments
+        for commentid path params, we should do some validation and parse it to an int, and then send it to the db layer as an int
     readme
         explain what this project is
         explain auth -- double submit cookies
