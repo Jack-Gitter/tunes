@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -165,53 +166,71 @@ func GetComment(commentID string) (*responses.Comment, error) {
 
 }
 
-func LikeComment(commentID string, spotifyID string)  error {
+func LikeOrDislikeComment(commentID string, spotifyID string, liked bool)  error {
     
-    query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE set liked = $2`
+    transaction := func() error {
 
-    res, err := DB.Driver.Exec(query, commentID, true, spotifyID)
+        tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
-    if err != nil {
-        return customerrors.WrapBasicError(err)
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        defer tx.Rollback()
+
+        query := `SELECT COUNT(*) FROM comment_votes WHERE commentid = $1 AND liked = $2 AND voterspotifyid = $3`
+
+        row := tx.QueryRow(query, commentID, liked, spotifyID)
+
+        count := 0
+        err = row.Scan(&count)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        if count >= 1 {
+            return &customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like/dislike comment twice"}
+        }
+
+        query = `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE set liked = $2`
+
+        res, err := tx.Exec(query, commentID, liked, spotifyID)
+        fmt.Println(res.RowsAffected())
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        rows, err := res.RowsAffected()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        if rows < 1 {
+            return customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "comment not found"}
+        }
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        return nil
     }
 
-    rows, err := res.RowsAffected()
+    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
-        return customerrors.WrapBasicError(err)
-    }
-
-    if rows < 1 {
-        return customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "comment not found"}
+        return err
     }
 
     return nil
 
 }
 
-func DislikeComment(commentID string, spotifyID string) error {
-    
-    query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE SET liked = $2`
-
-    res, err := DB.Driver.Exec(query, commentID, false, spotifyID)
-
-    if err != nil {
-        return customerrors.WrapBasicError(err)
-    }
-
-    rows, err := res.RowsAffected()
-
-    if err != nil {
-        return customerrors.WrapBasicError(err)
-    }
-
-    if rows < 1 {
-        return customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "comment not found"}
-    }
-
-    return nil
-
-}
 
 func RemoveCommentVote(commentID string, spotifyID string) error {
     query := `DELETE FROM comment_votes WHERE commentid = $1 AND voterspotifyid = $2`

@@ -37,8 +37,6 @@ func InitializeHttpServer() *gin.Engine {
                 userGroup.GET("/:spotifyID/followers", users.GetFollowersByID)
                 userGroup.POST("/current/follow/:otherUserSpotifyID", users.FollowerUser)
                 userGroup.DELETE("/current/unfollow/:otherUserSpotifyID", users.UnFollowUser)
-
-                // should not be able to update your role if you are not admin!
                 userGroup.PATCH("/current", validation.ValidateData(requests.ValidateUserRequestDTO), users.UpdateCurrentUserProperties)
                 userGroup.DELETE("/current", users.DeleteCurrentUser)
 
@@ -59,7 +57,6 @@ func InitializeHttpServer() *gin.Engine {
                 postGroup.GET("/previews/users/:spotifyID", posts.GetAllPostsForUserByID)
                 postGroup.GET("/comments/:spotifyID/:songID", posts.GetPostCommentsPaginated)
                 postGroup.POST("/", validation.ValidateData(requests.ValidateCreatePostDTO),  posts.CreatePostForCurrentUser)
-                // should not be able to do so multiple times
                 postGroup.POST("/likes/:spotifyID/:songID", posts.LikePost)
                 postGroup.POST("/dislikes/:spotifyID/:songID", posts.DislikePost)
                 // the likes do not get returned here... :(

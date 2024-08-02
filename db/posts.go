@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db/helpers"
@@ -378,32 +379,73 @@ func UpdatePost(spotifyID string, songID string, updatePostRequest *requests.Upd
 
 func LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, liked bool) error {
 
-	query := `INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) 
-              VALUES ($1, $2, $3, $4, $5, $6) 
-              ON CONFLICT (voterspotifyid, posterspotifyid, postsongid) 
-              DO UPDATE SET updatedat=$5, liked=$6`
+    transaction := func() error {
 
-	res, err := DB.Driver.Exec(query,
-		spotifyID,
-		posterSpotifyID,
-		songID,
-		time.Now().UTC(),
-		time.Now().UTC(),
-		liked)
+        tx, err := DB.Driver.BeginTx(context.Background(), nil)
 
-	if err != nil {
-		return customerrors.WrapBasicError(err)
-	}
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
 
-	rows, err := res.RowsAffected()
 
-	if err != nil {
-		return customerrors.WrapBasicError(err)
-	}
+        defer tx.Rollback()
 
-	if rows < 1 {
-		return customerrors.WrapBasicError(sql.ErrNoRows)
-	}
+        query := `SELECT COUNT(*)
+                  FROM post_votes
+                  WHERE voterspotifyid = $1 AND posterspotifyid = $2 AND postsongid = $3 AND liked = $4`
+
+        row := tx.QueryRow(query, spotifyID, posterSpotifyID, songID, liked)
+
+        count := 0
+        err = row.Scan(&count)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        if count >= 1 {
+            return &customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like or dislike a post many times"}
+        }
+
+        query = `INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) 
+                  VALUES ($1, $2, $3, $4, $5, $6) 
+                  ON CONFLICT (voterspotifyid, posterspotifyid, postsongid) DO UPDATE SET updatedat=$5, liked=$6`
+
+        res, err := tx.Exec(query,
+            spotifyID,
+            posterSpotifyID,
+            songID,
+            time.Now().UTC(),
+            time.Now().UTC(),
+            liked)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        rows, err := res.RowsAffected()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        if rows < 1 {
+            return customerrors.WrapBasicError(sql.ErrNoRows)
+        }
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+        return nil
+    }
+
+    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+
+    if err != nil {
+        return err
+    }
 
 	return nil
 }

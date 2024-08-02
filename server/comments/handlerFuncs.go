@@ -155,6 +155,7 @@ func GetComment(c *gin.Context)  {
 // @Failure 400 {string} string 
 // @Failure 401 {string} string 
 // @Failure 404 {string} string 
+// @Failure 409 {string} string 
 // @Failure 500 {string} string 
 // @Router /comments/like/{commentID} [post]
 // @Security Bearer
@@ -169,7 +170,7 @@ func LikeComment(c *gin.Context) {
     }
 
 
-    err := db.LikeComment(commentID, spotifyID.(string))
+    err := db.LikeOrDislikeComment(commentID, spotifyID.(string), true)
 
     if err != nil {
         c.Error(err)
@@ -190,6 +191,7 @@ func LikeComment(c *gin.Context) {
 // @Success 204
 // @Failure 400 {string} string 
 // @Failure 404 {string} string 
+// @Failure 409 {string} string 
 // @Failure 500 {string} string 
 // @Router /comments/dislike/{commentID} [post]
 // @Security Bearer
@@ -204,7 +206,7 @@ func DislikeComment(c *gin.Context) {
     }
 
 
-    err := db.DislikeComment(commentID, spotifyID.(string))
+    err := db.LikeOrDislikeComment(commentID, spotifyID.(string), false)
 
     if err != nil {
         c.Error(err)
