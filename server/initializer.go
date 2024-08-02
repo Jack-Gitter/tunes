@@ -74,12 +74,12 @@ func InitializeHttpServer() *gin.Engine {
             commentGroup := authGroup.Group("/comments")
             {
 
-                commentGroup.GET("/:commentID", comments.GetComment)
+                commentGroup.GET("/:commentID",  validation.ValidatePathParams[requests.CommentIDPathParams](), comments.GetComment)
                 commentGroup.POST("/:spotifyID/:songID", validation.ValidateData[requests.CreateCommentDTO](), comments.CreateComment)
-                commentGroup.POST("/like/:commentID", comments.LikeComment)
-                commentGroup.POST("/dislike/:commentID", comments.DislikeComment)
+                commentGroup.POST("/like/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.LikeComment)
+                commentGroup.POST("/dislike/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams]() ,comments.DislikeComment)
                 commentGroup.PATCH("/current/:commentID", validation.ValidateData(requests.ValidateUpdateCommentDTO), comments.UpdateComment)
-                commentGroup.DELETE("/current/:commentID", comments.DeleteCurrentUserComment)
+                commentGroup.DELETE("/current/:commentID", validation.ValidateData(requests.ValidateUpdateCommentDTO), comments.DeleteCurrentUserComment)
 
                 commentGroup.DELETE("/votes/current/:commentID", comments.RemoveCommentVote)
 
