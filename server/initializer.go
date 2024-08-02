@@ -80,10 +80,14 @@ func InitializeHttpServer() *gin.Engine {
 
                 commentGroup.GET("/:commentID", comments.GetComment)
                 commentGroup.POST("/:spotifyID/:songID", validation.ValidateData[requests.CreateCommentDTO](), comments.CreateComment)
+                // should not be able to do so multiple times
                 commentGroup.POST("/like/:commentID", comments.LikeComment)
                 commentGroup.POST("/dislike/:commentID", comments.DislikeComment)
+
+                // not returning commentors username
                 commentGroup.PATCH("/current/:commentID", validation.ValidateData(requests.ValidateUpdateCommentDTO), comments.UpdateComment)
                 commentGroup.DELETE("/current/:commentID", comments.DeleteCurrentUserComment)
+
                 commentGroup.DELETE("/votes/current/:commentID", comments.RemoveCommentVote)
 
                 adminOnly := commentGroup.Group("/admin", auth.ValidateAdminUser)

@@ -105,8 +105,6 @@ func GetComment(commentID string) (*responses.Comment, error) {
 
         res := tx.QueryRow(query, commentID)
 
-        commentResponse := &responses.Comment{}
-
         err = res.Scan(&commentResponse.CommentID, 
                     &commentResponse.CommentorID, 
                     &commentResponse.PostSpotifyID, 
@@ -270,10 +268,9 @@ func UpdateComment(commentID string, updateCommentDTO *requests.UpdateCommentDTO
         }
 
         defer tx.Rollback()
-        
-        comment := &responses.Comment{}
 
         row := tx.QueryRow(query, vals...)
+
         err = row.Scan(&comment.CommentID, &comment.CommentorID, &comment.PostSpotifyID, &comment.SongID, &comment.CommentText, &comment.CreatedAt, &comment.UpdatedAt)
 
         if err != nil {
@@ -314,7 +311,11 @@ func UpdateComment(commentID string, updateCommentDTO *requests.UpdateCommentDTO
         return nil
     }
 
-    helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+
+    if err != nil {
+        return nil, err
+    }
 
     return comment, nil
 

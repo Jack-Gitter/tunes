@@ -19,6 +19,7 @@ import (
 // @Param songID path string true "songID of post to make a comment on"
 // @Success 200 {object} responses.Comment
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /comments/{spotifyID}/{songID} [post]
@@ -59,6 +60,8 @@ func CreateComment(c *gin.Context) {
 // @Param commentID path string true "Comment ID of comment to delete"
 // @Success 204
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 403 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /comments/admin/{commentID} [delete]
@@ -86,6 +89,7 @@ func DeleteComment(c *gin.Context) {
 // @Param commentID path string true "Comment ID of comment to delete"
 // @Success 204
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /comments/current/{commentID} [delete]
@@ -119,7 +123,7 @@ func DeleteCurrentUserComment(c *gin.Context) {
 // @Produce json
 // @Param commentID path string true "Comment ID of comment to retrieve"
 // @Success 204
-// @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /comments/{commentID} [get]
@@ -148,6 +152,7 @@ func GetComment(c *gin.Context)  {
 // @Param commentID path string true "Comment ID of comment to like"
 // @Success 204
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /comments/like/{commentID} [post]
@@ -253,6 +258,7 @@ func RemoveCommentVote(c *gin.Context) {
 // @Param UpdateCommentDTO body requests.UpdateCommentDTO true "Comment data to update"
 // @Success 204
 // @Failure 400 {string} string 
+// @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
 // @Router /comments/current/{commentID} [patch]
