@@ -59,7 +59,6 @@ func InitializeHttpServer() *gin.Engine {
                 postGroup.POST("/", validation.ValidateData(requests.ValidateCreatePostDTO),  posts.CreatePostForCurrentUser)
                 postGroup.POST("/likes/:spotifyID/:songID", posts.LikePost)
                 postGroup.POST("/dislikes/:spotifyID/:songID", posts.DislikePost)
-                // the likes do not get returned here... :(
                 postGroup.PATCH("/current/:songID", validation.ValidateData(requests.ValidateUpdatePostRequestDTO), posts.UpdateCurrentUserPost)
                 postGroup.DELETE("/current/:songID", posts.DeletePostForCurrentUserBySongID)
 
@@ -79,7 +78,6 @@ func InitializeHttpServer() *gin.Engine {
                 commentGroup.POST("/:spotifyID/:songID", validation.ValidateData[requests.CreateCommentDTO](), comments.CreateComment)
                 commentGroup.POST("/like/:commentID", comments.LikeComment)
                 commentGroup.POST("/dislike/:commentID", comments.DislikeComment)
-                // not returning commentors username
                 commentGroup.PATCH("/current/:commentID", validation.ValidateData(requests.ValidateUpdateCommentDTO), comments.UpdateComment)
                 commentGroup.DELETE("/current/:commentID", comments.DeleteCurrentUserComment)
 

@@ -7,11 +7,6 @@ endpoints:
 general 
 
 documentation: 
-    swagger 
-    comments
-        patch comment does not return commentors username
-    posts
-        patching a post the likes and dislikes do not get returned
     readme
         explain what this project is
         explain auth -- double submit cookies
