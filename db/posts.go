@@ -368,7 +368,7 @@ func UpdatePost(spotifyID string, songID string, updatePostRequest *requests.Upd
 
         query, vals := helpers.PatchQueryBuilder("posts", updatedPostRequestMap, conditionals, returning)
 
-        res := DB.Driver.QueryRow(query, vals...)
+        res := tx.QueryRow(query, vals...)
 
         albumArtUri := sql.NullString{}
         err = res.Scan(&albumArtUri,
@@ -389,7 +389,7 @@ func UpdatePost(spotifyID string, songID string, updatePostRequest *requests.Upd
                 INNER JOIN users ON users.spotifyid = post_votes.voterspotifyid 
                 WHERE post_votes.posterspotifyid = $1 AND post_votes.postsongid = $2`
 
-        votes, err := DB.Driver.Query(query, spotifyID, songID)
+        votes, err := tx.Query(query, spotifyID, songID)
 
         likes := []responses.UserIdentifer{}
         dislikes := []responses.UserIdentifer{}
