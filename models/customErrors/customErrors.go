@@ -3,6 +3,7 @@ package customerrors
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -59,6 +60,7 @@ func WrapBasicError(err error) error {
 
 func wrapPostgresDriverErrors(err error, customError *CustomError) bool {  
 	if err, ok := err.(*pq.Error); ok {
+        fmt.Println(err.Code)
 		switch err.Code {
 		case "23505":
 			customError.StatusCode = http.StatusConflict
@@ -75,6 +77,10 @@ func wrapPostgresDriverErrors(err error, customError *CustomError) bool {
         case "22P02": 
             customError.StatusCode = http.StatusBadRequest
             customError.Msg = "data could not be parsed into the correct format"
+            return true
+        case "22003":
+            customError.StatusCode = http.StatusBadRequest
+            customError.Msg = "Data value overflow"
             return true
 		}
 	}
