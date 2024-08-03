@@ -11,6 +11,15 @@ type dbConnection struct {
 	Driver *sql.DB
 }
 
+// we would have our methods all taken in a QueryExecutor. Then we would have "orchestration" methods which either create a tx or db.driver, and pass it to them
+
+type QueryExecutor interface {
+    Exec(query string, args ...interface{}) (sql.Result, error)
+    Query(query string, args ...interface{}) (*sql.Rows, error)
+    QueryRow(query string, args ...interface{}) *sql.Row
+}
+
+
 var DB = &dbConnection{}
 
 func ConnectToDB() {

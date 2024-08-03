@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-
 	"github.com/Jack-Gitter/tunes/db/helpers"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -151,8 +150,122 @@ func FollowUser(spotifyID string, otherUserSpotifyID string) error {
 
 	return nil
 }
+func doesUserExist(executor QueryExecutor, spotifyID string) (bool, error) {
+    query := `SELECT COUNT(*) FROM users WHERE spotifyid = $1`
+
+    row := executor.QueryRow(query, spotifyID)
+
+    count := 0
+    err := row.Scan(&count)
+
+    if err != nil {
+        return false, customerrors.WrapBasicError(err)
+    }
+
+    if count >= 1 {
+        return true, nil
+    }
+
+    return false, nil
+
+}
+
+func getUserFollowersPaginated(executor QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error) {
+    query := `
+                SELECT users.spotifyid, users.username, users.bio, users.userrole 
+                FROM followers 
+                INNER JOIN  users 
+                ON users.spotifyid = followers.follower 
+                WHERE followers.userfollowed = $1 AND users.spotifyid < $2 ORDER BY users.spotifyid LIMIT 25 `
+
+        rows, err := executor.Query(query, spotifyID, paginationKey)
+
+        if err != nil {
+            return nil, customerrors.WrapBasicError(err)
+        }
+
+        userResponses := []responses.User{}
+        bio := sql.NullString{}
+
+        for rows.Next() {
+            user := responses.User{}
+            err := rows.Scan(&user.SpotifyID, &user.Username, &bio, &user.Role)
+            if err != nil {
+                return nil, customerrors.WrapBasicError(err)
+            }
+            user.Bio = bio.String
+            userResponses = append(userResponses, user)
+        }
+
+        return userResponses, nil
+}
+
+
+func setTransactionIsolationLevel(tx *sql.Tx, iso sql.IsolationLevel) error {
+    var err error = nil
+    switch iso {
+        case sql.LevelRepeatableRead:
+            _, err = tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+        case sql.LevelSerializable:
+            _, err = tx.Exec("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE") 
+    }
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    return nil
+}
 
 func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
+
+    paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
+
+    tx, err := DB.Driver.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    defer tx.Rollback()
+
+    err = setTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    exists, err := doesUserExist(tx, spotifyID)
+
+    if err != nil {
+        return nil, err
+    }
+
+    if !exists {
+        return nil, customerrors.WrapBasicError(sql.ErrNoRows)
+    }
+
+    followers, err := getUserFollowersPaginated(tx, spotifyID, paginationKey)
+
+    if err != nil {
+        return nil, err
+    }
+
+    paginationResponse.DataResponse = followers
+    paginationResponse.PaginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
+
+    if len(followers) > 0 {
+        paginationResponse.PaginationKey = followers[len(followers)-1].SpotifyID
+    } 
+
+    err = tx.Commit()
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    return paginationResponse, nil
+}
+/*func GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
     
     paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
 
@@ -240,4 +353,5 @@ func GetFollowers(spotifyID string, paginationKey string) (*responses.Pagination
     
 
 	return paginationResponse, nil
-}
+}*/
+
