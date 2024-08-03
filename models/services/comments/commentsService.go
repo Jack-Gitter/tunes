@@ -1,6 +1,8 @@
 package comments
 
 import (
+	"context"
+	"database/sql"
 	"net/http"
 
 	"github.com/Jack-Gitter/tunes/models/customErrors"
@@ -9,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 type CommentsService struct {
+    DB *sql.DB
     CommentsDAO daos.ICommentsDAO
 }
 
@@ -54,7 +57,7 @@ func(cs *CommentsService) CreateComment(c *gin.Context) {
         return
     }
 
-    comment, err := cs.CommentsDAO.CreateComment(commentorID.(string), posterID, songID, createCommentDTO.CommentText)
+    comment, err := cs.CommentsDAO.CreateComment(cs.DB, commentorID.(string), posterID, songID, createCommentDTO.CommentText)
 
     if err != nil {
         c.Error(err)
@@ -84,7 +87,7 @@ func(cs *CommentsService) DeleteComment(c *gin.Context) {
 
     commentID := c.Param("commentID")
 
-    err := cs.CommentsDAO.DeleteComment(commentID)
+    err := cs.CommentsDAO.DeleteComment(cs.DB, commentID)
 
     if err != nil {
         c.Error(err)
@@ -119,7 +122,7 @@ func(cs *CommentsService) DeleteCurrentUserComment(c *gin.Context) {
         return
     }
 
-    err := cs.CommentsDAO.DeleteCurrentUserComment(commentID, spotifyID.(string))
+    err := cs.CommentsDAO.DeleteCurrentUserComment(cs.DB, commentID, spotifyID.(string))
 
     if err != nil {
         c.Error(err)
@@ -147,13 +150,32 @@ func(cs *CommentsService) GetComment(c *gin.Context)  {
 
     commentID := c.Param("commentID") 
 
-    comment, err := cs.CommentsDAO.GetComment(commentID)
+    tx, err := cs.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    comment, err := cs.CommentsDAO.GetComment(tx, commentID)
 
     if err != nil {
         c.Error(err)
         c.Abort()
         return
     }
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
 
     c.JSON(http.StatusOK, comment)
 
@@ -183,13 +205,30 @@ func(cs *CommentsService) LikeComment(c *gin.Context) {
         return
     }
 
+    tx, err := cs.DB.BeginTx(context.Background(), nil)
 
-    err := cs.CommentsDAO.LikeOrDislikeComment(commentID, spotifyID.(string), true)
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    err = cs.CommentsDAO.LikeOrDislikeComment(tx, commentID, spotifyID.(string), true)
 
     if err != nil {
         c.Error(err)
         c.Abort()
         return 
+    }
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
     }
 
     c.Status(http.StatusNoContent)
@@ -220,13 +259,32 @@ func(cs *CommentsService) DislikeComment(c *gin.Context) {
     }
 
 
-    err := cs.CommentsDAO.LikeOrDislikeComment(commentID, spotifyID.(string), false)
+    tx, err := cs.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    err = cs.CommentsDAO.LikeOrDislikeComment(tx, commentID, spotifyID.(string), false)
 
     if err != nil {
         c.Error(err)
         c.Abort()
         return 
     }
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
 
     c.Status(http.StatusNoContent)
 }
@@ -254,7 +312,7 @@ func(cs *CommentsService) RemoveCommentVote(c *gin.Context) {
         return
     }
 
-    err := cs.CommentsDAO.RemoveCommentVote(commentID, spotifyID.(string))
+    err := cs.CommentsDAO.RemoveCommentVote(cs.DB, commentID, spotifyID.(string))
 
     if err != nil {
         c.Error(err)
@@ -285,11 +343,29 @@ func(cs *CommentsService) UpdateComment(c *gin.Context) {
     commentID := c.Param("commentID")
     updateCommentDTO := &requests.UpdateCommentDTO{}
     c.ShouldBindBodyWithJSON(updateCommentDTO)
-    
-    resp, err := cs.CommentsDAO.UpdateComment(commentID, updateCommentDTO)
+
+    tx, err := cs.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    resp, err := cs.CommentsDAO.UpdateComment(tx, commentID, updateCommentDTO)
 
     if err != nil {
         c.Error(err)
+        c.Abort()
+        return
+    }
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
