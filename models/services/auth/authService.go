@@ -1,10 +1,12 @@
 package auth
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
+
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
@@ -15,6 +17,7 @@ import (
 )
 
 type AuthService struct {
+    DB *sql.DB
     UsersDAO daos.IUsersDAO
     SpotifyService spotify.ISpotifyService
     JWTService jwt.IJWTService
@@ -57,7 +60,7 @@ func(a *AuthService) LoginCallback(c *gin.Context) {
 		return
 	}
 
-	user, err := a.UsersDAO.UpsertUserOnLogin(userProfileResponse.Display_name, userProfileResponse.Id)
+	user, err := a.UsersDAO.UpsertUserOnLogin(a.DB, userProfileResponse.Display_name, userProfileResponse.Id)
 
 	if err != nil {
 		c.Error(err)
@@ -144,7 +147,7 @@ func(a *AuthService) RefreshJWT(c *gin.Context) {
 		return
 	}
 
-	userDBResponse, err := a.UsersDAO.GetUserFromDbBySpotifyID(userProfileResponse.Id)
+	userDBResponse, err := a.UsersDAO.GetUserFromDbBySpotifyID(a.DB, userProfileResponse.Id)
 
 	if err != nil {
 		c.Error(err)

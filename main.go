@@ -31,9 +31,9 @@ func main() {
     db := db.ConnectToDB()
     defer db.Close()
 
-    usersDAO := daos.UsersDAO{DB: db}
-    postsDAO := daos.PostsDAO{DB: db}
-    commentsDAO := daos.CommentsDAO{DB: db}
+    usersDAO := daos.UsersDAO{}
+    postsDAO := daos.PostsDAO{}
+    commentsDAO := daos.CommentsDAO{}
 
     userService := users.UserService{UsersDAO: &usersDAO}
     postsService := posts.PostsService{PostsDAO: &postsDAO}

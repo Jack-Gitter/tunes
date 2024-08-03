@@ -119,13 +119,31 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
 		paginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
 	}
 
-	followersPaginated, err := u.UsersDAO.GetFollowers(spotifyID, paginationKey)
+    tx, err := u.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+	followersPaginated, err := u.UsersDAO.GetFollowers(tx, spotifyID, paginationKey)
 
 	if err != nil {
 		c.Error(err)
 		c.Abort()
 		return
 	}
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
 
 	c.JSON(http.StatusOK, followersPaginated)
 

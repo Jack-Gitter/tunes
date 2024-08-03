@@ -5,9 +5,8 @@ endpoints:
         users
             make a getFeed endpoint which gets all of the posts from the users followers and returns the top x most recent, make it paginated
 general 
-    service layer must orchestrate connections
-    change dao methods so that they take in an db.Executable
-    change the service structs so that they have a reference to the db, and then can pass the dao either a tx or sql.DB to run queries with
+    make the posts service layer responsible for injecting db.QueryExecutor instance
+    break up the daos where i have to provide a tx into multiple seperate little methods for users and comments and posts
 
 documentation: 
     readme
