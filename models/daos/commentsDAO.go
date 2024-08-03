@@ -93,7 +93,6 @@ func(c *CommentsDAO) DeleteCurrentUserComment(commentID string, spotifyID string
 
 func(c *CommentsDAO) GetComment(commentID string) (*responses.Comment, error) {
 
-
     commentResponse := &responses.Comment{}
 
     transaction := func() error {
