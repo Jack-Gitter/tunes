@@ -1,6 +1,7 @@
 package posts
 
 import (
+	"database/sql"
 	"net/http"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 )
 
 type PostsService struct {
+    DB *sql.DB
     PostsDAO daos.IPostsDAO
     SpotifyService spotify.ISpotifyService
 }

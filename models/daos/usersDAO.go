@@ -156,20 +156,29 @@ func(u *UsersDAO) GetFollowers(executor db.QueryExecutor, spotifyID string, pagi
 
     paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
 
-    exists, err := doesUserExist(executor, spotifyID)
+    query := ` SELECT users.spotifyid, users.username, users.bio, users.userrole 
+                FROM followers 
+                INNER JOIN  users 
+                ON users.spotifyid = followers.follower 
+                WHERE followers.userfollowed = $1 AND users.spotifyid < $2 ORDER BY users.spotifyid LIMIT 25 `
+
+    rows, err := executor.Query(query, spotifyID, paginationKey)
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
 
-    if !exists {
-        return nil, customerrors.WrapBasicError(sql.ErrNoRows)
-    }
+    followers := []responses.User{}
+    bio := sql.NullString{}
 
-    followers, err := getUserFollowersPaginated(executor, spotifyID, paginationKey)
-
-    if err != nil {
-        return nil, err
+    for rows.Next() {
+        user := responses.User{}
+        err := rows.Scan(&user.SpotifyID, &user.Username, &bio, &user.Role)
+        if err != nil {
+            return nil, customerrors.WrapBasicError(err)
+        }
+        user.Bio = bio.String
+        followers = append(followers, user)
     }
 
     paginationResponse.DataResponse = followers
@@ -204,30 +213,4 @@ func doesUserExist(executor db.QueryExecutor, spotifyID string) (bool, error) {
 }
 
 func getUserFollowersPaginated(executor db.QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error) {
-    query := ` SELECT users.spotifyid, users.username, users.bio, users.userrole 
-                FROM followers 
-                INNER JOIN  users 
-                ON users.spotifyid = followers.follower 
-                WHERE followers.userfollowed = $1 AND users.spotifyid < $2 ORDER BY users.spotifyid LIMIT 25 `
-
-        rows, err := executor.Query(query, spotifyID, paginationKey)
-
-        if err != nil {
-            return nil, customerrors.WrapBasicError(err)
-        }
-
-        userResponses := []responses.User{}
-        bio := sql.NullString{}
-
-        for rows.Next() {
-            user := responses.User{}
-            err := rows.Scan(&user.SpotifyID, &user.Username, &bio, &user.Role)
-            if err != nil {
-                return nil, customerrors.WrapBasicError(err)
-            }
-            user.Bio = bio.String
-            userResponses = append(userResponses, user)
-        }
-
-        return userResponses, nil
 }

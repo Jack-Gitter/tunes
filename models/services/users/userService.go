@@ -129,6 +129,16 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
 
     defer tx.Rollback()
 
+    // check if user exist
+    _, err = u.UsersDAO.GetUserFromDbBySpotifyID(tx, spotifyID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    // get said user followers
 	followersPaginated, err := u.UsersDAO.GetFollowers(tx, spotifyID, paginationKey)
 
 	if err != nil {
@@ -185,6 +195,14 @@ func(u *UserService) GetFollowers(c *gin.Context) {
     }
 
     defer tx.Rollback()
+
+    _, err = u.UsersDAO.GetUserFromDbBySpotifyID(tx, spotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
 
 	followersPaginated, err := u.UsersDAO.GetFollowers(tx, spotifyID.(string), paginationKey)
 
