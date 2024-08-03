@@ -7,6 +7,8 @@ endpoints:
 general 
     rewrite the service methods. They should be the ones orchestrating the dao. Each dao method should have a singular purpose!!!
 
+    how to run multiple DAO methods together in a transaction? we have a class with a db instance, and we are using that to run db queries. restructure it???
+
 documentation: 
     readme
         explain what this project is
