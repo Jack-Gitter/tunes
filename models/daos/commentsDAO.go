@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"net/http"
 	"time"
-
 	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"

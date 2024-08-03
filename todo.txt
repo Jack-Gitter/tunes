@@ -5,9 +5,7 @@ endpoints:
         users
             make a getFeed endpoint which gets all of the posts from the users followers and returns the top x most recent, make it paginated
 general 
-    rewrite the service methods. They should be the ones orchestrating the dao. Each dao method should have a singular purpose!!!
-
-    how to run multiple DAO methods together in a transaction? we have a class with a db instance, and we are using that to run db queries. restructure it???
+    have the service layer orchestrate transactions -- effectively going to have to re-write a lot of the dao code. Do I pass the database connection to the dao?
 
 documentation: 
     readme
