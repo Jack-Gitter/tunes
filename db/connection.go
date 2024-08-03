@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
@@ -9,14 +8,12 @@ import (
 )
 
 type dbConnection struct {
-	Ctx    context.Context
 	Driver *sql.DB
 }
 
 var DB = &dbConnection{}
 
 func ConnectToDB() {
-	DB.Ctx = context.Background()
 	dbHost := os.Getenv("DB_HOST")
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASS")

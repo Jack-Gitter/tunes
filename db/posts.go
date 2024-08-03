@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"sort"
 	"time"
-
 	"github.com/Jack-Gitter/tunes/db/helpers"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
