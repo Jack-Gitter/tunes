@@ -5,12 +5,11 @@ import (
 	"net/http"
 	"os"
 	"strings"
-
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
-	"github.com/Jack-Gitter/tunes/models/services/auth/helpers"
+	"github.com/Jack-Gitter/tunes/models/services/jwt"
 	"github.com/Jack-Gitter/tunes/models/services/spotify"
 	"github.com/gin-gonic/gin"
 )
@@ -18,6 +17,7 @@ import (
 type AuthService struct {
     UsersDAO daos.IUsersDAO
     SpotifyService spotify.ISpotifyService
+    JWTService jwt.IJWTService
 }
 
 type IAuthService interface {
@@ -65,7 +65,7 @@ func(a *AuthService) LoginCallback(c *gin.Context) {
 		return
 	}
 
-	tokenString, err := helpers.CreateAccessJWT(
+	tokenString, err := a.JWTService.CreateAccessJWT(
 		userProfileResponse.Id,
 		userProfileResponse.Display_name,
 		accessTokenResponse.Access_token,
@@ -78,7 +78,7 @@ func(a *AuthService) LoginCallback(c *gin.Context) {
 		return
 	}
 
-	refreshString, err := helpers.CreateRefreshJWT(accessTokenResponse.Refresh_token)
+	refreshString, err := a.JWTService.CreateRefreshJWT(accessTokenResponse.Refresh_token)
 
 	if err != nil {
 		c.Error(err)
@@ -115,7 +115,7 @@ func(a *AuthService) RefreshJWT(c *gin.Context) {
 		return
 	}
 
-	refresh_token, e := helpers.ValidateRefreshToken(refresh_jwt)
+	refresh_token, e := a.JWTService.ValidateRefreshToken(refresh_jwt)
 
 	if e != nil {
 		c.Error(e)
@@ -152,7 +152,7 @@ func(a *AuthService) RefreshJWT(c *gin.Context) {
 		return
 	}
 
-	accessTokenJWT, err := helpers.CreateAccessJWT(
+	accessTokenJWT, err := a.JWTService.CreateAccessJWT(
 		userProfileResponse.Id,
 		userProfileResponse.Display_name,
 		accessTokenResponseBody.Access_token,
@@ -188,7 +188,7 @@ func(a *AuthService) ValidateUserJWT(c *gin.Context) {
 
 	jwtTokenString := header[1]
 
-	token, err := helpers.ValidateAccessToken(jwtTokenString)
+	token, err := a.JWTService.ValidateAccessToken(jwtTokenString)
 
 	if err != nil {
 		c.Error(err)

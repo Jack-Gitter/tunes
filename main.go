@@ -3,11 +3,13 @@ package main
 import (
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/daos"
+	"github.com/Jack-Gitter/tunes/models/services/auth"
+	"github.com/Jack-Gitter/tunes/models/services/comments"
+	"github.com/Jack-Gitter/tunes/models/services/jwt"
+	"github.com/Jack-Gitter/tunes/models/services/posts"
+	"github.com/Jack-Gitter/tunes/models/services/spotify"
+	"github.com/Jack-Gitter/tunes/models/services/users"
 	"github.com/Jack-Gitter/tunes/server"
-	"github.com/Jack-Gitter/tunes/server/auth"
-	"github.com/Jack-Gitter/tunes/server/comments"
-	"github.com/Jack-Gitter/tunes/server/posts"
-	"github.com/Jack-Gitter/tunes/server/users"
 	"github.com/joho/godotenv"
 )
 
@@ -33,8 +35,9 @@ func main() {
     postsService := posts.PostsService{PostsDAO: &postsDAO}
     commentsDAO := daos.CommentsDAO{DB: db}
     commentsService := comments.CommentsService{CommentsDAO: &commentsDAO}
-    authService := auth.AuthService{UsersDAO: &usersDAO}
-
+    spotifyService := spotify.SpotifyService{}
+    jwtService := jwt.JWTService{}
+    authService := auth.AuthService{UsersDAO: &usersDAO, SpotifyService: &spotifyService, JWTService: &jwtService}
 
     defer db.Close()
 

@@ -1,16 +1,24 @@
-package helpers
+package jwt
 
 import (
 	"os"
 	"time"
-
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func CreateAccessJWT(spotifyID string, username string, accessToken string, accessTokenExpiresAt int, role responses.Role) (string, error) {
+type JWTService struct {}
+
+type IJWTService interface {
+    CreateAccessJWT(spotifyID string, username string, accessToken string, accessTokenExpiresAt int, role responses.Role) (string, error) 
+    CreateRefreshJWT(spotifyRefreshToken string) (string, error) 
+    ValidateAccessToken(accessTokenJWT string) (*jwt.Token, error) 
+    ValidateRefreshToken(refreshTokenJWT string) (*jwt.Token, error) 
+}
+
+func(j *JWTService) CreateAccessJWT(spotifyID string, username string, accessToken string, accessTokenExpiresAt int, role responses.Role) (string, error) {
 
 	claims := &requests.JWTClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -35,7 +43,7 @@ func CreateAccessJWT(spotifyID string, username string, accessToken string, acce
 	return tokenString, customerrors.WrapBasicError(err)
 }
 
-func CreateRefreshJWT(spotifyRefreshToken string) (string, error) {
+func(j *JWTService) CreateRefreshJWT(spotifyRefreshToken string) (string, error) {
 	claims := &requests.RefreshJWTClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "tunes",
@@ -55,14 +63,14 @@ func CreateRefreshJWT(spotifyRefreshToken string) (string, error) {
 	return refreshString, customerrors.WrapBasicError(err)
 }
 
-func ValidateAccessToken(accessTokenJWT string) (*jwt.Token, error) {
+func(j *JWTService) ValidateAccessToken(accessTokenJWT string) (*jwt.Token, error) {
 	token, err := jwt.ParseWithClaims(accessTokenJWT, &requests.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	return token, customerrors.WrapBasicError(err)
 }
 
-func ValidateRefreshToken(refreshTokenJWT string) (*jwt.Token, error) {
+func(j *JWTService) ValidateRefreshToken(refreshTokenJWT string) (*jwt.Token, error) {
 	token, e := jwt.ParseWithClaims(refreshTokenJWT, &requests.RefreshJWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})

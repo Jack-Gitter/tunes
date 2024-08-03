@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,6 +20,7 @@ type ISpotifyService interface {
     RetrieveInitialAccessToken(authorizationCode string) (*responses.AccessTokenResponnse, error) 
     RetrieveUserProfile(accessToken string) (*responses.ProfileResponse, error) 
     RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken string) (*responses.RefreshTokenResponse, error) 
+    GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*responses.SongResponse, error)
 }
 
 func(s *SpotifyService) RetrieveInitialAccessToken(authorizationCode string) (*responses.AccessTokenResponnse, error) {
@@ -108,5 +110,41 @@ func(s *SpotifyService) RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken 
 	json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
 
 	return accessTokenResponseBody, nil
+
+}
+
+func(s *SpotifyService) GetSongDetailsFromSpotify(songID string, spotifyAccessToken string) (*responses.SongResponse, error) {
+
+	url := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", songID)
+	songRequest, err := http.NewRequest(http.MethodGet, url, nil)
+
+	if err != nil {
+		return nil, customerrors.WrapBasicError(err)
+	}
+
+	songRequest.Header.Set("Authorization", fmt.Sprintf("Bearer %s", spotifyAccessToken))
+
+	client := &http.Client{}
+	resp, err := client.Do(songRequest)
+
+	if err != nil {
+		return nil, customerrors.WrapBasicError(err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+			return nil, &customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "Song with spotify ID not found"}
+		} else {
+            return nil, &customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "spotify failed not 200"}
+		}
+	}
+
+	spotifySongResponse := &responses.SongResponse{}
+	bodyString, _ := io.ReadAll(resp.Body)
+	json.Unmarshal(bodyString, spotifySongResponse)
+
+	return spotifySongResponse, nil
 
 }

@@ -6,14 +6,15 @@ import (
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
-	"github.com/Jack-Gitter/tunes/models/requests"
-	"github.com/Jack-Gitter/tunes/models/responses"
-	"github.com/Jack-Gitter/tunes/server/posts/helpers"
+	"github.com/Jack-Gitter/tunes/models/dtos/requests"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
+	"github.com/Jack-Gitter/tunes/models/services/spotify"
 	"github.com/gin-gonic/gin"
 )
 
 type PostsService struct {
     PostsDAO daos.IPostsDAO
+    SpotifyService spotify.ISpotifyService
 }
 
 type IPostsService interface {
@@ -61,7 +62,7 @@ func(p *PostsService) CreatePostForCurrentUser(c *gin.Context) {
 	createPostDTO := &requests.CreatePostDTO{}
 	c.ShouldBindBodyWithJSON(createPostDTO)
 
-	spotifySongResponse, err := helpers.GetSongDetailsFromSpotify(*createPostDTO.SongID, spotifyAccessToken.(string))
+	spotifySongResponse, err := p.SpotifyService.GetSongDetailsFromSpotify(*createPostDTO.SongID, spotifyAccessToken.(string))
 
 	if err != nil {
 		c.Error(err)

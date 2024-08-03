@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"sort"
 	"time"
-	"github.com/Jack-Gitter/tunes/db/helpers"
+
+	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
-	"github.com/Jack-Gitter/tunes/models/requests"
-	"github.com/Jack-Gitter/tunes/models/responses"
+	"github.com/Jack-Gitter/tunes/models/dtos/requests"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
+	"github.com/Jack-Gitter/tunes/models/services/auth/helpers"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -154,7 +156,7 @@ func(p *PostsDAO) GetUserPostByID(postID string, spotifyID string) (*responses.P
 
     } 
 
-    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         return nil, err
@@ -270,7 +272,7 @@ func(p *PostsDAO) GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.
         return nil
     }
 
-    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         return nil, err
@@ -387,7 +389,7 @@ func(p *PostsDAO) UpdatePost(spotifyID string, songID string, updatePostRequest 
 
         returning := []string{"albumarturi", "albumid", "albumname", "createdat", "rating", "songid", "songname", "review", "updatedat", "posterspotifyid"}
 
-        query, vals := helpers.PatchQueryBuilder("posts", updatedPostRequestMap, conditionals, returning)
+        query, vals := db.PatchQueryBuilder("posts", updatedPostRequestMap, conditionals, returning)
 
         res := tx.QueryRow(query, vals...)
 
@@ -454,7 +456,7 @@ func(p *PostsDAO) UpdatePost(spotifyID string, songID string, updatePostRequest 
 
     }
 
-    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         return nil, err
@@ -527,7 +529,7 @@ func(p *PostsDAO) LikeOrDislikePost(spotifyID string, posterSpotifyID string, so
         return nil
     }
 
-    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         return err
@@ -627,7 +629,7 @@ func(p *PostsDAO) GetPostCommentsPaginated(spotifyID string, songID string, pagi
         return nil
     }
 
-    helpers.RunTransactionWithExponentialBackoff(transaction, 5) 
+    db.RunTransactionWithExponentialBackoff(transaction, 5) 
 
 
     return paginationResponse, nil
