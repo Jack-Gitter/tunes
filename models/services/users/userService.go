@@ -5,8 +5,8 @@ import (
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
-	"github.com/Jack-Gitter/tunes/models/requests"
-	"github.com/Jack-Gitter/tunes/models/responses"
+	"github.com/Jack-Gitter/tunes/models/dtos/requests"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/gin-gonic/gin"
 )
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
-	"github.com/Jack-Gitter/tunes/models/requests"
+	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/gin-gonic/gin"
 )
 type CommentsService struct {

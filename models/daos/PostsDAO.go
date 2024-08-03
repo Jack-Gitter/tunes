@@ -11,7 +11,6 @@ import (
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
-	"github.com/Jack-Gitter/tunes/models/services/auth/helpers"
 	"github.com/mitchellh/mapstructure"
 )
 

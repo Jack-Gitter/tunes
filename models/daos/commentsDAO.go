@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"net/http"
 	"time"
-	"github.com/Jack-Gitter/tunes/db/helpers"
+
+	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
-	"github.com/Jack-Gitter/tunes/models/requests"
-	"github.com/Jack-Gitter/tunes/models/responses"
+	"github.com/Jack-Gitter/tunes/models/dtos/requests"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -168,7 +169,7 @@ func(c *CommentsDAO) GetComment(commentID string) (*responses.Comment, error) {
 
     }
 
-    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
     
     if err != nil {
         return nil, err
@@ -232,7 +233,7 @@ func(c *CommentsDAO) LikeOrDislikeComment(commentID string, spotifyID string, li
         return nil
     }
 
-    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         return err
@@ -280,7 +281,7 @@ func(c *CommentsDAO) UpdateComment(commentID string, updateCommentDTO *requests.
 
     returning := []string{"commentid", "commentorspotifyid", "posterspotifyid", "songid", "commenttext", "createdat", "updatedat"}
 
-    query, vals := helpers.PatchQueryBuilder("comments", updateCommentMap, conditionals, returning)
+    query, vals := db.PatchQueryBuilder("comments", updateCommentMap, conditionals, returning)
 
     comment := &responses.Comment{}
     transaction := func() error {
@@ -341,7 +342,7 @@ func(c *CommentsDAO) UpdateComment(commentID string, updateCommentDTO *requests.
         return nil
     }
 
-    err := helpers.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         return nil, err
