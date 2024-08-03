@@ -20,9 +20,8 @@ type QueryExecutor interface {
 }
 
 
-var DB = &dbConnection{}
 
-func ConnectToDB() {
+func ConnectToDB() *sql.DB {
 	dbHost := os.Getenv("DB_HOST")
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASS")
@@ -44,6 +43,6 @@ func ConnectToDB() {
 		panic(err)
 	}
 
-	DB.Driver = db
+    return db
 
 }

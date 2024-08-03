@@ -2,7 +2,10 @@ package main
 
 import (
 	"github.com/Jack-Gitter/tunes/db"
+	"github.com/Jack-Gitter/tunes/models/dtos"
 	"github.com/Jack-Gitter/tunes/server"
+	"github.com/Jack-Gitter/tunes/server/posts"
+	"github.com/Jack-Gitter/tunes/server/users"
 	"github.com/joho/godotenv"
 )
 
@@ -21,10 +24,15 @@ func main() {
 
 	godotenv.Load()
 
-	db.ConnectToDB()
-	defer db.DB.Driver.Close()
+    db := db.ConnectToDB()
+    usersDTO := dtos.UsersDTO{DB: db}
+    userService := users.UserService{UsersDTO: usersDTO}
+    postsDTO := dtos.PostsDTO{DB: db}
+    postsService := posts.PostsService{PostsDTO: postsDTO}
 
-	r := server.InitializeHttpServer()
+    defer db.Close()
+
+	r := server.InitializeHttpServer(userService, postsService)
 	r.Run(":2000")
 
 }
