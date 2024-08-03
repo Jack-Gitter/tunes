@@ -11,7 +11,7 @@ import (
 )
 
 type UserService struct {
-    UsersDTO dtos.UsersDTO
+    UsersDTO dtos.IUsersDTO
 }
 
 type IUserSerivce interface {

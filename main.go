@@ -4,6 +4,7 @@ import (
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/dtos"
 	"github.com/Jack-Gitter/tunes/server"
+	"github.com/Jack-Gitter/tunes/server/comments"
 	"github.com/Jack-Gitter/tunes/server/posts"
 	"github.com/Jack-Gitter/tunes/server/users"
 	"github.com/joho/godotenv"
@@ -26,13 +27,16 @@ func main() {
 
     db := db.ConnectToDB()
     usersDTO := dtos.UsersDTO{DB: db}
-    userService := users.UserService{UsersDTO: usersDTO}
+    userService := users.UserService{UsersDTO: &usersDTO}
     postsDTO := dtos.PostsDTO{DB: db}
-    postsService := posts.PostsService{PostsDTO: postsDTO}
+    postsService := posts.PostsService{PostsDTO: &postsDTO}
+    commentsDTO := dtos.CommentsDTO{DB: db}
+    commentsService := comments.CommentsService{CommentsDTO: &commentsDTO}
+
 
     defer db.Close()
 
-	r := server.InitializeHttpServer(userService, postsService)
+	r := server.InitializeHttpServer(&userService, &postsService, &commentsService)
 	r.Run(":2000")
 
 }

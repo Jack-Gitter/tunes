@@ -13,7 +13,7 @@ import (
 )
 
 type PostsService struct {
-    PostsDTO dtos.PostsDTO
+    PostsDTO dtos.IPostsDTO
 }
 
 type IPostsService interface {

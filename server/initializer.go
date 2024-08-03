@@ -14,7 +14,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPostsService) *gin.Engine {
+func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPostsService, commentsService comments.ICommentsService) *gin.Engine {
 	r := gin.Default()
 
     baseGroup := r.Group("", customerrors.ErrorHandlerMiddleware)
@@ -74,17 +74,17 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
             commentGroup := authGroup.Group("/comments")
             {
 
-                commentGroup.GET("/:commentID",  validation.ValidatePathParams[requests.CommentIDPathParams](), comments.GetComment)
-                commentGroup.POST("/:spotifyID/:songID", validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData[requests.CreateCommentDTO](), comments.CreateComment)
-                commentGroup.POST("/like/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.LikeComment)
-                commentGroup.POST("/dislike/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.DislikeComment)
-                commentGroup.PATCH("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData(requests.ValidateUpdateCommentDTO), comments.UpdateComment)
-                commentGroup.DELETE("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.DeleteCurrentUserComment)
-                commentGroup.DELETE("/votes/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.RemoveCommentVote)
+                commentGroup.GET("/:commentID",  validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.GetComment)
+                commentGroup.POST("/:spotifyID/:songID", validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData[requests.CreateCommentDTO](), commentsService.CreateComment)
+                commentGroup.POST("/like/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.LikeComment)
+                commentGroup.POST("/dislike/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.DislikeComment)
+                commentGroup.PATCH("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData(requests.ValidateUpdateCommentDTO), commentsService.UpdateComment)
+                commentGroup.DELETE("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.DeleteCurrentUserComment)
+                commentGroup.DELETE("/votes/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.RemoveCommentVote)
 
                 adminOnly := commentGroup.Group("/admin", auth.ValidateAdminUser)
                 {
-                    adminOnly.DELETE("/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.DeleteComment)
+                    adminOnly.DELETE("/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.DeleteComment)
                 }
 
             }
