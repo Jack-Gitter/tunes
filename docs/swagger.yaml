@@ -828,6 +828,36 @@ paths:
       summary: Dislikes a post for the current user
       tags:
       - Posts
+  /posts/feed:
+    get:
+      consumes:
+      - application/json
+      description: Gets the comments of a post
+      parameters:
+      - description: Pagination Key. In the form of UTC timestamp
+        in: query
+        name: createdAt
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaginationResponse-array_responses_Comment-time_Time'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Gets the comments of a post
+      tags:
+      - Posts
   /posts/likes/{spotifyID}/{songID}:
     post:
       consumes:

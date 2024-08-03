@@ -958,6 +958,54 @@
                 }
             }
         },
+        "/posts/feed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Gets the comments of a post",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Gets the comments of a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pagination Key. In the form of UTC timestamp",
+                        "name": "createdAt",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaginationResponse-array_responses_Comment-time_Time"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/posts/likes/{spotifyID}/{songID}": {
             "post": {
                 "security": [

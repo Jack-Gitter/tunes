@@ -56,12 +56,12 @@ func InitializeHttpServer() *gin.Engine {
                 postGroup.GET("/previews/users/current", posts.GetAllPostsForCurrentUser)
                 postGroup.GET("/previews/users/:spotifyID", posts.GetAllPostsForUserByID)
                 postGroup.GET("/comments/:spotifyID/:songID", posts.GetPostCommentsPaginated)
+                postGroup.GET("/feed", posts.GetCurrentUserFeed)
                 postGroup.POST("/", validation.ValidateData(requests.ValidateCreatePostDTO),  posts.CreatePostForCurrentUser)
                 postGroup.POST("/likes/:spotifyID/:songID", posts.LikePost)
                 postGroup.POST("/dislikes/:spotifyID/:songID", posts.DislikePost)
                 postGroup.PATCH("/current/:songID", validation.ValidateData(requests.ValidateUpdatePostRequestDTO), posts.UpdateCurrentUserPost)
                 postGroup.DELETE("/current/:songID", posts.DeletePostForCurrentUserBySongID)
-
                 postGroup.DELETE("/votes/current/:posterSpotifyID/:songID",  posts.RemovePostVote)
 
                 adminOnly := postGroup.Group("/admin", auth.ValidateAdminUser)
@@ -80,7 +80,6 @@ func InitializeHttpServer() *gin.Engine {
                 commentGroup.POST("/dislike/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.DislikeComment)
                 commentGroup.PATCH("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData(requests.ValidateUpdateCommentDTO), comments.UpdateComment)
                 commentGroup.DELETE("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.DeleteCurrentUserComment)
-
                 commentGroup.DELETE("/votes/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), comments.RemoveCommentVote)
 
                 adminOnly := commentGroup.Group("/admin", auth.ValidateAdminUser)

@@ -493,3 +493,50 @@ func GetPostCommentsPaginated(c *gin.Context) {
 
     c.JSON(http.StatusOK, resp)
 }
+
+// @Summary Gets the comments of a post
+// @Description Gets the comments of a post
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param createdAt query string false "Pagination Key. In the form of UTC timestamp"
+// @Success 200 {object} responses.PaginationResponse[[]responses.Comment, time.Time]
+// @Failure 401 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/feed [get]
+// @Security Bearer
+func GetCurrentUserFeed(c *gin.Context) {
+
+    spotifyID, exists := c.Get("spotifyID")
+    createdAt := c.Query("createdAt")
+
+    if !exists {
+        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "jwt"})
+        c.Abort()
+        return
+    }
+
+    var t time.Time = time.Now().UTC()
+    var err error
+
+	if createdAt != "" {
+		t, err = time.Parse(time.RFC3339, createdAt)
+
+        if err != nil {
+            c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"})
+            c.Abort()
+            return
+        }
+	}
+
+    resp, err := db.GetCurrentUserFeed(spotifyID.(string), t)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    c.JSON(http.StatusOK, resp)
+
+}

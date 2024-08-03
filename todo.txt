@@ -5,10 +5,9 @@ endpoints:
         users
             make a getFeed endpoint which gets all of the posts from the users followers and returns the top x most recent, make it paginated
 general 
+    make queries re-usable??? I'm a dumbass
 
 documentation: 
-    comments
-        for commentid path params, we should do some validation and parse it to an int, and then send it to the db layer as an int
     readme
         explain what this project is
         explain auth -- double submit cookies
@@ -28,7 +27,7 @@ dockerize:
 
 caching:
     redis 
-        read up on caching techniques!!! 
+        read up on caching techniques!!!  -- or do in memory lol, i'm a lazy bitch
 
 
 sql: 

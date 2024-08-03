@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db/helpers"
@@ -518,6 +519,7 @@ func LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, 
 func GetPostCommentsPaginated(spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error) {
 
     paginationResponse := &responses.PaginationResponse[[]responses.Comment, time.Time]{PaginationKey: time.Now().UTC()}
+
     transaction := func() error {
 
         tx, err := DB.Driver.BeginTx(context.Background(), nil)
@@ -609,4 +611,59 @@ func GetPostCommentsPaginated(spotifyID string, songID string, paginationKey tim
 
 
     return paginationResponse, nil
+}
+
+func GetCurrentUserFeed(spotifyID string, t time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
+
+    paginationResponse := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{PaginationKey: time.Now().UTC()}
+
+    query := `SELECT userfollowed FROM followers WHERE follower = $1`
+
+
+    followedIds := []string{}
+    rows, err := DB.Driver.Query(query, spotifyID)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    for rows.Next() {
+        follower := ""
+        err := rows.Scan(&follower)
+        if err != nil {
+            return nil, customerrors.WrapBasicError(err)
+        }
+        followedIds = append(followedIds, follower)
+    }
+
+    posts := []responses.PostPreview{}
+    for _, id := range followedIds {
+        val, err := GetUserPostsPreviewsByUserID(id, t)
+        if err != nil {
+            return nil, err
+        }
+        posts = append(posts, val.DataResponse...)
+    }
+
+    
+    sort.Slice(posts, func(i, j int) bool {
+        return posts[i].CreatedAt.Before(posts[j].CreatedAt)
+    })
+
+    if len(posts) == 0 {
+        return paginationResponse, nil
+    }
+
+    upTo := 0
+    if len(posts) > 15 {
+        upTo = 15
+    }
+
+    paginationResponse.DataResponse = posts[:upTo]
+
+    paginationResponse.PaginationKey = posts[:upTo][upTo-1].CreatedAt
+
+
+    return paginationResponse, nil
+
 }
