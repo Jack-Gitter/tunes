@@ -223,8 +223,7 @@ func doesUserExist(executor QueryExecutor, spotifyID string) (bool, error) {
 }
 
 func getUserFollowersPaginated(executor QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error) {
-    query := `
-                SELECT users.spotifyid, users.username, users.bio, users.userrole 
+    query := ` SELECT users.spotifyid, users.username, users.bio, users.userrole 
                 FROM followers 
                 INNER JOIN  users 
                 ON users.spotifyid = followers.follower 
