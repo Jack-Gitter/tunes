@@ -5,7 +5,9 @@ endpoints:
         users
             make a getFeed endpoint which gets all of the posts from the users followers and returns the top x most recent, make it paginated
 general 
-    have the service layer orchestrate transactions -- effectively going to have to re-write a lot of the dao code. Do I pass the database connection to the dao?
+    service layer must orchestrate connections
+    change dao methods so that they take in an db.Executable
+    change the service structs so that they have a reference to the db, and then can pass the dao either a tx or sql.DB to run queries with
 
 documentation: 
     readme

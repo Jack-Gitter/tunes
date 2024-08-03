@@ -12,7 +12,7 @@ type dbConnection struct {
 }
 
 type QueryExecutor interface {
-    Exec(query string, args ...interface{}) (sql.Result, error)
+    Exec(query string, args ...interface{}) (sql.Result, error) // if we have to swap out databases, sql.Result is a big problem? -- no, its a driver over multiple dbs!
     Query(query string, args ...interface{}) (*sql.Rows, error)
     QueryRow(query string, args ...interface{}) *sql.Row
 }
