@@ -29,17 +29,18 @@ func main() {
 	godotenv.Load()
 
     db := db.ConnectToDB()
+    defer db.Close()
+
     usersDAO := daos.UsersDAO{DB: db}
-    userService := users.UserService{UsersDAO: &usersDAO}
     postsDAO := daos.PostsDAO{DB: db}
-    postsService := posts.PostsService{PostsDAO: &postsDAO}
     commentsDAO := daos.CommentsDAO{DB: db}
+
+    userService := users.UserService{UsersDAO: &usersDAO}
+    postsService := posts.PostsService{PostsDAO: &postsDAO}
     commentsService := comments.CommentsService{CommentsDAO: &commentsDAO}
     spotifyService := spotify.SpotifyService{}
     jwtService := jwt.JWTService{}
     authService := auth.AuthService{UsersDAO: &usersDAO, SpotifyService: &spotifyService, JWTService: &jwtService}
-
-    defer db.Close()
 
 	r := server.InitializeHttpServer(&userService, &postsService, &commentsService, &authService)
 	r.Run(":2000")
