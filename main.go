@@ -4,6 +4,7 @@ import (
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/dtos"
 	"github.com/Jack-Gitter/tunes/server"
+	"github.com/Jack-Gitter/tunes/server/auth"
 	"github.com/Jack-Gitter/tunes/server/comments"
 	"github.com/Jack-Gitter/tunes/server/posts"
 	"github.com/Jack-Gitter/tunes/server/users"
@@ -32,11 +33,12 @@ func main() {
     postsService := posts.PostsService{PostsDTO: &postsDTO}
     commentsDTO := dtos.CommentsDTO{DB: db}
     commentsService := comments.CommentsService{CommentsDTO: &commentsDTO}
+    authService := auth.AuthService{UsersDTO: &usersDTO}
 
 
     defer db.Close()
 
-	r := server.InitializeHttpServer(&userService, &postsService, &commentsService)
+	r := server.InitializeHttpServer(&userService, &postsService, &commentsService, &authService)
 	r.Run(":2000")
 
 }

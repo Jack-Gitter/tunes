@@ -14,19 +14,19 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPostsService, commentsService comments.ICommentsService) *gin.Engine {
+func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPostsService, commentsService comments.ICommentsService, authSerivce auth.IAuthService) *gin.Engine {
 	r := gin.Default()
 
     baseGroup := r.Group("", customerrors.ErrorHandlerMiddleware)
     {
         loginGroup := baseGroup.Group("/login") 
         {
-            loginGroup.GET("/", auth.Login)
-            loginGroup.GET("/callback", auth.LoginCallback)
-            loginGroup.GET("/jwt", auth.RefreshJWT)
+            loginGroup.GET("/", authSerivce.Login)
+            loginGroup.GET("/callback", authSerivce.LoginCallback)
+            loginGroup.GET("/jwt", authSerivce.RefreshJWT)
         }
 
-        authGroup := baseGroup.Group("", auth.ValidateUserJWT) 
+        authGroup := baseGroup.Group("", authSerivce.ValidateUserJWT) 
         {
 
             userGroup := authGroup.Group("/users")
@@ -35,12 +35,12 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
                 userGroup.GET("/current", userService.GetCurrentUser)
                 userGroup.GET("/current/followers", userService.GetFollowers)
                 userGroup.GET("/:spotifyID/followers", userService.GetFollowersByID)
-                userGroup.POST("/current/follow/:otherUserSpotifyID", userService.FollowerUser)
+                userGroup.POST("/current/follow/:otherUserSpotifyID", userService.FollowUser)
                 userGroup.DELETE("/current/unfollow/:otherUserSpotifyID", userService.UnFollowUser)
                 userGroup.PATCH("/current", validation.ValidateData(requests.ValidateUserRequestDTO), userService.UpdateCurrentUserProperties)
                 userGroup.DELETE("/current", userService.DeleteCurrentUser)
 
-                adminOnly := userGroup.Group("/admin", auth.ValidateAdminUser)
+                adminOnly := userGroup.Group("/admin", authSerivce.ValidateAdminUser)
                 {
                     adminOnly.PATCH("/:spotifyID", validation.ValidateData(requests.ValidateUserRequestDTO), userService.UpdateUserBySpotifyID)
                     adminOnly.DELETE("/:spotifyID", userService.DeleteUserBySpotifyID)
@@ -64,7 +64,7 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
                 postGroup.DELETE("/current/:songID", postsService.DeletePostForCurrentUserBySongID)
                 postGroup.DELETE("/votes/current/:posterSpotifyID/:songID",  postsService.RemovePostVote)
 
-                adminOnly := postGroup.Group("/admin", auth.ValidateAdminUser)
+                adminOnly := postGroup.Group("/admin", authSerivce.ValidateAdminUser)
                 {
                     adminOnly.DELETE("/:spotifyID/:songID", postsService.DeletePostBySpotifyIDAndSongID)
                 }
@@ -82,7 +82,7 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
                 commentGroup.DELETE("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.DeleteCurrentUserComment)
                 commentGroup.DELETE("/votes/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.RemoveCommentVote)
 
-                adminOnly := commentGroup.Group("/admin", auth.ValidateAdminUser)
+                adminOnly := commentGroup.Group("/admin", authSerivce.ValidateAdminUser)
                 {
                     adminOnly.DELETE("/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.DeleteComment)
                 }

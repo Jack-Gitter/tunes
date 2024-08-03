@@ -15,144 +15,30 @@ type UserService struct {
 }
 
 type IUserSerivce interface {
-    // @Summary Gets a tunes user by their spotify ID
-    // @Description Gets a tunes user by their spotifyID
-    // @Tags Users
-    // @Accept json
-    // @Produce json
-    // @Param spotifyID path string true "User Spotify ID"
-    // @Success 200 {object} responses.User
-    // @Failure 401 {string} string
-    // @Failure 404 {string} string
-    // @Failure 500 {string} string
-    // @Router /users/{spotifyID} [get]
-    // @Security Bearer
     GetUserById(c *gin.Context)
-    // @Summary Unfollowers a user for the currently signed in user
-    // @Description Unfollowers a user for the currently signed in user
-    // @Tags Users
-    // @Accept json
-    // @Produce json
-    // @Param otherUserSpotifyID path string true "User to unfollow spotify ID"
-    // @Success 204
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /users/current/unfollow/{otherUserSpotifyID} [delete]
-    // @Security Bearer
     UnFollowUser(c *gin.Context)
-    // @Summary Gets a users followers by their spotify ID
-    // @Description Gets a users followers by their spotify ID
-    // @Tags Users
-    // @Accept json
-    // @Produce json
-    // @Param spotifyID path string true "User spotify ID"
-    // @Param spotifyID query string false "Pagination Key for follow up responses. This key is a spotify ID"
-    // @Success 200 {object} responses.PaginationResponse[[]responses.User, string]
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /users/{spotifyID}/followers/ [get]
-    // @Security Bearer
     GetFollowersByID(c *gin.Context)
-    // @Summary Gets the current users followers
-    // @Description Gets the current users followers
-    // @Tags Users
-    // @Accept json
-    // @Produce json
-    // @Param spotifyID query string false "Pagination Key for follow up responses. This key is a spotify ID"
-    // @Success 200 {object} responses.PaginationResponse[[]responses.User, string]
-    // @Failure 400 {string} string 
-    // @Failure 401 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /users/current/followers/ [get]
-    // @Security Bearer
     GetFollowers(c *gin.Context) 
-    // @Summary Follows a user for the current user
-    // @Description Follows a user for the current user 
-    // @Tags Users
-    // @Accept json
-    // @Produce json
-    // @Param otherUserSpotifyID path string true "Spotify ID of other user to follow"
-    // @Success 204 
-    // @Failure 400 {string} string 
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 409 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /users/current/follow/{otherUserSpotifyID} [post]
-    // @Security Bearer
-    FollowerUser(c *gin.Context)
-
-    // @Summary Retreives the current user
-    // @Description Retrieves the current user
-    // @Tags Users
-    // @Accept json
-    // @Produce json
-    // @Success 200 {object} responses.User
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /users/current [get]
-    // @Security Bearer
+    FollowUser(c *gin.Context)
     GetCurrentUser(c *gin.Context) 
-    // @Summary Updates a user by their spotify ID. Only accessable to admins
-    // @Description Updates a user by their spotify ID. Only accessable to admins
-    // @Tags Users
-    // @Accept json
-    // @Produce json
-    // @Param UpdateUserDTO body requests.UpdateUserRequestDTO true "Information to update"
-    // @Param spotifyID path string true "Spotify ID of the user to update"
-    // @Success 200 {object} responses.User
-    // @Failure 400 {string} string 
-    // @Failure 401 {string} string 
-    // @Failure 403 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /users/admin/{spotifyID} [patch]
-    // @Security Bearer
     UpdateUserBySpotifyID(c *gin.Context)
-    // @Summary Updates the current user
-    // @Description Updates the current user
-    // @Tags Users
-    // @Accept json
-    // @Produce json
-    // @Param UpdateUserDTO body requests.UpdateUserRequestDTO true "Information to update"
-    // @Success 200 {object} responses.User
-    // @Failure 400 {string} string 
-    // @Failure 401 {string} string 
-    // @Failure 403 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /users/current [patch]
-    // @Security Bearer
     UpdateCurrentUserProperties(c *gin.Context) 
-    // @Summary Deletes the current user
-    // @Description Deletes the current user
-    // @Tags Users
-    // @Accept json
-    // @Produce json
-    // @Success 204
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /users/current [delete]
-    // @Security Bearer
     DeleteCurrentUser(c *gin.Context)
-    // @Summary Deletes a user account by spotify ID
-    // @Description Deletes a user account by spotify ID
-    // @Tags Users
-    // @Accept json
-    // @Produce json
-    // @Success 204
-    // @Param spotifyID path string true "Spotify ID of the user to delete"
-    // @Failure 401 {string} string 
-    // @Failure 403 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /users/admin/{spotifyID} [delete]
-    // @Security Bearer
     DeleteUserBySpotifyID(c *gin.Context)
 }
 
+// @Summary Gets a tunes user by their spotify ID
+// @Description Gets a tunes user by their spotifyID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "User Spotify ID"
+// @Success 200 {object} responses.User
+// @Failure 401 {string} string
+// @Failure 404 {string} string
+// @Failure 500 {string} string
+// @Router /users/{spotifyID} [get]
+// @Security Bearer
 func(u *UserService) GetUserById(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
@@ -168,6 +54,18 @@ func(u *UserService) GetUserById(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// @Summary Unfollowers a user for the currently signed in user
+// @Description Unfollowers a user for the currently signed in user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param otherUserSpotifyID path string true "User to unfollow spotify ID"
+// @Success 204
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current/unfollow/{otherUserSpotifyID} [delete]
+// @Security Bearer
 func(u *UserService) UnFollowUser(c *gin.Context) {
 
 	otherUserSpotifyID := c.Param("otherUserSpotifyID")
@@ -197,6 +95,19 @@ func(u *UserService) UnFollowUser(c *gin.Context) {
 
 }
 
+// @Summary Gets a users followers by their spotify ID
+// @Description Gets a users followers by their spotify ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "User spotify ID"
+// @Param spotifyID query string false "Pagination Key for follow up responses. This key is a spotify ID"
+// @Success 200 {object} responses.PaginationResponse[[]responses.User, string]
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/{spotifyID}/followers/ [get]
+// @Security Bearer
 func(u *UserService) GetFollowersByID(c *gin.Context) {
 	spotifyID := c.Param("spotifyID")
 	paginationKey := c.Query("spotifyID")
@@ -217,6 +128,18 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
 
 }
 
+// @Summary Gets the current users followers
+// @Description Gets the current users followers
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param spotifyID query string false "Pagination Key for follow up responses. This key is a spotify ID"
+// @Success 200 {object} responses.PaginationResponse[[]responses.User, string]
+// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current/followers/ [get]
+// @Security Bearer
 func(u *UserService) GetFollowers(c *gin.Context) {
 
 	spotifyID, found := c.Get("spotifyID")
@@ -244,7 +167,21 @@ func(u *UserService) GetFollowers(c *gin.Context) {
 
 }
 
-func(u *UserService) FollowerUser(c *gin.Context) {
+// @Summary Follows a user for the current user
+// @Description Follows a user for the current user 
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param otherUserSpotifyID path string true "Spotify ID of other user to follow"
+// @Success 204 
+// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 409 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current/follow/{otherUserSpotifyID} [post]
+// @Security Bearer
+func(u *UserService) FollowUser(c *gin.Context) {
 	otherUserSpotifyID := c.Param("otherUserSpotifyID")
 	spotifyID, found := c.Get("spotifyID")
 
@@ -273,6 +210,17 @@ func(u *UserService) FollowerUser(c *gin.Context) {
 
 }
 
+// @Summary Retreives the current user
+// @Description Retrieves the current user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 200 {object} responses.User
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current [get]
+// @Security Bearer
 func(u *UserService) GetCurrentUser(c *gin.Context) {
 
 	spotifyID, spotifyIdExists := c.Get("spotifyID")
@@ -294,6 +242,21 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// @Summary Updates a user by their spotify ID. Only accessable to admins
+// @Description Updates a user by their spotify ID. Only accessable to admins
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param UpdateUserDTO body requests.UpdateUserRequestDTO true "Information to update"
+// @Param spotifyID path string true "Spotify ID of the user to update"
+// @Success 200 {object} responses.User
+// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 403 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/admin/{spotifyID} [patch]
+// @Security Bearer
 func(u *UserService) UpdateUserBySpotifyID(c *gin.Context) {
 
 	userUpdateRequest := &requests.UpdateUserRequestDTO{}
@@ -307,7 +270,7 @@ func(u *UserService) UpdateUserBySpotifyID(c *gin.Context) {
 
 	c.ShouldBindBodyWithJSON(userUpdateRequest)
 
-	resp, err := updateUser(spotifyID, userUpdateRequest)
+	resp, err := u.updateUser(spotifyID, userUpdateRequest)
 
 	if err != nil {
 		c.Error(err)
@@ -318,6 +281,20 @@ func(u *UserService) UpdateUserBySpotifyID(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+
+// @Summary Updates the current user
+// @Description Updates the current user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param UpdateUserDTO body requests.UpdateUserRequestDTO true "Information to update"
+// @Success 200 {object} responses.User
+// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 403 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current [patch]
+// @Security Bearer
 func(u *UserService) UpdateCurrentUserProperties(c *gin.Context) {
 
 	userUpdateRequest := &requests.UpdateUserRequestDTO{}
@@ -331,7 +308,7 @@ func(u *UserService) UpdateCurrentUserProperties(c *gin.Context) {
 
 	c.ShouldBindBodyWithJSON(userUpdateRequest)
 
-	resp, e := updateUser(spotifyID.(string), userUpdateRequest)
+	resp, e := u.updateUser(spotifyID.(string), userUpdateRequest)
 
 	if e != nil {
 		c.Error(e)
@@ -343,6 +320,17 @@ func(u *UserService) UpdateCurrentUserProperties(c *gin.Context) {
 
 }
 
+
+// @Summary Deletes the current user
+// @Description Deletes the current user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 204
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current [delete]
+// @Security Bearer
 func(u *UserService) DeleteCurrentUser(c *gin.Context) {
 	spotifyID, spotifyIdExists := c.Get("spotifyID")
 	if !spotifyIdExists {
@@ -362,6 +350,20 @@ func(u *UserService) DeleteCurrentUser(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+
+// @Summary Deletes a user account by spotify ID
+// @Description Deletes a user account by spotify ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 204
+// @Param spotifyID path string true "Spotify ID of the user to delete"
+// @Failure 401 {string} string 
+// @Failure 403 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/admin/{spotifyID} [delete]
+// @Security Bearer
 func(u *UserService) DeleteUserBySpotifyID(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")

@@ -17,194 +17,35 @@ type PostsService struct {
 }
 
 type IPostsService interface {
-    // @Summary Creates a post for the current user
-    // @Description Creates a post for the current user
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param createPostDTO body requests.CreatePostDTO true "Information required to create a post"
-    // @Success 200 {object} responses.PostPreview
-    // @Failure 400 {string} string
-    // @Failure 401 {string} string
-    // @Failure 404 {string} string
-    // @Failure 409 {string} string
-    // @Failure 500 {string} string
-    // @Router /posts/ [post]
-    // @Security Bearer
     CreatePostForCurrentUser(c *gin.Context) 
-    // @Summary Likes a post for the current user
-    // @Description Likes a post for the current user
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param spotifyID path string true "Song ID of the post to like"
-    // @Param songID path string true "Spotify ID of the user who posted the song"
-    // @Success 204
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 409 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/likes/{spotifyID}/{songID} [post]
-    // @Security Bearer
     LikePost(c *gin.Context) 
-    // @Summary Dislikes a post for the current user
-    // @Description Dislikes a post for the current user
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param spotifyID path string true "Song ID of the post to dislike"
-    // @Param songID path string true "Spotify ID of the user who posted the song"
-    // @Success 204
-    // @Failure 400 {string} string 
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 409 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/dislikes/{spotifyID}/{songID} [post]
-    // @Security Bearer
     DislikePost(c *gin.Context) 
-    // @Summary Get all of a users post previews
-    // @Description Get all of a users post previews
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param spotifyID path string true "The user whos posts are recieved. Value is a spotify ID"
-    // @Param createdAt query string false "Pagination Key. Format is UTC timestamp"
-    // @Success 200 {object} responses.PostPreview
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/previews/users/{spotifyID} [get]
-    // @Security Bearer
     GetAllPostsForUserByID(c *gin.Context) 
-    // @Summary Get all of a users post previews
-    // @Description Get all of a users post previews
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param createdAt query string false "Pagination Key. Format is UTC timestamp"
-    // @Success 200 {object} responses.PostPreview
-    // @Failure 400 {string} string 
-    // @Failure 401 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/previews/users/current [get]
-    // @Security Bearer
     GetAllPostsForCurrentUser(c *gin.Context) 
-    // @Summary Get apath specific post
-    // @Description Get a specific post
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param spotifyID path string true "The user who posted the song"
-    // @Param songID path string true "The songID of the posted song"
-    // @Success 200 {object} responses.Post
-    // @Failure 400 {string} string 
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/{spotifyID}/{songID} [get]
-    // @Security Bearer
     GetPostBySpotifyIDAndSongID(c *gin.Context)
-    // @Summary Get a specific post for the current user
-    // @Description Get a specific post for the current user
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param songID path string true "The songID of the posted song"
-    // @Success 200 {object} responses.PostPreview
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/current/{songID} [get]
-    // @Security Bearer
     GetPostCurrentUserBySongID(c *gin.Context) 
-    // @Summary Deletes a specific post. Only accessible to admins
-    // @Description Deletes a specific post. Only accessible to admins
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param spotifyID path string true "The spotify ID of the user who posted the song"
-    // @Param songID path string true "The songID of the posted song"
-    // @Success 204
-    // @Failure 400 {string} string 
-    // @Failure 403 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/admin/{spotifyID}/{songID} [delete]
-    // @Security Bearer
     DeletePostBySpotifyIDAndSongID(c *gin.Context) 
-    // @Summary Deletes a post made by the current user
-    // @Description Deletes a post made by the current user
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param songID path string true "The songID of the posted song"
-    // @Success 204
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/current/{songID} [delete]
-    // @Security Bearer
     DeletePostForCurrentUserBySongID(c *gin.Context) 
-    // @Summary Updates a post made by the current user
-    // @Description Updates a post made by the current user
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param songID path string true "The songID of the posted song"
-    // @Param UpdatePostDTO body requests.UpdatePostRequestDTO true "The fields to update"
-    // @Success 200 {object} responses.PostPreview
-    // @Failure 400 {string} string 
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/current/{songID} [patch]
-    // @Security Bearer
     UpdateCurrentUserPost(c *gin.Context) 
-    // @Summary Removes a vote for the current user on a post
-    // @Description Removes a vote for the current user on a post
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param songID path string true "The songID of the posted song"
-    // @Param posterSpotifyID path string true "The user who posted the post spotify ID"
-    // @Success 204
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/votes/current/{posterSpotifyID}/{songID} [delete]
-    // @Security Bearer
     RemovePostVote(c *gin.Context) 
-    // @Summary Gets the comments of a post
-    // @Description Gets the comments of a post
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param songID path string true "The songID of the posted song"
-    // @Param spotifyID path string true "The user who posted the post spotify ID"
-    // @Param createdAt query string false "Pagination Key. In the form of UTC timestamp"
-    // @Success 200 {object} responses.PaginationResponse[[]responses.Comment, time.Time]
-    // @Failure 400 {string} string 
-    // @Failure 401 {string} string 
-    // @Failure 404 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/comments/{spotifyID}/{songID} [get]
-    // @Security Bearer
     GetPostCommentsPaginated(c *gin.Context) 
-    // @Summary Gets the comments of a post
-    // @Description Gets the comments of a post
-    // @Tags Posts
-    // @Accept json
-    // @Produce json
-    // @Param createdAt query string false "Pagination Key. In the form of UTC timestamp"
-    // @Success 200 {object} responses.PaginationResponse[[]responses.Comment, time.Time]
-    // @Failure 401 {string} string 
-    // @Failure 500 {string} string 
-    // @Router /posts/feed [get]
-    // @Security Bearer
     GetCurrentUserFeed(c *gin.Context) 
 }
 
+// @Summary Creates a post for the current user
+// @Description Creates a post for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param createPostDTO body requests.CreatePostDTO true "Information required to create a post"
+// @Success 200 {object} responses.PostPreview
+// @Failure 400 {string} string
+// @Failure 401 {string} string
+// @Failure 404 {string} string
+// @Failure 409 {string} string
+// @Failure 500 {string} string
+// @Router /posts/ [post]
+// @Security Bearer
 func(p *PostsService) CreatePostForCurrentUser(c *gin.Context) {
 
 	spotifyID, spotifyIDExists := c.Get("spotifyID")
@@ -268,6 +109,20 @@ func(p *PostsService) CreatePostForCurrentUser(c *gin.Context) {
 
 }
 
+// @Summary Likes a post for the current user
+// @Description Likes a post for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "Song ID of the post to like"
+// @Param songID path string true "Spotify ID of the user who posted the song"
+// @Success 204
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 409 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/likes/{spotifyID}/{songID} [post]
+// @Security Bearer
 func(p *PostsService) LikePost(c *gin.Context) {
 	currentUserSpotifyID, found := c.Get("spotifyID")
 	spotifyID := c.Param("spotifyID")
@@ -290,6 +145,21 @@ func(p *PostsService) LikePost(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// @Summary Dislikes a post for the current user
+// @Description Dislikes a post for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "Song ID of the post to dislike"
+// @Param songID path string true "Spotify ID of the user who posted the song"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 409 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/dislikes/{spotifyID}/{songID} [post]
+// @Security Bearer
 func(p *PostsService) DislikePost(c *gin.Context) {
 
 	currentUserSpotifyID, found := c.Get("spotifyID")
@@ -313,6 +183,19 @@ func(p *PostsService) DislikePost(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// @Summary Get all of a users post previews
+// @Description Get all of a users post previews
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "The user whos posts are recieved. Value is a spotify ID"
+// @Param createdAt query string false "Pagination Key. Format is UTC timestamp"
+// @Success 200 {object} responses.PostPreview
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/previews/users/{spotifyID} [get]
+// @Security Bearer
 func(p *PostsService) GetAllPostsForUserByID(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
@@ -329,6 +212,18 @@ func(p *PostsService) GetAllPostsForUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
+// @Summary Get all of a users post previews
+// @Description Get all of a users post previews
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param createdAt query string false "Pagination Key. Format is UTC timestamp"
+// @Success 200 {object} responses.PostPreview
+// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/previews/users/current [get]
+// @Security Bearer
 func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
 	spotifyID, spotifyIDExists := c.Get("spotifyID")
 	createdAt := c.Query("createdAt")
@@ -349,7 +244,20 @@ func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, posts)
 }
-
+// @Summary Get apath specific post
+// @Description Get a specific post
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "The user who posted the song"
+// @Param songID path string true "The songID of the posted song"
+// @Success 200 {object} responses.Post
+// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/{spotifyID}/{songID} [get]
+// @Security Bearer
 func(p *PostsService) GetPostBySpotifyIDAndSongID(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
@@ -366,6 +274,18 @@ func(p *PostsService) GetPostBySpotifyIDAndSongID(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
+// @Summary Get a specific post for the current user
+// @Description Get a specific post for the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param songID path string true "The songID of the posted song"
+// @Success 200 {object} responses.PostPreview
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/current/{songID} [get]
+// @Security Bearer
 func(p *PostsService) GetPostCurrentUserBySongID(c *gin.Context) {
 
 	currentUserSpotifyID, found := c.Get("spotifyID")
@@ -388,6 +308,20 @@ func(p *PostsService) GetPostCurrentUserBySongID(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
+// @Summary Deletes a specific post. Only accessible to admins
+// @Description Deletes a specific post. Only accessible to admins
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "The spotify ID of the user who posted the song"
+// @Param songID path string true "The songID of the posted song"
+// @Success 204
+// @Failure 400 {string} string 
+// @Failure 403 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/admin/{spotifyID}/{songID} [delete]
+// @Security Bearer
 func(p *PostsService) DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
@@ -405,6 +339,18 @@ func(p *PostsService) DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 
 }
 
+// @Summary Deletes a post made by the current user
+// @Description Deletes a post made by the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param songID path string true "The songID of the posted song"
+// @Success 204
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/current/{songID} [delete]
+// @Security Bearer
 func(p *PostsService) DeletePostForCurrentUserBySongID(c *gin.Context) {
 
 	requestorSpotifyID, found := c.Get("spotifyID")
@@ -428,6 +374,20 @@ func(p *PostsService) DeletePostForCurrentUserBySongID(c *gin.Context) {
 
 }
 
+// @Summary Updates a post made by the current user
+// @Description Updates a post made by the current user
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param songID path string true "The songID of the posted song"
+// @Param UpdatePostDTO body requests.UpdatePostRequestDTO true "The fields to update"
+// @Success 200 {object} responses.PostPreview
+// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/current/{songID} [patch]
+// @Security Bearer
 func(p *PostsService) UpdateCurrentUserPost(c *gin.Context) {
 
 	spotifyID, exists := c.Get("spotifyID")
@@ -454,6 +414,19 @@ func(p *PostsService) UpdateCurrentUserPost(c *gin.Context) {
 	c.JSON(http.StatusOK, preview)
 }
 
+// @Summary Removes a vote for the current user on a post
+// @Description Removes a vote for the current user on a post
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param songID path string true "The songID of the posted song"
+// @Param posterSpotifyID path string true "The user who posted the post spotify ID"
+// @Success 204
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/votes/current/{posterSpotifyID}/{songID} [delete]
+// @Security Bearer
 func(p *PostsService) RemovePostVote(c *gin.Context) {
 	voterSpotifyID, found := c.Get("spotifyID")
 	posterSpotifyID := c.Param("posterSpotifyID")
@@ -492,6 +465,21 @@ func(p *PostsService) getAllPosts(spotifyID string, createdAt string) (*response
 	return p.PostsDTO.GetUserPostsPreviewsByUserID(spotifyID, t)
 
 }
+// @Summary Gets the comments of a post
+// @Description Gets the comments of a post
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param songID path string true "The songID of the posted song"
+// @Param spotifyID path string true "The user who posted the post spotify ID"
+// @Param createdAt query string false "Pagination Key. In the form of UTC timestamp"
+// @Success 200 {object} responses.PaginationResponse[[]responses.Comment, time.Time]
+// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/comments/{spotifyID}/{songID} [get]
+// @Security Bearer
 func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
     spotifyID := c.Param("spotifyID")
     songID := c.Param("songID")
@@ -521,6 +509,17 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
     c.JSON(http.StatusOK, resp)
 }
 
+// @Summary Gets the comments of a post
+// @Description Gets the comments of a post
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param createdAt query string false "Pagination Key. In the form of UTC timestamp"
+// @Success 200 {object} responses.PaginationResponse[[]responses.Comment, time.Time]
+// @Failure 401 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/feed [get]
+// @Security Bearer
 func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
 
     spotifyID, exists := c.Get("spotifyID")
