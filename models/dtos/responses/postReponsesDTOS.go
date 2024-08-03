@@ -4,11 +4,6 @@ import (
 	"time"
 )
 
-type Post struct {
-	PostPreview `mapstructure:",squash"`
-	// []Comments Comments
-}
-
 type PostPreview struct {
 	UserIdentifer `mapstructure:",squash"`
 	SongID        string

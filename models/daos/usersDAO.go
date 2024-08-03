@@ -168,7 +168,7 @@ func(u *UsersDAO) GetFollowers(spotifyID string, paginationKey string) (*respons
 
     defer tx.Rollback()
 
-    err = setTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
 
     if err != nil {
         return nil, customerrors.WrapBasicError(err)
@@ -254,20 +254,4 @@ func getUserFollowersPaginated(executor db.QueryExecutor, spotifyID string, pagi
         }
 
         return userResponses, nil
-}
-
-
-func setTransactionIsolationLevel(tx *sql.Tx, iso sql.IsolationLevel) error {
-    var err error = nil
-    switch iso {
-        case sql.LevelRepeatableRead:
-            _, err = tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
-        case sql.LevelSerializable:
-            _, err = tx.Exec("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE") 
-    }
-    if err != nil {
-        return customerrors.WrapBasicError(err)
-    }
-
-    return nil
 }

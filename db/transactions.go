@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"math"
 	"net/http"
 	"time"
@@ -38,4 +39,19 @@ func RunTransactionWithExponentialBackoff(transFunc func() error, retryTimes int
     }
 
         return failureError
+}
+
+func SetTransactionIsolationLevel(tx *sql.Tx, iso sql.IsolationLevel) error {
+    var err error = nil
+    switch iso {
+        case sql.LevelRepeatableRead:
+            _, err = tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+        case sql.LevelSerializable:
+            _, err = tx.Exec("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE") 
+    }
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    return nil
 }
