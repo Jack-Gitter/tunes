@@ -54,7 +54,7 @@ func(u *UsersDTO) GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, e
 	userResponse := &responses.User{}
 
 	bio := sql.NullString{}
-	err := row.Scan(&userResponse.SpotifyID, &userResponse.Username, &userResponse.Role, &bio)
+	err := row.Scan(&userResponse.SpotifyID, &userResponse.Role, &userResponse.Username, &bio)
 
 	if err != nil {
 		return nil, customerrors.WrapBasicError(err)
