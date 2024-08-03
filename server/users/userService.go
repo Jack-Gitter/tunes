@@ -4,14 +4,14 @@ import (
 	"net/http"
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
-	"github.com/Jack-Gitter/tunes/models/dtos"
+	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/gin-gonic/gin"
 )
 
 type UserService struct {
-    UsersDTO dtos.IUsersDTO
+    UsersDAO daos.IUsersDAO
 }
 
 type IUserSerivce interface {
@@ -43,7 +43,7 @@ func(u *UserService) GetUserById(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
 
-	user, err := u.UsersDTO.GetUserFromDbBySpotifyID(spotifyID)
+	user, err := u.UsersDAO.GetUserFromDbBySpotifyID(spotifyID)
 
 	if err != nil {
 		c.Error(err)
@@ -83,7 +83,7 @@ func(u *UserService) UnFollowUser(c *gin.Context) {
 		return
 	}
 
-	err := u.UsersDTO.UnfollowUser(spotifyID.(string), otherUserSpotifyID)
+	err := u.UsersDAO.UnfollowUser(spotifyID.(string), otherUserSpotifyID)
 
 	if err != nil {
 		c.Error(err)
@@ -116,7 +116,7 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
 		paginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
 	}
 
-	followersPaginated, err := u.UsersDTO.GetFollowers(spotifyID, paginationKey)
+	followersPaginated, err := u.UsersDAO.GetFollowers(spotifyID, paginationKey)
 
 	if err != nil {
 		c.Error(err)
@@ -155,7 +155,7 @@ func(u *UserService) GetFollowers(c *gin.Context) {
 		paginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
 	}
 
-	followersPaginated, err := u.UsersDTO.GetFollowers(spotifyID.(string), paginationKey)
+	followersPaginated, err := u.UsersDAO.GetFollowers(spotifyID.(string), paginationKey)
 
 	if err != nil {
 		c.Error(err)
@@ -198,7 +198,7 @@ func(u *UserService) FollowUser(c *gin.Context) {
 		return
 	}
 
-	err := u.UsersDTO.FollowUser(spotifyID.(string), otherUserSpotifyID)
+	err := u.UsersDAO.FollowUser(spotifyID.(string), otherUserSpotifyID)
 
 	if err != nil {
 		c.Error(err)
@@ -231,7 +231,7 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
 		return
 	}
 
-	user, err := u.UsersDTO.GetUserFromDbBySpotifyID(spotifyID.(string))
+	user, err := u.UsersDAO.GetUserFromDbBySpotifyID(spotifyID.(string))
 
 	if err != nil {
 		c.Error(err)
@@ -339,7 +339,7 @@ func(u *UserService) DeleteCurrentUser(c *gin.Context) {
 		return
 	}
 
-	err := u.UsersDTO.DeleteUserByID(spotifyID.(string))
+	err := u.UsersDAO.DeleteUserByID(spotifyID.(string))
 
 	if err != nil {
 		c.Error(err)
@@ -368,7 +368,7 @@ func(u *UserService) DeleteUserBySpotifyID(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
 
-	err := u.UsersDTO.DeleteUserByID(spotifyID)
+	err := u.UsersDAO.DeleteUserByID(spotifyID)
 
 	if err != nil {
 		c.Error(err)
@@ -380,5 +380,5 @@ func(u *UserService) DeleteUserBySpotifyID(c *gin.Context) {
 }
 
 func(u *UserService) updateUser(spotifyID string, userUpdateRequest *requests.UpdateUserRequestDTO) (*responses.User, error) {
-	return u.UsersDTO.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
+	return u.UsersDAO.UpdateUserPropertiesBySpotifyID(spotifyID, userUpdateRequest)
 }

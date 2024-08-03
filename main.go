@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/Jack-Gitter/tunes/db"
-	"github.com/Jack-Gitter/tunes/models/dtos"
+	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/server"
 	"github.com/Jack-Gitter/tunes/server/auth"
 	"github.com/Jack-Gitter/tunes/server/comments"
@@ -27,13 +27,13 @@ func main() {
 	godotenv.Load()
 
     db := db.ConnectToDB()
-    usersDTO := dtos.UsersDTO{DB: db}
-    userService := users.UserService{UsersDTO: &usersDTO}
-    postsDTO := dtos.PostsDTO{DB: db}
-    postsService := posts.PostsService{PostsDTO: &postsDTO}
-    commentsDTO := dtos.CommentsDTO{DB: db}
-    commentsService := comments.CommentsService{CommentsDTO: &commentsDTO}
-    authService := auth.AuthService{UsersDTO: &usersDTO}
+    usersDAO := daos.UsersDAO{DB: db}
+    userService := users.UserService{UsersDAO: &usersDAO}
+    postsDAO := daos.PostsDAO{DB: db}
+    postsService := posts.PostsService{PostsDAO: &postsDAO}
+    commentsDAO := daos.CommentsDAO{DB: db}
+    commentsService := comments.CommentsService{CommentsDAO: &commentsDAO}
+    authService := auth.AuthService{UsersDAO: &usersDAO}
 
 
     defer db.Close()

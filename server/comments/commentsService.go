@@ -1,14 +1,15 @@
 package comments
 
-import(
-    "github.com/Jack-Gitter/tunes/models/dtos"
+import (
 	"net/http"
+
 	"github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/gin-gonic/gin"
 )
 type CommentsService struct {
-    CommentsDTO dtos.ICommentsDTO
+    CommentsDAO daos.ICommentsDAO
 }
 
 type ICommentsService interface {
@@ -53,7 +54,7 @@ func(cs *CommentsService) CreateComment(c *gin.Context) {
         return
     }
 
-    comment, err := cs.CommentsDTO.CreateComment(commentorID.(string), posterID, songID, createCommentDTO.CommentText)
+    comment, err := cs.CommentsDAO.CreateComment(commentorID.(string), posterID, songID, createCommentDTO.CommentText)
 
     if err != nil {
         c.Error(err)
@@ -83,7 +84,7 @@ func(cs *CommentsService) DeleteComment(c *gin.Context) {
 
     commentID := c.Param("commentID")
 
-    err := cs.CommentsDTO.DeleteComment(commentID)
+    err := cs.CommentsDAO.DeleteComment(commentID)
 
     if err != nil {
         c.Error(err)
@@ -118,7 +119,7 @@ func(cs *CommentsService) DeleteCurrentUserComment(c *gin.Context) {
         return
     }
 
-    err := cs.CommentsDTO.DeleteCurrentUserComment(commentID, spotifyID.(string))
+    err := cs.CommentsDAO.DeleteCurrentUserComment(commentID, spotifyID.(string))
 
     if err != nil {
         c.Error(err)
@@ -146,7 +147,7 @@ func(cs *CommentsService) GetComment(c *gin.Context)  {
 
     commentID := c.Param("commentID") 
 
-    comment, err := cs.CommentsDTO.GetComment(commentID)
+    comment, err := cs.CommentsDAO.GetComment(commentID)
 
     if err != nil {
         c.Error(err)
@@ -183,7 +184,7 @@ func(cs *CommentsService) LikeComment(c *gin.Context) {
     }
 
 
-    err := cs.CommentsDTO.LikeOrDislikeComment(commentID, spotifyID.(string), true)
+    err := cs.CommentsDAO.LikeOrDislikeComment(commentID, spotifyID.(string), true)
 
     if err != nil {
         c.Error(err)
@@ -219,7 +220,7 @@ func(cs *CommentsService) DislikeComment(c *gin.Context) {
     }
 
 
-    err := cs.CommentsDTO.LikeOrDislikeComment(commentID, spotifyID.(string), false)
+    err := cs.CommentsDAO.LikeOrDislikeComment(commentID, spotifyID.(string), false)
 
     if err != nil {
         c.Error(err)
@@ -253,7 +254,7 @@ func(cs *CommentsService) RemoveCommentVote(c *gin.Context) {
         return
     }
 
-    err := cs.CommentsDTO.RemoveCommentVote(commentID, spotifyID.(string))
+    err := cs.CommentsDAO.RemoveCommentVote(commentID, spotifyID.(string))
 
     if err != nil {
         c.Error(err)
@@ -285,7 +286,7 @@ func(cs *CommentsService) UpdateComment(c *gin.Context) {
     updateCommentDTO := &requests.UpdateCommentDTO{}
     c.ShouldBindBodyWithJSON(updateCommentDTO)
     
-    resp, err := cs.CommentsDTO.UpdateComment(commentID, updateCommentDTO)
+    resp, err := cs.CommentsDAO.UpdateComment(commentID, updateCommentDTO)
 
     if err != nil {
         c.Error(err)

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
-	"github.com/Jack-Gitter/tunes/models/dtos"
+	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/posts/helpers"
@@ -13,7 +13,7 @@ import (
 )
 
 type PostsService struct {
-    PostsDTO dtos.IPostsDTO
+    PostsDAO daos.IPostsDAO
 }
 
 type IPostsService interface {
@@ -83,7 +83,7 @@ func(p *PostsService) CreatePostForCurrentUser(c *gin.Context) {
         createPostDTO.Text = &text
     }
 
-	resp, err := p.PostsDTO.CreatePost(
+	resp, err := p.PostsDAO.CreatePost(
 		spotifyID.(string),
 		*createPostDTO.SongID,
 		spotifySongResponse.Name,
@@ -134,7 +134,7 @@ func(p *PostsService) LikePost(c *gin.Context) {
 		return
 	}
 
-	err := p.PostsDTO.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, true)
+	err := p.PostsDAO.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, true)
 
 	if err != nil {
 		c.Error(err)
@@ -172,7 +172,7 @@ func(p *PostsService) DislikePost(c *gin.Context) {
 		return
 	}
 
-	err := p.PostsDTO.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, false)
+	err := p.PostsDAO.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, false)
 
 	if err != nil {
 		c.Error(err)
@@ -263,7 +263,7 @@ func(p *PostsService) GetPostBySpotifyIDAndSongID(c *gin.Context) {
 	spotifyID := c.Param("spotifyID")
 	songID := c.Param("songID")
 
-	post, err := p.PostsDTO.GetUserPostByID(songID, spotifyID)
+	post, err := p.PostsDAO.GetUserPostByID(songID, spotifyID)
 
 	if err != nil {
 		c.Error(err)
@@ -297,7 +297,7 @@ func(p *PostsService) GetPostCurrentUserBySongID(c *gin.Context) {
 		return
 	}
 
-	post, err := p.PostsDTO.GetUserPostByID(songID, currentUserSpotifyID.(string))
+	post, err := p.PostsDAO.GetUserPostByID(songID, currentUserSpotifyID.(string))
 
 	if err != nil {
 		c.Error(err)
@@ -327,7 +327,7 @@ func(p *PostsService) DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 	spotifyID := c.Param("spotifyID")
 	songID := c.Param("songID")
 
-	err := p.PostsDTO.DeletePost(songID, spotifyID)
+	err := p.PostsDAO.DeletePost(songID, spotifyID)
 
 	if err != nil {
 		c.Error(err)
@@ -362,7 +362,7 @@ func(p *PostsService) DeletePostForCurrentUserBySongID(c *gin.Context) {
 	}
 	songID := c.Param("songID")
 
-	err := p.PostsDTO.DeletePost(songID, requestorSpotifyID.(string))
+	err := p.PostsDAO.DeletePost(songID, requestorSpotifyID.(string))
 
 	if err != nil {
 		c.Error(err)
@@ -403,7 +403,7 @@ func(p *PostsService) UpdateCurrentUserPost(c *gin.Context) {
 		return
 	}
 
-	preview, err := p.PostsDTO.UpdatePost(spotifyID.(string), songID, updatePostReq, spotifyUsername.(string))
+	preview, err := p.PostsDAO.UpdatePost(spotifyID.(string), songID, updatePostReq, spotifyUsername.(string))
 
 	if err != nil {
 		c.Error(err)
@@ -436,7 +436,7 @@ func(p *PostsService) RemovePostVote(c *gin.Context) {
 		c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "forgot to set JWT"})
 	}
 
-	err := p.PostsDTO.RemoveVote(voterSpotifyID.(string), posterSpotifyID, songID)
+	err := p.PostsDAO.RemoveVote(voterSpotifyID.(string), posterSpotifyID, songID)
 
 	if err != nil {
 		c.Error(err)
@@ -462,7 +462,7 @@ func(p *PostsService) getAllPosts(spotifyID string, createdAt string) (*response
 
 	}
 
-	return p.PostsDTO.GetUserPostsPreviewsByUserID(spotifyID, t)
+	return p.PostsDAO.GetUserPostsPreviewsByUserID(spotifyID, t)
 
 }
 // @Summary Gets the comments of a post
@@ -498,7 +498,7 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
         }
 	}
 
-    resp, err := p.PostsDTO.GetPostCommentsPaginated(spotifyID, songID, t)
+    resp, err := p.PostsDAO.GetPostCommentsPaginated(spotifyID, songID, t)
 
     if err != nil {
         c.Error(err)
@@ -544,7 +544,7 @@ func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
         }
 	}
 
-    resp, err := p.PostsDTO.GetCurrentUserFeed(spotifyID.(string), t)
+    resp, err := p.PostsDAO.GetCurrentUserFeed(spotifyID.(string), t)
 
     if err != nil {
         c.Error(err)

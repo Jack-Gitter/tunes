@@ -1,4 +1,4 @@
-package dtos
+package daos
 
 import (
 	"context"
@@ -13,11 +13,11 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type PostsDTO struct {
+type PostsDAO struct {
     DB *sql.DB
 }
 
-type IPostsDTO interface {
+type IPostsDAO interface {
     CreatePost(spotifyID string, 
                songID string, 
                songName string, 
@@ -40,7 +40,7 @@ type IPostsDTO interface {
     GetCurrentUserFeed(spotifyID string, t time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error)
 }
 
-func(p *PostsDTO) CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, error) {
+func(p *PostsDAO) CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, error) {
 
 	query := `INSERT INTO posts (albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid) 
               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
@@ -69,7 +69,7 @@ func(p *PostsDTO) CreatePost(spotifyID string, songID string, songName string, a
 
 /* ===================== READ =====================  */
 
-func(p *PostsDTO) GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
+func(p *PostsDAO) GetUserPostByID(postID string, spotifyID string) (*responses.Post, error) {
 
 
     post := &responses.Post{}
@@ -163,7 +163,7 @@ func(p *PostsDTO) GetUserPostByID(postID string, spotifyID string) (*responses.P
 	return post, nil
 }
 
-func(p *PostsDTO) GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
+func(p *PostsDAO) GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
 
 	paginationResponse := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{}
     transaction := func() error {
@@ -279,7 +279,7 @@ func(p *PostsDTO) GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.
 	return paginationResponse, nil
 }
 
-func(p *PostsDTO) RemoveVote(voterSpotifyID string, posterSpotifyID string, songID string) error {
+func(p *PostsDAO) RemoveVote(voterSpotifyID string, posterSpotifyID string, songID string) error {
 	query := `DELETE FROM post_votes WHERE voterspotifyid = $1 AND posterspotifyid = $2 AND postsongid = $3`
 
 	res, err := p.DB.Exec(query, voterSpotifyID, posterSpotifyID, songID)
@@ -301,7 +301,7 @@ func(p *PostsDTO) RemoveVote(voterSpotifyID string, posterSpotifyID string, song
 	return nil
 }
 
-func(p *PostsDTO) GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, error) {
+func(p *PostsDAO) GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, error) {
 	query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
                 FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`
 
@@ -334,7 +334,7 @@ func(p *PostsDTO) GetUserPostPreviewByID(songID string, spotifyID string) (*resp
 
 /* ===================== DELETE =====================  */
 
-func(p *PostsDTO) DeletePost(songID string, spotifyID string) error {
+func(p *PostsDAO) DeletePost(songID string, spotifyID string) error {
 	query := `DELETE FROM posts WHERE posterspotifyid = $1 AND songid = $2`
 
 	res, err := p.DB.Exec(query, spotifyID, songID)
@@ -357,7 +357,7 @@ func(p *PostsDTO) DeletePost(songID string, spotifyID string) error {
 }
 
 /* PROPERTY UPDATES */
-func(p *PostsDTO) UpdatePost(spotifyID string, songID string, updatePostRequest *requests.UpdatePostRequestDTO, username string) (*responses.PostPreview, error) {
+func(p *PostsDAO) UpdatePost(spotifyID string, songID string, updatePostRequest *requests.UpdatePostRequestDTO, username string) (*responses.PostPreview, error) {
 
     postPreview := &responses.PostPreview{}
 
@@ -463,7 +463,7 @@ func(p *PostsDTO) UpdatePost(spotifyID string, songID string, updatePostRequest 
 	return postPreview, nil
 }
 
-func(p *PostsDTO) LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, liked bool) error {
+func(p *PostsDAO) LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, liked bool) error {
 
     transaction := func() error {
 
@@ -536,7 +536,7 @@ func(p *PostsDTO) LikeOrDislikePost(spotifyID string, posterSpotifyID string, so
 	return nil
 }
 
-func(p *PostsDTO) GetPostCommentsPaginated(spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error) {
+func(p *PostsDAO) GetPostCommentsPaginated(spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error) {
 
     paginationResponse := &responses.PaginationResponse[[]responses.Comment, time.Time]{PaginationKey: time.Now().UTC()}
 
@@ -633,7 +633,7 @@ func(p *PostsDTO) GetPostCommentsPaginated(spotifyID string, songID string, pagi
     return paginationResponse, nil
 }
 
-func(p *PostsDTO) GetCurrentUserFeed(spotifyID string, t time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
+func(p *PostsDAO) GetCurrentUserFeed(spotifyID string, t time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
 
     paginationResponse := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{PaginationKey: time.Now().UTC()}
 

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
-	"github.com/Jack-Gitter/tunes/models/dtos"
+	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/requests"
 	"github.com/Jack-Gitter/tunes/models/responses"
 	"github.com/Jack-Gitter/tunes/server/auth/helpers"
@@ -15,7 +15,7 @@ import (
 )
 
 type AuthService struct {
-    UsersDTO dtos.IUsersDTO
+    UsersDAO daos.IUsersDAO
 }
 
 type IAuthService interface {
@@ -55,7 +55,7 @@ func(a *AuthService) LoginCallback(c *gin.Context) {
 		return
 	}
 
-	user, err := a.UsersDTO.UpsertUserOnLogin(userProfileResponse.Display_name, userProfileResponse.Id)
+	user, err := a.UsersDAO.UpsertUserOnLogin(userProfileResponse.Display_name, userProfileResponse.Id)
 
 	if err != nil {
 		c.Error(err)
@@ -142,7 +142,7 @@ func(a *AuthService) RefreshJWT(c *gin.Context) {
 		return
 	}
 
-	userDBResponse, err := a.UsersDTO.GetUserFromDbBySpotifyID(userProfileResponse.Id)
+	userDBResponse, err := a.UsersDAO.GetUserFromDbBySpotifyID(userProfileResponse.Id)
 
 	if err != nil {
 		c.Error(err)

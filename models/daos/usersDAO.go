@@ -1,4 +1,4 @@
-package dtos
+package daos
 
 import (
 	"context"
@@ -13,11 +13,11 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type UsersDTO struct {
+type UsersDAO struct {
     DB *sql.DB
 }
 
-type IUsersDTO interface {
+type IUsersDAO interface {
     UpsertUserOnLogin(username string, spotifyID string) (*responses.User, error)
     GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, error)
     UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error)
@@ -27,7 +27,7 @@ type IUsersDTO interface {
     GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error)
 }
 
-func(u *UsersDTO) UpsertUserOnLogin(username string, spotifyID string) (*responses.User, error) {
+func(u *UsersDAO) UpsertUserOnLogin(username string, spotifyID string) (*responses.User, error) {
 	query := "INSERT INTO users (spotifyid, username, userrole) values ($1, $2, 'BASIC') ON CONFLICT (spotifyID) DO UPDATE SET username=$2 RETURNING bio, userrole"
 	row := u.DB.QueryRow(query, spotifyID, username)
 
@@ -47,7 +47,7 @@ func(u *UsersDTO) UpsertUserOnLogin(username string, spotifyID string) (*respons
 	return userResponse, nil
 }
 
-func(u *UsersDTO) GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, error) {
+func(u *UsersDAO) GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, error) {
 	query := "SELECT spotifyid, userrole, username, bio FROM users WHERE spotifyid = $1"
 	row := u.DB.QueryRow(query, spotifyID)
 
@@ -65,7 +65,7 @@ func(u *UsersDTO) GetUserFromDbBySpotifyID(spotifyID string) (*responses.User, e
 	return userResponse, nil
 }
 
-func(u *UsersDTO) UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error) {
+func(u *UsersDAO) UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error) {
 
     updateUserMap := make(map[string]any)
     mapstructure.Decode(updatedUser, &updateUserMap)
@@ -92,7 +92,7 @@ func(u *UsersDTO) UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser 
 
 }
 
-func(u *UsersDTO) DeleteUserByID(spotifyID string) error {
+func(u *UsersDAO) DeleteUserByID(spotifyID string) error {
 	query := "DELETE FROM users WHERE spotifyID = $1"
 	res, err := u.DB.Exec(query, spotifyID)
 
@@ -113,7 +113,7 @@ func(u *UsersDTO) DeleteUserByID(spotifyID string) error {
 	return nil
 }
 
-func(u UsersDTO) UnfollowUser(spotifyID string, otherUserSpotifyID string) error {
+func(u *UsersDAO) UnfollowUser(spotifyID string, otherUserSpotifyID string) error {
 	query := "DELETE FROM followers WHERE follower = $1 AND userfollowed = $2"
 
 	res, err := u.DB.Exec(query, spotifyID, otherUserSpotifyID)
@@ -135,7 +135,7 @@ func(u UsersDTO) UnfollowUser(spotifyID string, otherUserSpotifyID string) error
 	return nil
 }
 
-func(u UsersDTO) FollowUser(spotifyID string, otherUserSpotifyID string) error {
+func(u *UsersDAO) FollowUser(spotifyID string, otherUserSpotifyID string) error {
 	query := "INSERT INTO followers (follower, userFollowed) VALUES ($1, $2)"
 
 	res, err := u.DB.Exec(query, spotifyID, otherUserSpotifyID)
@@ -157,7 +157,7 @@ func(u UsersDTO) FollowUser(spotifyID string, otherUserSpotifyID string) error {
 	return nil
 }
 
-func(u UsersDTO) GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
+func(u *UsersDAO) GetFollowers(spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
 
     paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
 

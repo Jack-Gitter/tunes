@@ -1,11 +1,10 @@
-package dtos
+package daos
 
 import (
 	"context"
 	"database/sql"
 	"net/http"
 	"time"
-
 	"github.com/Jack-Gitter/tunes/db/helpers"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/requests"
@@ -13,11 +12,11 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type CommentsDTO struct {
+type CommentsDAO struct {
     DB *sql.DB
 }
 
-type ICommentsDTO interface {
+type ICommentsDAO interface {
     CreateComment(commentorID string, posterID string, songID string, commentText string) (*responses.Comment, error)
     DeleteComment(commentID string) error
     DeleteCurrentUserComment(commentID string, spotifyID string) error 
@@ -27,7 +26,7 @@ type ICommentsDTO interface {
     UpdateComment(commentID string, updateCommentDTO *requests.UpdateCommentDTO) (*responses.Comment, error) 
 }
 
-func(c *CommentsDTO) CreateComment(commentorID string, posterID string, songID string, commentText string) (*responses.Comment, error){
+func(c *CommentsDAO) CreateComment(commentorID string, posterID string, songID string, commentText string) (*responses.Comment, error){
 
     query := `INSERT INTO comments (commentorspotifyid, posterspotifyid, songid, commenttext, createdAt, updatedAt) values ($1, $2, $3, $4, $5, $5) RETURNING commentid, commentorspotifyid, posterspotifyid, songid, commenttext`
 
@@ -45,7 +44,7 @@ func(c *CommentsDTO) CreateComment(commentorID string, posterID string, songID s
 
 }
 
-func(c *CommentsDTO) DeleteComment(commentID string) error {
+func(c *CommentsDAO) DeleteComment(commentID string) error {
     query := `DELETE FROM comments WHERE commentid = $1`
 
     resp, err := c.DB.Exec(query, commentID)
@@ -68,7 +67,7 @@ func(c *CommentsDTO) DeleteComment(commentID string) error {
 
 }
 
-func(c *CommentsDTO) DeleteCurrentUserComment(commentID string, spotifyID string) error {
+func(c *CommentsDAO) DeleteCurrentUserComment(commentID string, spotifyID string) error {
 
     query := `DELETE FROM comments WHERE commentid = $1 AND commentorspotifyid = $2`
 
@@ -92,7 +91,7 @@ func(c *CommentsDTO) DeleteCurrentUserComment(commentID string, spotifyID string
 
 }
 
-func(c *CommentsDTO) GetComment(commentID string) (*responses.Comment, error) {
+func(c *CommentsDAO) GetComment(commentID string) (*responses.Comment, error) {
 
 
     commentResponse := &responses.Comment{}
@@ -179,7 +178,7 @@ func(c *CommentsDTO) GetComment(commentID string) (*responses.Comment, error) {
 
 }
 
-func(c *CommentsDTO) LikeOrDislikeComment(commentID string, spotifyID string, liked bool)  error {
+func(c *CommentsDAO) LikeOrDislikeComment(commentID string, spotifyID string, liked bool)  error {
     
     transaction := func() error {
 
@@ -244,7 +243,7 @@ func(c *CommentsDTO) LikeOrDislikeComment(commentID string, spotifyID string, li
 }
 
 
-func(c *CommentsDTO) RemoveCommentVote(commentID string, spotifyID string) error {
+func(c *CommentsDAO) RemoveCommentVote(commentID string, spotifyID string) error {
     query := `DELETE FROM comment_votes WHERE commentid = $1 AND voterspotifyid = $2`
 
     res, err := c.DB.Exec(query, commentID, spotifyID)
@@ -267,7 +266,7 @@ func(c *CommentsDTO) RemoveCommentVote(commentID string, spotifyID string) error
 
 }
 
-func(c *CommentsDTO) UpdateComment(commentID string, updateCommentDTO *requests.UpdateCommentDTO) (*responses.Comment, error) {
+func(c *CommentsDAO) UpdateComment(commentID string, updateCommentDTO *requests.UpdateCommentDTO) (*responses.Comment, error) {
 
     updateCommentMap := make(map[string]any)
     mapstructure.Decode(updateCommentDTO, &updateCommentMap)
