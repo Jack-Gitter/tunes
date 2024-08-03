@@ -5,7 +5,7 @@ endpoints:
         users
             make a getFeed endpoint which gets all of the posts from the users followers and returns the top x most recent, make it paginated
 general 
-    make queries re-usable??? I'm a dumbass
+    rewrite the service methods. They should be the ones orchestrating the dao. Each dao method should have a singular purpose!!!
 
 documentation: 
     readme
