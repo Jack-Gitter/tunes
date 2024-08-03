@@ -5,10 +5,9 @@ import (
 	"database/sql"
 
 	"github.com/Jack-Gitter/tunes/db"
-	"github.com/Jack-Gitter/tunes/db/helpers"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
-	"github.com/Jack-Gitter/tunes/models/requests"
-	"github.com/Jack-Gitter/tunes/models/responses"
+	"github.com/Jack-Gitter/tunes/models/dtos/requests"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	_ "github.com/lib/pq"
 	"github.com/mitchellh/mapstructure"
 )
@@ -75,7 +74,7 @@ func(u *UsersDAO) UpdateUserPropertiesBySpotifyID(spotifyID string, updatedUser 
 
     returning := []string{"bio", "userrole", "spotifyid", "username"}
 
-    query, values := helpers.PatchQueryBuilder("users", updateUserMap, conditionals, returning)
+    query, values := db.PatchQueryBuilder("users", updateUserMap, conditionals, returning)
 
 	res := u.DB.QueryRow(query, values...)
 

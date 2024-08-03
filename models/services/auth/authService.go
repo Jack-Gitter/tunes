@@ -8,14 +8,16 @@ import (
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
-	"github.com/Jack-Gitter/tunes/models/requests"
-	"github.com/Jack-Gitter/tunes/models/responses"
-	"github.com/Jack-Gitter/tunes/server/auth/helpers"
+	"github.com/Jack-Gitter/tunes/models/dtos/requests"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
+	"github.com/Jack-Gitter/tunes/models/services/auth/helpers"
+	"github.com/Jack-Gitter/tunes/models/services/spotify"
 	"github.com/gin-gonic/gin"
 )
 
 type AuthService struct {
     UsersDAO daos.IUsersDAO
+    SpotifyService spotify.ISpotifyService
 }
 
 type IAuthService interface {
@@ -39,7 +41,7 @@ func(a *AuthService) Login(c *gin.Context) {
 
 func(a *AuthService) LoginCallback(c *gin.Context) {
 
-	accessTokenResponse, err := helpers.RetrieveInitialAccessToken(c.Query("code"))
+	accessTokenResponse, err := a.SpotifyService.RetrieveInitialAccessToken(c.Query("code"))
 
 	if err != nil {
 		c.Error(err)
@@ -47,7 +49,7 @@ func(a *AuthService) LoginCallback(c *gin.Context) {
 		return
 	}
 
-	userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponse.Access_token)
+	userProfileResponse, err := a.SpotifyService.RetrieveUserProfile(accessTokenResponse.Access_token)
 
 	if err != nil {
 		c.Error(err)
@@ -122,7 +124,7 @@ func(a *AuthService) RefreshJWT(c *gin.Context) {
 	}
 
 	spotifyRefreshToken := refresh_token.Claims.(*requests.RefreshJWTClaims).RefreshToken
-	accessTokenResponseBody, err := helpers.RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken)
+	accessTokenResponseBody, err := a.SpotifyService.RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken)
 
 	if err != nil {
 		c.Error(err)
@@ -134,7 +136,7 @@ func(a *AuthService) RefreshJWT(c *gin.Context) {
 		accessTokenResponseBody.Refresh_token = spotifyRefreshToken
 	}
 
-	userProfileResponse, err := helpers.RetrieveUserProfile(accessTokenResponseBody.Access_token)
+	userProfileResponse, err := a.SpotifyService.RetrieveUserProfile(accessTokenResponseBody.Access_token)
 
 	if err != nil {
 		c.Error(err)

@@ -1,21 +1,14 @@
-package requests
+package validation
 
 import (
 	"net/http"
-
-	"github.com/Jack-Gitter/tunes/models/customErrors"
-	"github.com/Jack-Gitter/tunes/models/responses"
+	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/dtos/requests"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/gin-gonic/gin"
 )
 
-// the body fields must be pointers, because the zero value for pointers is nill. We will be able
-// to properly determine whether or not users have requested to update or change a resource
-type UpdateUserRequestDTO struct {
-	Bio  *string
-	UserRole *responses.Role 
-}
-
-func ValidateUserRequestDTO(req UpdateUserRequestDTO, c *gin.Context) error {
+func ValidateUserRequestDTO(req requests.UpdateUserRequestDTO, c *gin.Context) error {
     userRole, found := c.Get("userRole")
 
     if !found {

@@ -1,4 +1,4 @@
-package helpers
+package spotify
 
 import (
 	"bytes"
@@ -10,10 +10,18 @@ import (
 	"os"
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
-	"github.com/Jack-Gitter/tunes/models/spotifyResponses"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 )
 
-func RetrieveInitialAccessToken(authorizationCode string) (*spotifyresponses.AccessTokenResponnse, error) {
+type SpotifyService struct { }
+
+type ISpotifyService interface {
+    RetrieveInitialAccessToken(authorizationCode string) (*responses.AccessTokenResponnse, error) 
+    RetrieveUserProfile(accessToken string) (*responses.ProfileResponse, error) 
+    RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken string) (*responses.RefreshTokenResponse, error) 
+}
+
+func(s *SpotifyService) RetrieveInitialAccessToken(authorizationCode string) (*responses.AccessTokenResponnse, error) {
 
 	queryParamsMap := url.Values{}
 	queryParamsMap.Add("grant_type", "authorization_code")
@@ -41,13 +49,13 @@ func RetrieveInitialAccessToken(authorizationCode string) (*spotifyresponses.Acc
 	}
 
 	defer resp.Body.Close()
-	accessTokenResponseBody := &spotifyresponses.AccessTokenResponnse{}
+	accessTokenResponseBody := &responses.AccessTokenResponnse{}
 	json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
 
 	return accessTokenResponseBody, nil
 }
 
-func RetrieveUserProfile(accessToken string) (*spotifyresponses.ProfileResponse, error) {
+func(s *SpotifyService) RetrieveUserProfile(accessToken string) (*responses.ProfileResponse, error) {
 
 	nReq, err := http.NewRequest(http.MethodGet, "https://api.spotify.com/v1/me", &bytes.Buffer{})
 
@@ -65,7 +73,7 @@ func RetrieveUserProfile(accessToken string) (*spotifyresponses.ProfileResponse,
 	}
 
 	defer nResp.Body.Close()
-	respJson2 := &spotifyresponses.ProfileResponse{}
+	respJson2 := &responses.ProfileResponse{}
 
 	json.NewDecoder(nResp.Body).Decode(respJson2)
 
@@ -73,7 +81,7 @@ func RetrieveUserProfile(accessToken string) (*spotifyresponses.ProfileResponse,
 
 }
 
-func RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken string) (*spotifyresponses.RefreshTokenResponse, error) {
+func(s *SpotifyService) RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken string) (*responses.RefreshTokenResponse, error) {
 
 	queryParamsMap := url.Values{}
 	queryParamsMap.Add("grant_type", "refresh_token")
@@ -96,7 +104,7 @@ func RetreiveAccessTokenFromRefreshToken(spotifyRefreshToken string) (*spotifyre
 
 	defer resp.Body.Close()
 
-	accessTokenResponseBody := &spotifyresponses.RefreshTokenResponse{}
+	accessTokenResponseBody := &responses.RefreshTokenResponse{}
 	json.NewDecoder(resp.Body).Decode(accessTokenResponseBody)
 
 	return accessTokenResponseBody, nil

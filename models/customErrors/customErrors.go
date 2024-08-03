@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/lib/pq"
