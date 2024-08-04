@@ -36,7 +36,7 @@ type IPostsService interface {
     UpdateCurrentUserPost(c *gin.Context) 
     RemovePostVote(c *gin.Context) 
     GetPostCommentsPaginated(c *gin.Context) 
-    GetCurrentUserFeed(c *gin.Context) 
+//    GetCurrentUserFeed(c *gin.Context) 
 }
 
 // @Summary Creates a post for the current user

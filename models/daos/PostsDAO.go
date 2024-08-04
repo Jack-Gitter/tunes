@@ -51,7 +51,7 @@ func(p *PostsDAO) CreatePost(executor db.QueryExecutor, spotifyID string, songID
 	return postPreview, nil
 }
 
-func GetPostVotes(executor db.QueryExecutor, postID string, spotifyID string) ([]responses.UserIdentifer, []responses.UserIdentifer, error) {
+func(p *PostsDAO) GetPostVotes(executor db.QueryExecutor, postID string, spotifyID string) ([]responses.UserIdentifer, []responses.UserIdentifer, error) {
         query2 := `SELECT post_votes.voterspotifyid, users.username, post_votes.liked 
                    FROM post_votes INNER JOIN users ON post_votes.voterspotifyid = users.spotifyid
                    WHERE post_votes.posterspotifyid = $1 AND post_votes.postsongid = $2 `
@@ -82,7 +82,7 @@ func GetPostVotes(executor db.QueryExecutor, postID string, spotifyID string) ([
         return likes, dislikes, nil
 
 }
-func GetPostProperties(executor db.QueryExecutor, postID string, spotifyID string) (*responses.PostPreview, error) {
+func(p *PostsDAO) GetPostProperties(executor db.QueryExecutor, postID string, spotifyID string) (*responses.PostPreview, error) {
     post := &responses.PostPreview{}
 
     query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
@@ -279,7 +279,7 @@ func(p *PostsDAO) GetPostCommentsPaginated(executor db.QueryExecutor, spotifyID 
 }
 
 
-func(p *PostsDAO) GetUserPostPropertiesPaginated(executor db.QueryExecutor, spotifyID string, createdAt time.Time) ([]responses.PostPreview, error) {
+func(p *PostsDAO) GetUserPostsPropertiesPaginated(executor db.QueryExecutor, spotifyID string, createdAt time.Time) ([]responses.PostPreview, error) {
     query := `SELECT posts.albumarturi, posts.albumid, posts.albumname, posts.createdat, posts.rating, posts.songid, posts.songname, posts.review, posts.updatedat, posts.posterspotifyid, users.username
                 FROM posts 
                 INNER JOIN users 

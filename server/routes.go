@@ -56,7 +56,7 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
                 postGroup.GET("/previews/users/current", postsService.GetAllPostsForCurrentUser)
                 postGroup.GET("/previews/users/:spotifyID", postsService.GetAllPostsForUserByID)
                 postGroup.GET("/comments/:spotifyID/:songID", postsService.GetPostCommentsPaginated)
-                postGroup.GET("/feed", postsService.GetCurrentUserFeed)
+//                postGroup.GET("/feed", postsService.GetCurrentUserFeed)
                 postGroup.POST("/", validation.ValidateData(validation.ValidateCreatePostDTO),  postsService.CreatePostForCurrentUser)
                 postGroup.POST("/likes/:spotifyID/:songID", postsService.LikePost)
                 postGroup.POST("/dislikes/:spotifyID/:songID", postsService.DislikePost)
