@@ -114,15 +114,9 @@ func(cs *CommentsService) DeleteComment(c *gin.Context) {
 func(cs *CommentsService) DeleteCurrentUserComment(c *gin.Context) {
 
     commentID := c.Param("commentID")
-    spotifyID, exists := c.Get("spotifyID")
 
-    if !exists {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "bad jwt"})
-        c.Abort()
-        return
-    }
-
-    err := cs.CommentsDAO.DeleteCurrentUserComment(cs.DB, commentID, spotifyID.(string))
+    // need some extra validation here, first need to get the comment. then see if the spotifyid for the comment is the same as our spotifyid
+    err := cs.CommentsDAO.DeleteComment(cs.DB, commentID)
 
     if err != nil {
         c.Error(err)
@@ -160,13 +154,24 @@ func(cs *CommentsService) GetComment(c *gin.Context)  {
 
     defer tx.Rollback()
 
-    comment, err := cs.CommentsDAO.GetComment(tx, commentID)
+    comment, err := cs.CommentsDAO.GetCommentProperties(tx, commentID)
 
     if err != nil {
         c.Error(err)
         c.Abort()
         return
     }
+
+    likes, dislikes, err := cs.CommentsDAO.GetCommentLikes(tx, commentID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    comment.Likes = likes 
+    comment.Dislikes = dislikes
 
     err = tx.Commit()
 
@@ -215,7 +220,7 @@ func(cs *CommentsService) LikeComment(c *gin.Context) {
 
     defer tx.Rollback()
 
-    err = cs.CommentsDAO.LikeOrDislikeComment(tx, commentID, spotifyID.(string), true)
+    err = cs.CommentsDAO.LikeComment(tx, commentID, spotifyID.(string))
 
     if err != nil {
         c.Error(err)
@@ -269,7 +274,7 @@ func(cs *CommentsService) DislikeComment(c *gin.Context) {
 
     defer tx.Rollback()
 
-    err = cs.CommentsDAO.LikeOrDislikeComment(tx, commentID, spotifyID.(string), false)
+    err = cs.CommentsDAO.DislikeComment(tx, commentID, spotifyID.(string))
 
     if err != nil {
         c.Error(err)
@@ -361,6 +366,17 @@ func(cs *CommentsService) UpdateComment(c *gin.Context) {
         c.Abort()
         return
     }
+
+    likes, dislikes, err := cs.CommentsDAO.GetCommentLikes(tx, commentID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    resp.Likes = likes
+    resp.Dislikes = dislikes
 
     err = tx.Commit()
 

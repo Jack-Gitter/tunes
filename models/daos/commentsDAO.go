@@ -15,9 +15,10 @@ type CommentsDAO struct { }
 type ICommentsDAO interface {
     CreateComment(executor db.QueryExecutor, commentorID string, posterID string, songID string, commentText string) (*responses.Comment, error)
     DeleteComment(executor db.QueryExecutor, commentID string) error
-    DeleteCurrentUserComment(executor db.QueryExecutor, commentID string, spotifyID string) error 
-    GetComment(executor db.QueryExecutor, commentID string) (*responses.Comment, error) 
-    LikeOrDislikeComment(executor db.QueryExecutor, commentID string, spotifyID string, liked bool)  error 
+    GetCommentProperties(executor db.QueryExecutor, commentID string) (*responses.Comment, error) 
+    GetCommentLikes(executor db.QueryExecutor, commentID string) (int, int, error)
+    LikeComment(executor db.QueryExecutor, commentID string, spotifyID string) error 
+    DislikeComment(executor db.QueryExecutor, commentID string, spotifyID string) error 
     RemoveCommentVote(executor db.QueryExecutor, commentID string, spotifyID string) error 
     UpdateComment(executor db.QueryExecutor, commentID string, updateCommentDTO *requests.UpdateCommentDTO) (*responses.Comment, error) 
 }
@@ -63,31 +64,7 @@ func(c *CommentsDAO) DeleteComment(executor db.QueryExecutor, commentID string) 
 
 }
 
-func(c *CommentsDAO) DeleteCurrentUserComment(executor db.QueryExecutor, commentID string, spotifyID string) error {
-
-    query := `DELETE FROM comments WHERE commentid = $1 AND commentorspotifyid = $2`
-
-    resp, err := executor.Exec(query, commentID, spotifyID)
-
-    if err != nil {
-        return customerrors.WrapBasicError(err)
-    }
-
-    rows, err := resp.RowsAffected()
-
-    if err != nil {
-        return customerrors.WrapBasicError(err)
-    }
-
-    if rows < 1 {
-        return &customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "comment not found"}
-    }
-
-    return nil
-
-}
-
-func(c *CommentsDAO) GetComment(executor db.QueryExecutor, commentID string) (*responses.Comment, error) {
+func(c *CommentsDAO) GetCommentProperties(executor db.QueryExecutor, commentID string) (*responses.Comment, error) {
 
     commentResponse := &responses.Comment{}
 
@@ -111,12 +88,18 @@ func(c *CommentsDAO) GetComment(executor db.QueryExecutor, commentID string) (*r
         return nil, customerrors.WrapBasicError(err)
     }
 
-    query = `SELECT liked FROM comment_votes WHERE commentid = $1`
+
+    return commentResponse, nil
+
+}
+
+func(cs *CommentsDAO) GetCommentLikes(executor db.QueryExecutor, commentID string) (int, int, error) {
+    query := `SELECT liked FROM comment_votes WHERE commentid = $1`
 
     row, err := executor.Query(query, commentID)
 
     if err != nil {
-        return nil, customerrors.WrapBasicError(err)
+        return 0, 0, customerrors.WrapBasicError(err)
     }
 
     likes := 0
@@ -125,7 +108,7 @@ func(c *CommentsDAO) GetComment(executor db.QueryExecutor, commentID string) (*r
        val := true 
        err := row.Scan(&val)
        if err != nil {
-           return nil, customerrors.WrapBasicError(err)
+           return 0, 0, customerrors.WrapBasicError(err)
        }
        if val {
            likes +=1
@@ -134,32 +117,13 @@ func(c *CommentsDAO) GetComment(executor db.QueryExecutor, commentID string) (*r
        }
     }
 
-    commentResponse.Likes = likes
-    commentResponse.Dislikes = dislikes
-
-    return commentResponse, nil
+    return likes, dislikes, nil
 
 }
 
-func(c *CommentsDAO) LikeOrDislikeComment(executor db.QueryExecutor, commentID string, spotifyID string, liked bool)  error {
+func(c *CommentsDAO) LikeComment(executor db.QueryExecutor, commentID string, spotifyID string, liked bool) error {
     
-
-    query := `SELECT COUNT(*) FROM comment_votes WHERE commentid = $1 AND liked = $2 AND voterspotifyid = $3`
-
-    row := executor.QueryRow(query, commentID, liked, spotifyID)
-
-    count := 0
-    err := row.Scan(&count)
-
-    if err != nil {
-        return customerrors.WrapBasicError(err)
-    }
-
-    if count >= 1 {
-        return &customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like/dislike comment twice"}
-    }
-
-    query = `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE set liked = $2`
+    query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE set liked = $2`
 
     res, err := executor.Exec(query, commentID, liked, spotifyID)
 
@@ -182,6 +146,30 @@ func(c *CommentsDAO) LikeOrDislikeComment(executor db.QueryExecutor, commentID s
 
 }
 
+func(c *CommentsDAO) DislikeComment(executor db.QueryExecutor, commentID string, spotifyID string, liked bool)  error {
+
+    query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE SET liked = $2`
+
+    res, err := executor.Exec(query, commentID, liked, spotifyID)
+
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    rows, err := res.RowsAffected()
+
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    if rows < 1 {
+        return customerrors.CustomError{StatusCode: http.StatusNotFound, Msg: "comment not found"}
+    }
+
+
+    return nil
+
+}
 
 func(c *CommentsDAO) RemoveCommentVote(executor db.QueryExecutor, commentID string, spotifyID string) error {
     query := `DELETE FROM comment_votes WHERE commentid = $1 AND voterspotifyid = $2`
@@ -232,32 +220,6 @@ func(c *CommentsDAO) UpdateComment(executor db.QueryExecutor, commentID string, 
     if err != nil {
         return nil, customerrors.WrapBasicError(err)
     }
-
-    query = `SELECT liked FROM comment_votes WHERE commentid = $1`
-
-    rows, err := executor.Query(query, commentID)
-
-    if err != nil {
-        return nil, customerrors.WrapBasicError(err)
-    }
-
-    likes := 0
-    dislikes := 0
-    for rows.Next() {
-       val := true 
-       err := rows.Scan(&val)
-       if err != nil {
-           return nil, customerrors.WrapBasicError(err)
-       }
-       if val {
-           likes +=1
-       } else {
-           dislikes+=1
-       }
-    }
-    comment.Likes = likes
-    comment.Dislikes = dislikes
-
 
     return comment, nil
 
