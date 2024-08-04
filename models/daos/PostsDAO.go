@@ -1,12 +1,10 @@
 package daos
 
 import (
-	"context"
 	"database/sql"
 	"net/http"
 	"sort"
 	"time"
-
 	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
@@ -14,29 +12,29 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type PostsDAO struct {
-    DB *sql.DB
-}
+type PostsDAO struct { }
 
 type IPostsDAO interface {
-    CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, error) 
-    GetUserPostByID(postID string, spotifyID string) (*responses.PostPreview, error) 
-    GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error)
-    RemoveVote(voterSpotifyID string, posterSpotifyID string, songID string) error 
-    GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, error) 
-    DeletePost(songID string, spotifyID string) error
-    UpdatePost(spotifyID string, songID string, updatePostRequest *requests.UpdatePostRequestDTO, username string) (*responses.PostPreview, error) 
-    LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, liked bool) error
-    GetPostCommentsPaginated(spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error)
-    GetCurrentUserFeed(spotifyID string, t time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error)
+    CreatePost(executor db.QueryExecutor, spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, error) 
+    GetUserPostByID(executor db.QueryExecutor, postID string, spotifyID string) (*responses.PostPreview, error) 
+    GetPostProperties(executor db.QueryExecutor, postID string, spotifyID string) (*responses.PostPreview, error)
+    GetPostVotes(executor db.QueryExecutor, postID string, spotifyID string) ([]responses.UserIdentifer, []responses.UserIdentifer, error)
+    GetUserPostsPreviewsByUserID(executor db.QueryExecutor, spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error)
+    RemoveVote(executor db.QueryExecutor, voterSpotifyID string, posterSpotifyID string, songID string) error 
+    GetUserPostPreviewByID(executor db.QueryExecutor, songID string, spotifyID string) (*responses.PostPreview, error) 
+    DeletePost(executor db.QueryExecutor, songID string, spotifyID string) error
+    UpdatePost(executor db.QueryExecutor, spotifyID string, songID string, updatePostRequest *requests.UpdatePostRequestDTO, username string) (*responses.PostPreview, error) 
+    LikeOrDislikePost(executor db.QueryExecutor, spotifyID string, posterSpotifyID string, songID string, liked bool) error
+    GetPostCommentsPaginated(executor db.QueryExecutor, spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error)
+    GetCurrentUserFeed(executor db.QueryExecutor, spotifyID string, t time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error)
 }
 
-func(p *PostsDAO) CreatePost(spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, error) {
+func(p *PostsDAO) CreatePost(executor db.QueryExecutor, spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, error) {
 
 	query := `INSERT INTO posts (albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid) 
               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
-	_, err := p.DB.Exec(query, albumImage, albumID, albumName, createdAt, rating, songID, songName, text, createdAt, spotifyID)
+	_, err := executor.Exec(query, albumImage, albumID, albumName, createdAt, rating, songID, songName, text, createdAt, spotifyID)
 
 	if err != nil {
 		return nil, customerrors.WrapBasicError(err)
@@ -58,49 +56,17 @@ func(p *PostsDAO) CreatePost(spotifyID string, songID string, songName string, a
 	return postPreview, nil
 }
 
-func(p *PostsDAO) GetUserPostByID(postID string, spotifyID string) (*responses.PostPreview, error) {
+func(p *PostsDAO) GetUserPostByID(executor db.QueryExecutor, postID string, spotifyID string) (*responses.PostPreview, error) {
 
     post := &responses.PostPreview{}
 
-    transaction := func() error {
+    err := p.getUserPostProperties(executor, spotifyID, postID, post)
 
-        tx, err := p.DB.BeginTx(context.Background(), nil)
+    if err != nil {
+        return nil, err
+    }
 
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        defer tx.Rollback()
-
-        err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
-
-        if err != nil {
-            return err
-        }
-
-        err = p.getUserPostProperties(tx, spotifyID, postID, post)
-
-        if err != nil {
-            return err
-        }
-
-        err = p.getPostLikesAndDislikes(tx, spotifyID, postID, post)
-
-        if err != nil {
-            return err
-        }
-
-        err = tx.Commit()
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        return nil
-
-    } 
-
-    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
+    err = p.getPostLikesAndDislikes(executor, spotifyID, postID, post)
 
     if err != nil {
         return nil, err
@@ -109,40 +75,11 @@ func(p *PostsDAO) GetUserPostByID(postID string, spotifyID string) (*responses.P
 	return post, nil
 }
 
-func(p *PostsDAO) GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
+func(p *PostsDAO) GetUserPostsPreviewsByUserID(executor db.QueryExecutor, spotifyID string, createdAt time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
 
 	paginationResponse := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{PaginationKey: time.Now().UTC()}
 
-    transaction := func() error {
-
-        tx, err := p.DB.BeginTx(context.Background(), nil)
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        defer tx.Rollback()
-
-        err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
-
-        if err != nil {
-            return err
-        }
-
-        err = p.getUserPostPreviews(tx, spotifyID, createdAt, paginationResponse)
-
-        if err != nil {
-            return err
-        }
-
-        if err = tx.Commit(); err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        return nil
-    }
-
-    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
+    err := p.getUserPostPreviews(executor, spotifyID, createdAt, paginationResponse)
 
     if err != nil {
         return nil, err
@@ -154,10 +91,10 @@ func(p *PostsDAO) GetUserPostsPreviewsByUserID(spotifyID string, createdAt time.
 
 
 
-func(p *PostsDAO) RemoveVote(voterSpotifyID string, posterSpotifyID string, songID string) error {
+func(p *PostsDAO) RemoveVote(executor db.QueryExecutor, voterSpotifyID string, posterSpotifyID string, songID string) error {
 	query := `DELETE FROM post_votes WHERE voterspotifyid = $1 AND posterspotifyid = $2 AND postsongid = $3`
 
-	res, err := p.DB.Exec(query, voterSpotifyID, posterSpotifyID, songID)
+	res, err := executor.Exec(query, voterSpotifyID, posterSpotifyID, songID)
 
 	if err != nil {
 		return customerrors.WrapBasicError(err)
@@ -176,11 +113,11 @@ func(p *PostsDAO) RemoveVote(voterSpotifyID string, posterSpotifyID string, song
 	return nil
 }
 
-func(p *PostsDAO) GetUserPostPreviewByID(songID string, spotifyID string) (*responses.PostPreview, error) {
+func(p *PostsDAO) GetUserPostPreviewByID(executor db.QueryExecutor, songID string, spotifyID string) (*responses.PostPreview, error) {
 	query := `SELECT albumarturi, albumid, albumname, createdat, rating, songid, songname, review, updatedat, posterspotifyid, username 
                 FROM posts INNER JOIN users ON users.spotifyid = posts.posterspotifyid WHERE posts.posterspotifyid = $1 AND posts.songid = $2`
 
-	row := p.DB.QueryRow(query, spotifyID, songID)
+	row := executor.QueryRow(query, spotifyID, songID)
 
 	postPreview := &responses.PostPreview{}
 	albumArtUri := sql.NullString{}
@@ -207,10 +144,10 @@ func(p *PostsDAO) GetUserPostPreviewByID(songID string, spotifyID string) (*resp
 
 }
 
-func(p *PostsDAO) DeletePost(songID string, spotifyID string) error {
+func(p *PostsDAO) DeletePost(executor db.QueryExecutor, songID string, spotifyID string) error {
 	query := `DELETE FROM posts WHERE posterspotifyid = $1 AND songid = $2`
 
-	res, err := p.DB.Exec(query, spotifyID, songID)
+	res, err := executor.Exec(query, spotifyID, songID)
 
 	if err != nil {
 		return customerrors.WrapBasicError(err)
@@ -229,77 +166,43 @@ func(p *PostsDAO) DeletePost(songID string, spotifyID string) error {
 	return nil
 }
 
-func(p *PostsDAO) UpdatePost(spotifyID string, songID string, updatePostRequest *requests.UpdatePostRequestDTO, username string) (*responses.PostPreview, error) {
+func(p *PostsDAO) UpdatePost(executor db.QueryExecutor, spotifyID string, songID string, updatePostRequest *requests.UpdatePostRequestDTO, username string) (*responses.PostPreview, error) {
 
     postPreview := &responses.PostPreview{}
 
-    transaction := func() error {
-        tx, err := p.DB.BeginTx(context.Background(), nil)
+    updatedPostRequestMap := make(map[string]any)
+    mapstructure.Decode(updatePostRequest, &updatedPostRequestMap)
 
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
+    t := time.Now().UTC()
+    updatedPostRequestMap["updatedat"] = &t
 
-        defer tx.Rollback()
+    conditionals := make(map[string]any)
+    conditionals["posterspotifyid"] = spotifyID
+    conditionals["songid"] = songID
 
-        err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+    returning := []string{"albumarturi", "albumid", "albumname", "createdat", "rating", "songid", "songname", "review", "updatedat", "posterspotifyid"}
 
-        if err != nil {
-            return err
-        }
+    query, vals := db.PatchQueryBuilder("posts", updatedPostRequestMap, conditionals, returning)
 
-        updatedPostRequestMap := make(map[string]any)
-        mapstructure.Decode(updatePostRequest, &updatedPostRequestMap)
+    res := executor.QueryRow(query, vals...)
 
-        t := time.Now().UTC()
-        updatedPostRequestMap["updatedat"] = &t
+    albumArtUri := sql.NullString{}
+    err := res.Scan(&albumArtUri,
+        &postPreview.AlbumID,
+        &postPreview.AlbumName,
+        &postPreview.CreatedAt,
+        &postPreview.Rating,
+        &postPreview.SongID,
+        &postPreview.SongName,
+        &postPreview.Text,
+        &postPreview.UpdatedAt,
+        &postPreview.SpotifyID)
 
-        conditionals := make(map[string]any)
-        conditionals["posterspotifyid"] = spotifyID
-        conditionals["songid"] = songID
 
-        returning := []string{"albumarturi", "albumid", "albumname", "createdat", "rating", "songid", "songname", "review", "updatedat", "posterspotifyid"}
+    postPreview.Username = username
+    postPreview.AlbumArtURI = albumArtUri.String
 
-        query, vals := db.PatchQueryBuilder("posts", updatedPostRequestMap, conditionals, returning)
-
-        res := tx.QueryRow(query, vals...)
-
-        albumArtUri := sql.NullString{}
-        err = res.Scan(&albumArtUri,
-            &postPreview.AlbumID,
-            &postPreview.AlbumName,
-            &postPreview.CreatedAt,
-            &postPreview.Rating,
-            &postPreview.SongID,
-            &postPreview.SongName,
-            &postPreview.Text,
-            &postPreview.UpdatedAt,
-            &postPreview.SpotifyID)
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        postPreview.Username = username
-        postPreview.AlbumArtURI = albumArtUri.String
-
-        err = p.getPostLikesAndDislikes(tx, spotifyID, songID, postPreview)
-
-        if err != nil {
-            return err
-        }
-
-        err = tx.Commit()
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        return nil
-
-    }
-
-    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
+    err = p.getPostLikesAndDislikes(executor, spotifyID, songID, postPreview)
 
     if err != nil {
         return nil, err
@@ -308,256 +211,173 @@ func(p *PostsDAO) UpdatePost(spotifyID string, songID string, updatePostRequest 
 	return postPreview, nil
 }
 
-func(p *PostsDAO) LikeOrDislikePost(spotifyID string, posterSpotifyID string, songID string, liked bool) error {
+func(p *PostsDAO) LikeOrDislikePost(executor db.QueryExecutor, spotifyID string, posterSpotifyID string, songID string, liked bool) error {
 
-    transaction := func() error {
+    query := `SELECT COUNT(*)
+              FROM post_votes
+              WHERE voterspotifyid = $1 AND posterspotifyid = $2 AND postsongid = $3 AND liked = $4`
 
-        tx, err := p.DB.BeginTx(context.Background(), nil)
+    row := executor.QueryRow(query, spotifyID, posterSpotifyID, songID, liked)
 
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-
-        defer tx.Rollback()
-
-        err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
-
-        if err != nil {
-            return err
-        }
-
-        query := `SELECT COUNT(*)
-                  FROM post_votes
-                  WHERE voterspotifyid = $1 AND posterspotifyid = $2 AND postsongid = $3 AND liked = $4`
-
-        row := tx.QueryRow(query, spotifyID, posterSpotifyID, songID, liked)
-
-        count := 0
-        err = row.Scan(&count)
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        if count >= 1 {
-            return &customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like or dislike a post many times"}
-        }
-
-        query = `INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) 
-                  VALUES ($1, $2, $3, $4, $5, $6) 
-                  ON CONFLICT (voterspotifyid, posterspotifyid, postsongid) DO UPDATE SET updatedat=$5, liked=$6`
-
-        res, err := tx.Exec(query,
-            spotifyID,
-            posterSpotifyID,
-            songID,
-            time.Now().UTC(),
-            time.Now().UTC(),
-            liked)
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        rows, err := res.RowsAffected()
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        if rows < 1 {
-            return customerrors.WrapBasicError(sql.ErrNoRows)
-        }
-
-        err = tx.Commit()
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-        return nil
-    }
-
-    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
+    count := 0
+    err := row.Scan(&count)
 
     if err != nil {
-        return err
+        return customerrors.WrapBasicError(err)
     }
 
-	return nil
+    if count >= 1 {
+        return &customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like or dislike a post many times"}
+    }
+
+    query = `INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) 
+              VALUES ($1, $2, $3, $4, $5, $6) 
+              ON CONFLICT (voterspotifyid, posterspotifyid, postsongid) DO UPDATE SET updatedat=$5, liked=$6`
+
+    res, err := executor.Exec(query,
+        spotifyID,
+        posterSpotifyID,
+        songID,
+        time.Now().UTC(),
+        time.Now().UTC(),
+        liked)
+
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    rows, err := res.RowsAffected()
+
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    if rows < 1 {
+        return customerrors.WrapBasicError(sql.ErrNoRows)
+    }
+
+    return nil
+
 }
 
-func(p *PostsDAO) GetPostCommentsPaginated(spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error) {
+func(p *PostsDAO) GetPostCommentsPaginated(executor db.QueryExecutor, spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error) {
 
     paginationResponse := &responses.PaginationResponse[[]responses.Comment, time.Time]{PaginationKey: time.Now().UTC()}
 
-    transaction := func() error {
-
-        tx, err := p.DB.BeginTx(context.Background(), nil)
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        defer tx.Rollback()
-
-        err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
-
-        if err != nil {
-            return err
-        }
-
-        query := `SELECT commentid, commentorspotifyid, posterspotifyid, songid, commenttext, createdat, updatedat 
-                  FROM comments
-                  WHERE posterspotifyid = $1 AND songid = $2 AND createdAt < $3 
-                  ORDER BY createdat DESC 
-                  LIMIT 25 `
+    query := `SELECT commentid, commentorspotifyid, posterspotifyid, songid, commenttext, createdat, updatedat 
+              FROM comments
+              WHERE posterspotifyid = $1 AND songid = $2 AND createdAt < $3 
+              ORDER BY createdat DESC 
+              LIMIT 25 `
 
 
-        rows, err := tx.Query(query, spotifyID, songID, paginationKey)
+    rows, err := executor.Query(query, spotifyID, songID, paginationKey)
 
 
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        comments := []responses.Comment{}
-
-        for rows.Next() {
-
-            comment := &responses.Comment{}
-            err := rows.Scan(&comment.CommentID, &comment.CommentorID, &comment.PostSpotifyID, &comment.SongID, &comment.CommentText, &comment.CreatedAt, &comment.UpdatedAt)
-
-            if err != nil {
-                return customerrors.WrapBasicError(err)
-            }
-
-            comments = append(comments, *comment)
-
-        }
-
-        for i := 0; i < len(comments); i++ {
-
-            query = `SELECT liked FROM comment_votes WHERE commentid = $1`
-            rows, err := tx.Query(query, comments[i].CommentID)
-
-            if err != nil {
-                return customerrors.WrapBasicError(err)
-            }
-
-            likes := 0
-            dislikes := 0
-            for rows.Next() {
-               val := true 
-               err := rows.Scan(&val)
-               if err != nil {
-                   return customerrors.WrapBasicError(err)
-               }
-               if val {
-                   likes +=1
-               } else {
-                   dislikes+=1
-               }
-            }
-               comments[i].Likes = likes
-               comments[i].Dislikes = dislikes
-        }
-
-        paginationResponse.DataResponse = comments
-
-        if len(comments) > 0 {
-            paginationResponse.PaginationKey = comments[len(comments)-1].CreatedAt
-        }
-
-        err = tx.Commit()
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        return nil
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
     }
 
-    db.RunTransactionWithExponentialBackoff(transaction, 5) 
+    comments := []responses.Comment{}
 
+    for rows.Next() {
+
+        comment := &responses.Comment{}
+        err := rows.Scan(&comment.CommentID, &comment.CommentorID, &comment.PostSpotifyID, &comment.SongID, &comment.CommentText, &comment.CreatedAt, &comment.UpdatedAt)
+
+        if err != nil {
+            return nil, customerrors.WrapBasicError(err)
+        }
+
+        comments = append(comments, *comment)
+
+    }
+
+    for i := 0; i < len(comments); i++ {
+
+        query = `SELECT liked FROM comment_votes WHERE commentid = $1`
+        rows, err := executor.Query(query, comments[i].CommentID)
+
+        if err != nil {
+            return nil, customerrors.WrapBasicError(err)
+        }
+
+        likes := 0
+        dislikes := 0
+        for rows.Next() {
+           val := true 
+           err := rows.Scan(&val)
+           if err != nil {
+               return nil, customerrors.WrapBasicError(err)
+           }
+           if val {
+               likes +=1
+           } else {
+               dislikes+=1
+           }
+        }
+           comments[i].Likes = likes
+           comments[i].Dislikes = dislikes
+    }
+
+    paginationResponse.DataResponse = comments
+
+    if len(comments) > 0 {
+        paginationResponse.PaginationKey = comments[len(comments)-1].CreatedAt
+    }
 
     return paginationResponse, nil
 }
 
-func(p *PostsDAO) GetCurrentUserFeed(spotifyID string, t time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
+func(p *PostsDAO) GetCurrentUserFeed(executor db.QueryExecutor, spotifyID string, t time.Time) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
 
     paginationResponse := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{PaginationKey: time.Now().UTC()}
 
-    transaction := func() error {
+    query := `SELECT userfollowed FROM followers WHERE follower = $1`
 
-        tx, err := p.DB.BeginTx(context.Background(), nil)
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        defer tx.Rollback()
-
-        query := `SELECT userfollowed FROM followers WHERE follower = $1`
-
-        followedIds := []string{}
-        rows, err := p.DB.Query(query, spotifyID)
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        for rows.Next() {
-            follower := ""
-            err := rows.Scan(&follower)
-            if err != nil {
-                return customerrors.WrapBasicError(err)
-            }
-            followedIds = append(followedIds, follower)
-        }
-
-        posts := []responses.PostPreview{}
-
-        for _, id := range followedIds {
-            userPosts := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{}
-            err = p.getUserPostPreviews(p.DB, id, t, userPosts)
-            if err != nil {
-                return err
-            }
-            posts = append(posts, userPosts.DataResponse...)
-        }
-
-        
-        sort.Slice(posts, func(i, j int) bool {
-            return posts[i].CreatedAt.Before(posts[j].CreatedAt)
-        })
-
-        if len(posts) == 0 {
-            return nil
-        }
-
-        upTo := 0
-        if len(posts) > 15 {
-            upTo = 15
-        }
-
-        paginationResponse.DataResponse = posts[:upTo]
-        paginationResponse.PaginationKey = posts[:upTo][upTo-1].CreatedAt
-
-        err = tx.Commit()
-
-        if err != nil {
-            return customerrors.WrapBasicError(err)
-        }
-
-        return nil
-    }
-
-    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
+    followedIds := []string{}
+    rows, err := executor.Query(query, spotifyID)
 
     if err != nil {
-        return nil, err
+        return nil, customerrors.WrapBasicError(err)
     }
+
+    for rows.Next() {
+        follower := ""
+        err := rows.Scan(&follower)
+        if err != nil {
+            return nil, customerrors.WrapBasicError(err)
+        }
+        followedIds = append(followedIds, follower)
+    }
+
+    posts := []responses.PostPreview{}
+
+    for _, id := range followedIds {
+        userPosts := &responses.PaginationResponse[[]responses.PostPreview, time.Time]{}
+        err = p.getUserPostPreviews(executor, id, t, userPosts)
+        if err != nil {
+            return nil, err
+        }
+        posts = append(posts, userPosts.DataResponse...)
+    }
+
+    
+    sort.Slice(posts, func(i, j int) bool {
+        return posts[i].CreatedAt.Before(posts[j].CreatedAt)
+    })
+
+    if len(posts) == 0 {
+        return paginationResponse, nil
+    }
+
+    upTo := len(posts)
+    if len(posts) > 15 {
+        upTo = 15
+    }
+
+    paginationResponse.DataResponse = posts[:upTo]
+    paginationResponse.PaginationKey = posts[:upTo][upTo-1].CreatedAt
 
     return paginationResponse, nil
 

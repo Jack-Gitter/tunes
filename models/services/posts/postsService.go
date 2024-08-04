@@ -1,6 +1,7 @@
 package posts
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"time"
@@ -87,6 +88,7 @@ func(p *PostsService) CreatePostForCurrentUser(c *gin.Context) {
     }
 
 	resp, err := p.PostsDAO.CreatePost(
+        p.DB,
 		spotifyID.(string),
 		*createPostDTO.SongID,
 		spotifySongResponse.Name,
@@ -137,13 +139,31 @@ func(p *PostsService) LikePost(c *gin.Context) {
 		return
 	}
 
-	err := p.PostsDAO.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, true)
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+    
+	err = p.PostsDAO.LikeOrDislikePost(tx, currentUserSpotifyID.(string), spotifyID, songID, true)
 
 	if err != nil {
 		c.Error(err)
 		c.Abort()
 		return
 	}
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
 
 	c.Status(http.StatusNoContent)
 }
@@ -175,7 +195,32 @@ func(p *PostsService) DislikePost(c *gin.Context) {
 		return
 	}
 
-	err := p.PostsDAO.LikeOrDislikePost(currentUserSpotifyID.(string), spotifyID, songID, false)
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+    
+	err = p.PostsDAO.LikeOrDislikePost(tx, currentUserSpotifyID.(string), spotifyID, songID, false)
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
 
 	if err != nil {
 		c.Error(err)
@@ -204,13 +249,45 @@ func(p *PostsService) GetAllPostsForUserByID(c *gin.Context) {
 	spotifyID := c.Param("spotifyID")
 	createdAt := c.Query("createdAt")
 
-	posts, err := p.getAllPosts(spotifyID, createdAt)
+	var t time.Time = time.Now().UTC()
+    var err error
+
+	if createdAt != "" {
+        t, err = time.Parse(time.RFC3339, createdAt)
+
+        if err != nil {
+            c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"})
+            c.Abort()
+            return
+        }
+
+	}
+
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    posts, err := p.PostsDAO.GetUserPostsPreviewsByUserID(tx, spotifyID, t)
 
 	if err != nil {
 		c.Error(err)
 		c.Abort()
 		return
 	}
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
 
 	c.JSON(http.StatusOK, posts)
 }
@@ -237,7 +314,39 @@ func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
 		return
 	}
 
-	posts, err := p.getAllPosts(spotifyID.(string), createdAt)
+	var t time.Time = time.Now().UTC()
+    var err error
+
+	if createdAt != "" {
+        t, err = time.Parse(time.RFC3339, createdAt)
+
+        if err != nil {
+            c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"})
+            c.Abort()
+            return
+        }
+
+	}
+
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    posts, err := p.PostsDAO.GetUserPostsPreviewsByUserID(tx, spotifyID.(string), t)
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+    err = tx.Commit()
 
 	if err != nil {
 		c.Error(err)
@@ -266,13 +375,32 @@ func(p *PostsService) GetPostBySpotifyIDAndSongID(c *gin.Context) {
 	spotifyID := c.Param("spotifyID")
 	songID := c.Param("songID")
 
-	post, err := p.PostsDAO.GetUserPostByID(songID, spotifyID)
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+	post, err := p.PostsDAO.GetUserPostByID(tx, songID, spotifyID)
 
 	if err != nil {
 		c.Error(err)
 		c.Abort()
 		return
 	}
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
 
 	c.JSON(http.StatusOK, post)
 }
@@ -300,7 +428,31 @@ func(p *PostsService) GetPostCurrentUserBySongID(c *gin.Context) {
 		return
 	}
 
-	post, err := p.PostsDAO.GetUserPostByID(songID, currentUserSpotifyID.(string))
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+	post, err := p.PostsDAO.GetUserPostByID(tx, songID, currentUserSpotifyID.(string))
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
 
 	if err != nil {
 		c.Error(err)
@@ -330,7 +482,7 @@ func(p *PostsService) DeletePostBySpotifyIDAndSongID(c *gin.Context) {
 	spotifyID := c.Param("spotifyID")
 	songID := c.Param("songID")
 
-	err := p.PostsDAO.DeletePost(songID, spotifyID)
+	err := p.PostsDAO.DeletePost(p.DB, songID, spotifyID)
 
 	if err != nil {
 		c.Error(err)
@@ -365,7 +517,7 @@ func(p *PostsService) DeletePostForCurrentUserBySongID(c *gin.Context) {
 	}
 	songID := c.Param("songID")
 
-	err := p.PostsDAO.DeletePost(songID, requestorSpotifyID.(string))
+	err := p.PostsDAO.DeletePost(p.DB, songID, requestorSpotifyID.(string))
 
 	if err != nil {
 		c.Error(err)
@@ -406,13 +558,31 @@ func(p *PostsService) UpdateCurrentUserPost(c *gin.Context) {
 		return
 	}
 
-	preview, err := p.PostsDAO.UpdatePost(spotifyID.(string), songID, updatePostReq, spotifyUsername.(string))
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+	preview, err := p.PostsDAO.UpdatePost(tx, spotifyID.(string), songID, updatePostReq, spotifyUsername.(string))
 
 	if err != nil {
 		c.Error(err)
 		c.Abort()
 		return
 	}
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
 
 	c.JSON(http.StatusOK, preview)
 }
@@ -439,7 +609,7 @@ func(p *PostsService) RemovePostVote(c *gin.Context) {
 		c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "forgot to set JWT"})
 	}
 
-	err := p.PostsDAO.RemoveVote(voterSpotifyID.(string), posterSpotifyID, songID)
+	err := p.PostsDAO.RemoveVote(p.DB, voterSpotifyID.(string), posterSpotifyID, songID)
 
 	if err != nil {
 		c.Error(err)
@@ -451,23 +621,6 @@ func(p *PostsService) RemovePostVote(c *gin.Context) {
 
 }
 
-func(p *PostsService) getAllPosts(spotifyID string, createdAt string) (*responses.PaginationResponse[[]responses.PostPreview, time.Time], error) {
-
-	var t time.Time = time.Now().UTC()
-    var err error
-
-	if createdAt != "" {
-        t, err = time.Parse(time.RFC3339, createdAt)
-
-        if err != nil {
-            return nil, &customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"}
-        }
-
-	}
-
-	return p.PostsDAO.GetUserPostsPreviewsByUserID(spotifyID, t)
-
-}
 // @Summary Gets the comments of a post
 // @Description Gets the comments of a post
 // @Tags Posts
@@ -501,10 +654,28 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
         }
 	}
 
-    resp, err := p.PostsDAO.GetPostCommentsPaginated(spotifyID, songID, t)
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    resp, err := p.PostsDAO.GetPostCommentsPaginated(tx, spotifyID, songID, t)
 
     if err != nil {
         c.Error(err)
+        c.Abort()
+        return
+    }
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
@@ -547,10 +718,25 @@ func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
         }
 	}
 
-    resp, err := p.PostsDAO.GetCurrentUserFeed(spotifyID.(string), t)
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+    resp, err := p.PostsDAO.GetCurrentUserFeed(tx, spotifyID.(string), t)
 
     if err != nil {
         c.Error(err)
+        c.Abort()
+        return
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
