@@ -210,28 +210,10 @@ func(cs *CommentsService) LikeComment(c *gin.Context) {
         return
     }
 
-    tx, err := cs.DB.BeginTx(context.Background(), nil)
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
-    defer tx.Rollback()
-
-    err = cs.CommentsDAO.LikeComment(tx, commentID, spotifyID.(string))
+    err := cs.CommentsDAO.LikeComment(cs.DB, commentID, spotifyID.(string))
 
     if err != nil {
         c.Error(err)
-        c.Abort()
-        return 
-    }
-
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
@@ -263,29 +245,10 @@ func(cs *CommentsService) DislikeComment(c *gin.Context) {
         return
     }
 
-
-    tx, err := cs.DB.BeginTx(context.Background(), nil)
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
-    defer tx.Rollback()
-
-    err = cs.CommentsDAO.DislikeComment(tx, commentID, spotifyID.(string))
+    err := cs.CommentsDAO.DislikeComment(cs.DB, commentID, spotifyID.(string))
 
     if err != nil {
         c.Error(err)
-        c.Abort()
-        return 
-    }
-
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
