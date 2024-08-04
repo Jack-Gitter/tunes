@@ -7,6 +7,9 @@ endpoints:
 general 
 
 documentation: 
+    general
+        make sure to set transaction isolation level to repeatable read everywhere we do a transaction!!!
+        do transaction retires where applicable!!! when we're inserting, not just for reading because we don't need it then
     posts
         get user feed endpoint!!!
     readme
