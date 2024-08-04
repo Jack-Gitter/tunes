@@ -60,7 +60,7 @@ func(a *AuthService) LoginCallback(c *gin.Context) {
 		return
 	}
 
-	user, err := a.UsersDAO.UpsertUserOnLogin(a.DB, userProfileResponse.Display_name, userProfileResponse.Id)
+	user, err := a.UsersDAO.UpsertUser(a.DB, userProfileResponse.Display_name, userProfileResponse.Id)
 
 	if err != nil {
 		c.Error(err)
@@ -147,7 +147,7 @@ func(a *AuthService) RefreshJWT(c *gin.Context) {
 		return
 	}
 
-	userDBResponse, err := a.UsersDAO.GetUserFromDbBySpotifyID(a.DB, userProfileResponse.Id)
+	userDBResponse, err := a.UsersDAO.GetUser(a.DB, userProfileResponse.Id)
 
 	if err != nil {
 		c.Error(err)
