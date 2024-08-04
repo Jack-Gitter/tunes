@@ -1,17 +1,18 @@
 tunes todos:
 
-endpoints: 
-    general
-        users
-            make a getFeed endpoint which gets all of the posts from the users followers and returns the top x most recent, make it paginated
 general 
 
-documentation: 
+endpoints:
     general
         make sure to set transaction isolation level to repeatable read everywhere we do a transaction!!!
         do transaction retires where applicable!!! when we're inserting, not just for reading because we don't need it then
     posts
         get user feed endpoint!!!
+
+testing:
+    test all of the endpoints again!!!! lmao kms
+
+documentation: 
     readme
         explain what this project is
         explain auth -- double submit cookies
