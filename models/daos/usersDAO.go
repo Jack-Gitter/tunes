@@ -20,6 +20,7 @@ type IUsersDAO interface {
     UnfollowUser(executor db.QueryExecutor, spotifyID string, otherUserSpotifyID string) error
     FollowUser(executor db.QueryExecutor, spotifyID string, otherUserSpotifyID string) error 
     GetUserFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error)
+    GetUserFollowing(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error)
 }
 
 func(u *UsersDAO) UpsertUser(executor db.QueryExecutor, username string, spotifyID string) (*responses.User, error) {
@@ -189,4 +190,47 @@ func(u *UsersDAO) GetUserFollowers(executor db.QueryExecutor, spotifyID string, 
     } 
 
     return paginationResponse, nil
+}
+
+func(u *UsersDAO) GetUserFollowing(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
+
+
+    paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
+
+    query := ` SELECT users.spotifyid, users.username, users.bio, users.userrole 
+                FROM followers 
+                INNER JOIN  users 
+                ON users.spotifyid = followers.userfollowed 
+                WHERE followers.userfollowed = $1 AND users.spotifyid < $2 ORDER BY users.spotifyid LIMIT 25 `
+
+    rows, err := executor.Query(query, spotifyID, paginationKey)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    followers := []responses.User{}
+    bio := sql.NullString{}
+
+    for rows.Next() {
+        user := responses.User{}
+        err := rows.Scan(&user.SpotifyID, &user.Username, &bio, &user.Role)
+        if err != nil {
+            return nil, customerrors.WrapBasicError(err)
+        }
+        user.Bio = bio.String
+        followers = append(followers, user)
+    }
+
+    paginationResponse.DataResponse = followers
+    paginationResponse.PaginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
+
+    if len(followers) > 0 {
+        paginationResponse.PaginationKey = followers[len(followers)-1].SpotifyID
+    } 
+
+    return paginationResponse, nil
+
+
+
 }

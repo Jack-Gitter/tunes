@@ -3,6 +3,7 @@ package posts
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -17,6 +18,8 @@ import (
 type PostsService struct {
     DB *sql.DB
     PostsDAO daos.IPostsDAO
+    UsersDAO daos.IUsersDAO
+    CommentsDAO daos.CommentsDAO
     SpotifyService spotify.ISpotifyService
 }
 
@@ -138,18 +141,8 @@ func(p *PostsService) LikePost(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
-    tx, err := p.DB.BeginTx(context.Background(), nil)
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
-    defer tx.Rollback()
     
-	err = p.PostsDAO.LikeOrDislikePost(tx, currentUserSpotifyID.(string), spotifyID, songID, true)
+    err := p.PostsDAO.LikeOrDislikePost(p.DB, currentUserSpotifyID.(string), spotifyID, songID, true)
 
 	if err != nil {
 		c.Error(err)
@@ -157,13 +150,6 @@ func(p *PostsService) LikePost(c *gin.Context) {
 		return
 	}
 
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
 
 	c.Status(http.StatusNoContent)
 }
@@ -194,33 +180,8 @@ func(p *PostsService) DislikePost(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
-    tx, err := p.DB.BeginTx(context.Background(), nil)
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
-    defer tx.Rollback()
     
-	err = p.PostsDAO.LikeOrDislikePost(tx, currentUserSpotifyID.(string), spotifyID, songID, false)
-
-	if err != nil {
-		c.Error(err)
-		c.Abort()
-		return
-	}
-
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
+    err := p.PostsDAO.LikeOrDislikePost(p.DB, currentUserSpotifyID.(string), spotifyID, songID, false)
 
 	if err != nil {
 		c.Error(err)
@@ -273,13 +234,32 @@ func(p *PostsService) GetAllPostsForUserByID(c *gin.Context) {
 
     defer tx.Rollback()
 
-    posts, err := p.PostsDAO.GetUserPostsPreviewsByUserID(tx, spotifyID, t)
+    _, err = p.UsersDAO.GetUser(tx, spotifyID)
 
-	if err != nil {
-		c.Error(err)
-		c.Abort()
-		return
-	}
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    posts, err := p.PostsDAO.GetUserPostsPropertiesPaginated(tx, spotifyID, t)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    for i := 0; i < len(posts); i++ {
+        likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, spotifyID, posts[i].SongID)
+        if err != nil {
+            c.Error(err)
+            c.Abort()
+            return
+        }
+        posts[i].Likes = likes
+        posts[i].Dislikes = dislikes
+    }
 
     err = tx.Commit()
 
@@ -338,13 +318,32 @@ func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
 
     defer tx.Rollback()
 
-    posts, err := p.PostsDAO.GetUserPostsPreviewsByUserID(tx, spotifyID.(string), t)
+    _, err = p.UsersDAO.GetUser(tx, spotifyID.(string))
 
-	if err != nil {
-		c.Error(err)
-		c.Abort()
-		return
-	}
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    posts, err := p.PostsDAO.GetUserPostsPropertiesPaginated(tx, spotifyID.(string), t)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    for i := 0; i < len(posts); i++ {
+        likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, spotifyID.(string), posts[i].SongID)
+        if err != nil {
+            c.Error(err)
+            c.Abort()
+            return
+        }
+        posts[i].Likes = likes
+        posts[i].Dislikes = dislikes
+    }
 
     err = tx.Commit()
 
@@ -385,13 +384,24 @@ func(p *PostsService) GetPostBySpotifyIDAndSongID(c *gin.Context) {
 
     defer tx.Rollback()
 
-	post, err := p.PostsDAO.GetUserPostByID(tx, songID, spotifyID)
+    post, err := p.PostsDAO.GetPostProperties(tx, songID, spotifyID)
 
-	if err != nil {
-		c.Error(err)
-		c.Abort()
-		return
-	}
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, songID, spotifyID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    post.Likes = likes
+    post.Dislikes = dislikes
 
     err = tx.Commit()
 
@@ -438,13 +448,24 @@ func(p *PostsService) GetPostCurrentUserBySongID(c *gin.Context) {
 
     defer tx.Rollback()
 
-	post, err := p.PostsDAO.GetUserPostByID(tx, songID, currentUserSpotifyID.(string))
+    post, err := p.PostsDAO.GetPostProperties(tx, songID, currentUserSpotifyID.(string))
 
-	if err != nil {
-		c.Error(err)
-		c.Abort()
-		return
-	}
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, songID, currentUserSpotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    post.Likes = likes
+    post.Dislikes = dislikes
 
     err = tx.Commit()
 
@@ -454,11 +475,6 @@ func(p *PostsService) GetPostCurrentUserBySongID(c *gin.Context) {
         return
     }
 
-	if err != nil {
-		c.Error(err)
-		c.Abort()
-		return
-	}
 
 	c.JSON(http.StatusOK, post)
 }
@@ -570,11 +586,22 @@ func(p *PostsService) UpdateCurrentUserPost(c *gin.Context) {
 
 	preview, err := p.PostsDAO.UpdatePost(tx, spotifyID.(string), songID, updatePostReq, spotifyUsername.(string))
 
-	if err != nil {
-		c.Error(err)
-		c.Abort()
-		return
-	}
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, preview.SongID, spotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    preview.Likes = likes
+    preview.Dislikes = dislikes
 
     err = tx.Commit()
 
@@ -664,82 +691,30 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
 
     defer tx.Rollback()
 
-    resp, err := p.PostsDAO.GetPostCommentsPaginated(tx, spotifyID, songID, t)
+    paginatedComments, err := p.PostsDAO.GetPostCommentsPaginated(tx, spotifyID, songID, t)
 
-    if err != nil {
-        c.Error(err)
-        c.Abort()
-        return
-    }
+    comments := paginatedComments.DataResponse
 
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
-    c.JSON(http.StatusOK, resp)
-}
-
-// @Summary Gets the comments of a post
-// @Description Gets the comments of a post
-// @Tags Posts
-// @Accept json
-// @Produce json
-// @Param createdAt query string false "Pagination Key. In the form of UTC timestamp"
-// @Success 200 {object} responses.PaginationResponse[[]responses.Comment, time.Time]
-// @Failure 401 {string} string 
-// @Failure 500 {string} string 
-// @Router /posts/feed [get]
-// @Security Bearer
-func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
-
-    spotifyID, exists := c.Get("spotifyID")
-    createdAt := c.Query("createdAt")
-
-    if !exists {
-        c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "jwt"})
-        c.Abort()
-        return
-    }
-
-    var t time.Time = time.Now().UTC()
-    var err error
-
-	if createdAt != "" {
-		t, err = time.Parse(time.RFC3339, createdAt)
+    for i := 0; i < len(comments); i++ {
+        likes, dislikes, err := p.CommentsDAO.GetCommentLikes(tx, fmt.Sprint(comments[i].CommentID))
 
         if err != nil {
-            c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"})
+            c.Error(err)
             c.Abort()
             return
         }
-	}
 
-    tx, err := p.DB.BeginTx(context.Background(), nil)
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
-    defer tx.Rollback()
-    resp, err := p.PostsDAO.GetCurrentUserFeed(tx, spotifyID.(string), t)
-
-    if err != nil {
-        c.Error(err)
-        c.Abort()
-        return
+        comments[i].Likes = likes
+        comments[i].Dislikes = dislikes
     }
 
     err = tx.Commit()
+
     if err != nil {
         c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
 
-    c.JSON(http.StatusOK, resp)
+    c.JSON(http.StatusOK, paginatedComments)
 }
