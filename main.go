@@ -31,16 +31,16 @@ func main() {
     db := db.ConnectToDB()
     defer db.Close()
 
-    usersDAO := daos.UsersDAO{}
-    postsDAO := daos.PostsDAO{}
-    commentsDAO := daos.CommentsDAO{}
+    usersDAO := &daos.UsersDAO{}
+    postsDAO := &daos.PostsDAO{}
+    commentsDAO := &daos.CommentsDAO{}
 
-    userService := users.UserService{UsersDAO: &usersDAO}
-    postsService := posts.PostsService{PostsDAO: &postsDAO}
-    commentsService := comments.CommentsService{CommentsDAO: &commentsDAO}
-    spotifyService := spotify.SpotifyService{}
-    jwtService := jwt.JWTService{}
-    authService := auth.AuthService{UsersDAO: &usersDAO, SpotifyService: &spotifyService, JWTService: &jwtService}
+    userService := users.UserService{UsersDAO: usersDAO, DB: db}
+    postsService := posts.PostsService{PostsDAO: postsDAO, DB: db}
+    commentsService := comments.CommentsService{CommentsDAO: commentsDAO, DB: db}
+    spotifyService := &spotify.SpotifyService{}
+    jwtService := &jwt.JWTService{}
+    authService := auth.AuthService{UsersDAO: usersDAO, SpotifyService: spotifyService, JWTService: jwtService, DB: db}
 
 	r := server.InitializeHttpServer(&userService, &postsService, &commentsService, &authService)
 	r.Run(":2000")
