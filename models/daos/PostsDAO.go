@@ -15,11 +15,12 @@ type PostsDAO struct { }
 type IPostsDAO interface {
     CreatePost(executor db.QueryExecutor, spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, error) 
     GetPostProperties(executor db.QueryExecutor, postID string, spotifyID string) (*responses.PostPreview, error)
-    GetUserPostsPropertiesPaginated(executor db.QueryExecutor, spotifyID string, createdAt time.Time) ([]responses.PostPreview, error)
+    GetUserPostsProperties(executor db.QueryExecutor, spotifyID string, createdAt time.Time) ([]responses.PostPreview, error)
     GetPostVotes(executor db.QueryExecutor, postID string, spotifyID string) ([]responses.UserIdentifer, []responses.UserIdentifer, error)
-    RemoveVote(executor db.QueryExecutor, voterSpotifyID string, posterSpotifyID string, songID string) error 
+    RemovePostVote(executor db.QueryExecutor, voterSpotifyID string, posterSpotifyID string, songID string) error 
     UpdatePost(executor db.QueryExecutor, spotifyID string, songID string, updatePostRequest *requests.UpdatePostRequestDTO, username string) (*responses.PostPreview, error) 
-    LikeOrDislikePost(executor db.QueryExecutor, spotifyID string, posterSpotifyID string, songID string, liked bool) error
+    LikePost(executor db.QueryExecutor, spotifyID string, posterSpotifyID string, songID string) error
+    DislikePost(executor db.QueryExecutor, spotifyID string, posterSpotifyID string, songID string) error
     DeletePost(executor db.QueryExecutor, songID string, spotifyID string) error
     GetPostCommentsPaginated(executor db.QueryExecutor, spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error)
 }
@@ -116,7 +117,7 @@ func(p *PostsDAO) GetPostProperties(executor db.QueryExecutor, postID string, sp
 
 }
 
-func(p *PostsDAO) RemoveVote(executor db.QueryExecutor, voterSpotifyID string, posterSpotifyID string, songID string) error {
+func(p *PostsDAO) RemovePostVote(executor db.QueryExecutor, voterSpotifyID string, posterSpotifyID string, songID string) error {
 	query := `DELETE FROM post_votes WHERE voterspotifyid = $1 AND posterspotifyid = $2 AND postsongid = $3`
 
 	res, err := executor.Exec(query, voterSpotifyID, posterSpotifyID, songID)
@@ -204,7 +205,7 @@ func(p *PostsDAO) UpdatePost(executor db.QueryExecutor, spotifyID string, songID
 	return postPreview, nil
 }
 
-func(p *PostsDAO) LikeOrDislikePost(executor db.QueryExecutor, spotifyID string, posterSpotifyID string, songID string, liked bool) error {
+func(p *PostsDAO) LikePost(executor db.QueryExecutor, spotifyID string, posterSpotifyID string, songID string) error {
 
     query := `INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) 
               VALUES ($1, $2, $3, $4, $5, $6) 
@@ -216,7 +217,39 @@ func(p *PostsDAO) LikeOrDislikePost(executor db.QueryExecutor, spotifyID string,
         songID,
         time.Now().UTC(),
         time.Now().UTC(),
-        liked)
+        true)
+
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    rows, err := res.RowsAffected()
+
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
+
+    if rows < 1 {
+        return customerrors.WrapBasicError(sql.ErrNoRows)
+    }
+
+    return nil
+
+}
+
+func(p *PostsDAO) DislikePost(executor db.QueryExecutor, spotifyID string, posterSpotifyID string, songID string) error {
+
+    query := `INSERT INTO post_votes (voterspotifyid, posterspotifyid, postsongid, createdat, updatedat, liked) 
+              VALUES ($1, $2, $3, $4, $5, $6) 
+              ON CONFLICT (voterspotifyid, posterspotifyid, postsongid) DO UPDATE SET updatedat=$5, liked=$6`
+
+    res, err := executor.Exec(query,
+        spotifyID,
+        posterSpotifyID,
+        songID,
+        time.Now().UTC(),
+        time.Now().UTC(),
+        false)
 
     if err != nil {
         return customerrors.WrapBasicError(err)
@@ -279,7 +312,7 @@ func(p *PostsDAO) GetPostCommentsPaginated(executor db.QueryExecutor, spotifyID 
 }
 
 
-func(p *PostsDAO) GetUserPostsPropertiesPaginated(executor db.QueryExecutor, spotifyID string, createdAt time.Time) ([]responses.PostPreview, error) {
+func(p *PostsDAO) GetUserPostsProperties(executor db.QueryExecutor, spotifyID string, createdAt time.Time) ([]responses.PostPreview, error) {
     query := `SELECT posts.albumarturi, posts.albumid, posts.albumname, posts.createdat, posts.rating, posts.songid, posts.songname, posts.review, posts.updatedat, posts.posterspotifyid, users.username
                 FROM posts 
                 INNER JOIN users 

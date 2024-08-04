@@ -142,7 +142,7 @@ func(p *PostsService) LikePost(c *gin.Context) {
 		return
 	}
     
-    err := p.PostsDAO.LikeOrDislikePost(p.DB, currentUserSpotifyID.(string), spotifyID, songID, true)
+    err := p.PostsDAO.LikePost(p.DB, currentUserSpotifyID.(string), spotifyID, songID)
 
 	if err != nil {
 		c.Error(err)
@@ -181,7 +181,7 @@ func(p *PostsService) DislikePost(c *gin.Context) {
 		return
 	}
     
-    err := p.PostsDAO.LikeOrDislikePost(p.DB, currentUserSpotifyID.(string), spotifyID, songID, false)
+    err := p.PostsDAO.DislikePost(p.DB, currentUserSpotifyID.(string), spotifyID, songID)
 
 	if err != nil {
 		c.Error(err)
@@ -242,7 +242,7 @@ func(p *PostsService) GetAllPostsForUserByID(c *gin.Context) {
         return
     }
 
-    posts, err := p.PostsDAO.GetUserPostsPropertiesPaginated(tx, spotifyID, t)
+    posts, err := p.PostsDAO.GetUserPostsProperties(tx, spotifyID, t)
 
     if err != nil {
         c.Error(err)
@@ -326,7 +326,7 @@ func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
         return
     }
 
-    posts, err := p.PostsDAO.GetUserPostsPropertiesPaginated(tx, spotifyID.(string), t)
+    posts, err := p.PostsDAO.GetUserPostsProperties(tx, spotifyID.(string), t)
 
     if err != nil {
         c.Error(err)
@@ -636,7 +636,7 @@ func(p *PostsService) RemovePostVote(c *gin.Context) {
 		c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "forgot to set JWT"})
 	}
 
-	err := p.PostsDAO.RemoveVote(p.DB, voterSpotifyID.(string), posterSpotifyID, songID)
+	err := p.PostsDAO.RemovePostVote(p.DB, voterSpotifyID.(string), posterSpotifyID, songID)
 
 	if err != nil {
 		c.Error(err)

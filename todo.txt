@@ -5,10 +5,10 @@ endpoints:
         users
             make a getFeed endpoint which gets all of the posts from the users followers and returns the top x most recent, make it paginated
 general 
-    make the posts service layer responsible for injecting db.QueryExecutor instance
-    break up the daos where i have to provide a tx into multiple seperate little methods for users and comments and posts
 
 documentation: 
+    posts
+        get user feed endpoint!!!
     readme
         explain what this project is
         explain auth -- double submit cookies
