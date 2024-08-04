@@ -13,16 +13,16 @@ import (
 type UsersDAO struct { }
 
 type IUsersDAO interface {
-    UpsertUserOnLogin(executor db.QueryExecutor, username string, spotifyID string) (*responses.User, error)
-    GetUserFromDbBySpotifyID(executor db.QueryExecutor, spotifyID string) (*responses.User, error)
-    UpdateUserPropertiesBySpotifyID(executor db.QueryExecutor, spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error)
-    DeleteUserByID(executor db.QueryExecutor, spotifyID string) error
+    UpsertUser(executor db.QueryExecutor, username string, spotifyID string) (*responses.User, error)
+    GetUser(executor db.QueryExecutor, spotifyID string) (*responses.User, error)
+    UpdateUser(executor db.QueryExecutor, spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error)
+    DeleteUser(executor db.QueryExecutor, spotifyID string) error
     UnfollowUser(executor db.QueryExecutor, spotifyID string, otherUserSpotifyID string) error
     FollowUser(executor db.QueryExecutor, spotifyID string, otherUserSpotifyID string) error 
-    GetFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error)
+    GetUserFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error)
 }
 
-func(u *UsersDAO) UpsertUserOnLogin(executor db.QueryExecutor, username string, spotifyID string) (*responses.User, error) {
+func(u *UsersDAO) UpsertUser(executor db.QueryExecutor, username string, spotifyID string) (*responses.User, error) {
 	query := "INSERT INTO users (spotifyid, username, userrole) values ($1, $2, 'BASIC') ON CONFLICT (spotifyID) DO UPDATE SET username=$2 RETURNING bio, userrole"
 	row := executor.QueryRow(query, spotifyID, username)
 
@@ -42,7 +42,7 @@ func(u *UsersDAO) UpsertUserOnLogin(executor db.QueryExecutor, username string, 
 	return userResponse, nil
 }
 
-func(u *UsersDAO) GetUserFromDbBySpotifyID(executor db.QueryExecutor, spotifyID string) (*responses.User, error) {
+func(u *UsersDAO) GetUser(executor db.QueryExecutor, spotifyID string) (*responses.User, error) {
 	query := "SELECT spotifyid, userrole, username, bio FROM users WHERE spotifyid = $1"
 	row := executor.QueryRow(query, spotifyID)
 
@@ -60,7 +60,7 @@ func(u *UsersDAO) GetUserFromDbBySpotifyID(executor db.QueryExecutor, spotifyID 
 	return userResponse, nil
 }
 
-func(u *UsersDAO) UpdateUserPropertiesBySpotifyID(executor db.QueryExecutor, spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error) {
+func(u *UsersDAO) UpdateUser(executor db.QueryExecutor, spotifyID string, updatedUser *requests.UpdateUserRequestDTO) (*responses.User, error) {
 
     updateUserMap := make(map[string]any)
     mapstructure.Decode(updatedUser, &updateUserMap)
@@ -87,7 +87,7 @@ func(u *UsersDAO) UpdateUserPropertiesBySpotifyID(executor db.QueryExecutor, spo
 
 }
 
-func(u *UsersDAO) DeleteUserByID(executor db.QueryExecutor, spotifyID string) error {
+func(u *UsersDAO) DeleteUser(executor db.QueryExecutor, spotifyID string) error {
 	query := "DELETE FROM users WHERE spotifyID = $1"
 	res, err := executor.Exec(query, spotifyID)
 
@@ -152,7 +152,7 @@ func(u *UsersDAO) FollowUser(executor db.QueryExecutor, spotifyID string, otherU
 	return nil
 }
 
-func(u *UsersDAO) GetFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
+func(u *UsersDAO) GetUserFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
 
     paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
 
@@ -189,28 +189,4 @@ func(u *UsersDAO) GetFollowers(executor db.QueryExecutor, spotifyID string, pagi
     } 
 
     return paginationResponse, nil
-}
-
-
-func doesUserExist(executor db.QueryExecutor, spotifyID string) (bool, error) {
-    query := `SELECT COUNT(*) FROM users WHERE spotifyid = $1`
-
-    row := executor.QueryRow(query, spotifyID)
-
-    count := 0
-    err := row.Scan(&count)
-
-    if err != nil {
-        return false, customerrors.WrapBasicError(err)
-    }
-
-    if count >= 1 {
-        return true, nil
-    }
-
-    return false, nil
-
-}
-
-func getUserFollowersPaginated(executor db.QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error) {
 }
