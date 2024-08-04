@@ -121,11 +121,11 @@ func(cs *CommentsDAO) GetCommentLikes(executor db.QueryExecutor, commentID strin
 
 }
 
-func(c *CommentsDAO) LikeComment(executor db.QueryExecutor, commentID string, spotifyID string, liked bool) error {
+func(c *CommentsDAO) LikeComment(executor db.QueryExecutor, commentID string, spotifyID string) error {
     
     query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE set liked = $2`
 
-    res, err := executor.Exec(query, commentID, liked, spotifyID)
+    res, err := executor.Exec(query, commentID, true, spotifyID)
 
     if err != nil {
         return customerrors.WrapBasicError(err)
@@ -146,11 +146,11 @@ func(c *CommentsDAO) LikeComment(executor db.QueryExecutor, commentID string, sp
 
 }
 
-func(c *CommentsDAO) DislikeComment(executor db.QueryExecutor, commentID string, spotifyID string, liked bool)  error {
+func(c *CommentsDAO) DislikeComment(executor db.QueryExecutor, commentID string, spotifyID string) error {
 
     query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE SET liked = $2`
 
-    res, err := executor.Exec(query, commentID, liked, spotifyID)
+    res, err := executor.Exec(query, commentID, false, spotifyID)
 
     if err != nil {
         return customerrors.WrapBasicError(err)
