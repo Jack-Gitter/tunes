@@ -885,14 +885,30 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
 // @Tags Posts
 // @Accept json
 // @Produce json
-// @Success 200 {object} responses.PostPreview{}
+// @Param createdAt query string false "Pagination Key. In the form of UTC timestamp"
+// @Success 200 {object} responses.PaginationResponse[[]responses.PostPreview, time.Time]
 // @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
-// @Router /posts/comments/{spotifyID}/{songID} [get]
+// @Router /posts/feed [get]
 // @Security Bearer
 func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
     spotifyID, exists := c.Get("spotifyID")
+    createdAt := c.Param("createdAt")
+
+	var t time.Time = time.Now().UTC()
+    var err error
+
+	if createdAt != "" {
+        t, err = time.Parse(time.RFC3339, createdAt)
+
+        if err != nil {
+            c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "invalid time format"})
+            c.Abort()
+            return
+        }
+
+	}
 
     if !exists {
         c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "failed to set JWT"})
@@ -919,8 +935,9 @@ func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
     posts := []responses.PostPreview{}
 
     for _, user_followed := range following {
+        fmt.Println(user_followed.SpotifyID)
 
-        user_posts, err := p.PostsDAO.GetUserPostsProperties(tx, user_followed.SpotifyID, time.Now().UTC())
+        user_posts, err := p.PostsDAO.GetUserPostsProperties(tx, user_followed.SpotifyID, t)
 
         if err != nil {
             c.Error(err)
@@ -936,7 +953,13 @@ func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
         return posts[i].CreatedAt.Before(posts[j].CreatedAt)
     })
 
-    posts = posts[:25]
+    feedLength := 25
+
+    if len(posts) < feedLength {
+        feedLength = len(posts)
+    }
+
+    posts = posts[:feedLength]
 
     for i := 0; i < len(posts); i++ {
         likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, posts[i].SongID, posts[i].SpotifyID)
@@ -952,6 +975,15 @@ func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
 
     }
 
-    c.JSON(http.StatusOK, posts)
+    paginationResponse := responses.PaginationResponse[[]responses.PostPreview, time.Time]{DataResponse: posts}
+    paginationKey := time.Now().UTC()
+
+    if feedLength > 0 {
+        paginationKey = posts[feedLength-1].CreatedAt
+    }
+
+    paginationResponse.PaginationKey = paginationKey
+
+    c.JSON(http.StatusOK, paginationResponse)
 
 }
