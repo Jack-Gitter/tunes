@@ -54,7 +54,7 @@ func(p *PostsDAO) CreatePost(executor db.QueryExecutor, spotifyID string, songID
 	return postPreview, nil
 }
 
-func(p *PostsDAO) GetPostVotes(executor db.QueryExecutor, spotifyID string, postID string) ([]responses.UserIdentifer, []responses.UserIdentifer, error) {
+func(p *PostsDAO) GetPostVotes(executor db.QueryExecutor, postID string, spotifyID string)  ([]responses.UserIdentifer, []responses.UserIdentifer, error) {
     fmt.Println(spotifyID)
     fmt.Println(postID)
         query2 := `SELECT post_votes.voterspotifyid, users.username, post_votes.liked 

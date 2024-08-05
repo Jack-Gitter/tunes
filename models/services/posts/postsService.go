@@ -251,7 +251,7 @@ func(p *PostsService) GetAllPostsForUserByID(c *gin.Context) {
     }
 
     for i := 0; i < len(posts); i++ {
-        likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, spotifyID, posts[i].SongID)
+        likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, posts[i].SongID, spotifyID)
         if err != nil {
             c.Error(err)
             c.Abort()
@@ -336,7 +336,7 @@ func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
     }
 
     for i := 0; i < len(posts); i++ {
-        likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, spotifyID.(string), posts[i].SongID)
+        likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, posts[i].SongID, spotifyID.(string))
         if err != nil {
             c.Error(err)
             c.Abort()
