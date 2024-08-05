@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
@@ -37,7 +38,7 @@ type IPostsService interface {
     UpdateCurrentUserPost(c *gin.Context) // yes
     RemovePostVote(c *gin.Context) 
     GetPostCommentsPaginated(c *gin.Context) 
-//    GetCurrentUserFeed(c *gin.Context) 
+    GetCurrentUserFeed(c *gin.Context) 
 }
 
 // @Summary Creates a post for the current user
@@ -876,4 +877,81 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, paginatedComments)
+}
+
+
+// @Summary Gets the comments of a post
+// @Description Gets the comments of a post
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Success 200 {object} responses.PostPreview{}
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /posts/comments/{spotifyID}/{songID} [get]
+// @Security Bearer
+func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
+    spotifyID, exists := c.Get("spotifyID")
+
+    if !exists {
+        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "failed to set JWT"})
+        c.Abort()
+        return
+    }
+    
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    following, err := p.UsersDAO.GetAllUserFollowing(tx, spotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    posts := []responses.PostPreview{}
+
+    for _, user_followed := range following {
+
+        user_posts, err := p.PostsDAO.GetUserPostsProperties(tx, user_followed.SpotifyID, time.Now().UTC())
+
+        if err != nil {
+            c.Error(err)
+            c.Abort()
+            return
+        }
+
+        posts = append(posts, user_posts...)
+
+    }
+
+    sort.Slice(posts, func(i, j int) bool {
+        return posts[i].CreatedAt.Before(posts[j].CreatedAt)
+    })
+
+    posts = posts[:25]
+
+    for i := 0; i < len(posts); i++ {
+        likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, posts[i].SongID, posts[i].SpotifyID)
+
+        if err != nil {
+            c.Error(err)
+            c.Abort()
+            return
+        }
+
+        posts[i].Likes = likes
+        posts[i].Dislikes = dislikes
+
+    }
+
+    c.JSON(http.StatusOK, posts)
+
 }

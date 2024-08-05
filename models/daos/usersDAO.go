@@ -21,6 +21,7 @@ type IUsersDAO interface {
     FollowUser(executor db.QueryExecutor, spotifyID string, otherUserSpotifyID string) error 
     GetUserFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error)
     GetUserFollowing(executor db.QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error)
+    GetAllUserFollowing(executor db.QueryExecutor, spotifyID string) ([]responses.User, error)
 }
 
 func(u *UsersDAO) UpsertUser(executor db.QueryExecutor, username string, spotifyID string) (*responses.User, error) {
@@ -192,6 +193,37 @@ func(u *UsersDAO) GetUserFollowing(executor db.QueryExecutor, spotifyID string, 
                 WHERE followers.userfollowed = $1 AND users.spotifyid > $2 ORDER BY users.spotifyid LIMIT 25 `
 
     rows, err := executor.Query(query, spotifyID, paginationKey)
+
+    if err != nil {
+        return nil, customerrors.WrapBasicError(err)
+    }
+
+    following := []responses.User{}
+    bio := sql.NullString{}
+
+    for rows.Next() {
+        user := responses.User{}
+        err := rows.Scan(&user.SpotifyID, &user.Username, &bio, &user.Role)
+        if err != nil {
+            return nil, customerrors.WrapBasicError(err)
+        }
+        user.Bio = bio.String
+        following = append(following, user)
+    }
+
+    return following, nil
+
+}
+
+func(u *UsersDAO) GetAllUserFollowing(executor db.QueryExecutor, spotifyID string) ([]responses.User, error) {
+
+    query := ` SELECT users.spotifyid, users.username, users.bio, users.userrole 
+                FROM followers 
+                INNER JOIN  users 
+                ON users.spotifyid = followers.userfollowed 
+                WHERE followers.userfollowed = $1`
+
+    rows, err := executor.Query(query, spotifyID)
 
     if err != nil {
         return nil, customerrors.WrapBasicError(err)

@@ -39,13 +39,13 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
                 userGroup.GET("/:spotifyID/following", userService.GetFollowingByID)
                 userGroup.POST("/current/follow/:otherUserSpotifyID", userService.FollowUser)
                 userGroup.DELETE("/current/unfollow/:otherUserSpotifyID", userService.UnFollowUser)
-                userGroup.PATCH("/current", validation.ValidateData(validation.ValidateUserRequestDTO), userService.UpdateCurrentUserProperties)
+                userGroup.PATCH("/current", validation.ValidateData(validation.ValidateUserRequestDTO), userService.UpdateCurrentUser)
                 userGroup.DELETE("/current", userService.DeleteCurrentUser)
 
                 adminOnly := userGroup.Group("/admin", authSerivce.ValidateAdminUser)
                 {
-                    adminOnly.PATCH("/:spotifyID", validation.ValidateData(validation.ValidateUserRequestDTO), userService.UpdateUserBySpotifyID)
-                    adminOnly.DELETE("/:spotifyID", userService.DeleteUserBySpotifyID)
+                    adminOnly.PATCH("/:spotifyID", validation.ValidateData(validation.ValidateUserRequestDTO), userService.UpdateUserByID)
+                    adminOnly.DELETE("/:spotifyID", userService.DeleteUserByID)
                 }
 
             }
@@ -58,7 +58,7 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
                 postGroup.GET("/previews/users/current", postsService.GetAllPostsForCurrentUser)
                 postGroup.GET("/previews/users/:spotifyID", postsService.GetAllPostsForUserByID)
                 postGroup.GET("/comments/:spotifyID/:songID", postsService.GetPostCommentsPaginated)
-//                postGroup.GET("/feed", postsService.GetCurrentUserFeed)
+                postGroup.GET("/feed", postsService.GetCurrentUserFeed)
                 postGroup.POST("/", validation.ValidateData(validation.ValidateCreatePostDTO),  postsService.CreatePostForCurrentUser)
                 postGroup.POST("/likes/:spotifyID/:songID", postsService.LikePost)
                 postGroup.POST("/dislikes/:spotifyID/:songID", postsService.DislikePost)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
-
 	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
@@ -607,5 +606,4 @@ func(u *UserService) DeleteUserByID(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
-
 
