@@ -996,11 +996,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.PaginationResponse-array_responses_Comment-time_Time"
+                            "$ref": "#/definitions/responses.PaginationResponse-array_responses_PostPreview-time_Time"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "string"
                         }
@@ -1173,6 +1179,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.PostPreview"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
@@ -1291,7 +1303,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.Post"
+                            "$ref": "#/definitions/responses.PostPreview"
                         }
                     },
                     "400": {
@@ -1626,12 +1638,6 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
@@ -1660,6 +1666,60 @@ const docTemplate = `{
             }
         },
         "/users/current/followers/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Gets the current users followers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Gets the current users followers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pagination Key for follow up responses. This key is a spotify ID",
+                        "name": "spotifyID",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaginationResponse-array_responses_User-string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/current/following/": {
             "get": {
                 "security": [
                     {
@@ -1880,6 +1940,67 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/{spotifyID}/following/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Gets a users followers by their spotify ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Gets a users followers by their spotify ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User spotify ID",
+                        "name": "spotifyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pagination Key for follow up responses. This key is a spotify ID",
+                        "name": "spotifyID",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaginationResponse-array_responses_User-string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1984,6 +2105,20 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.PaginationResponse-array_responses_PostPreview-time_Time": {
+            "type": "object",
+            "properties": {
+                "dataResponse": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PostPreview"
+                    }
+                },
+                "paginationKey": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.PaginationResponse-array_responses_User-string": {
             "type": "object",
             "properties": {
@@ -1994,56 +2129,6 @@ const docTemplate = `{
                     }
                 },
                 "paginationKey": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.Post": {
-            "type": "object",
-            "properties": {
-                "albumArtURI": {
-                    "type": "string"
-                },
-                "albumID": {
-                    "type": "string"
-                },
-                "albumName": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "dislikes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/responses.UserIdentifer"
-                    }
-                },
-                "likes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/responses.UserIdentifer"
-                    }
-                },
-                "rating": {
-                    "type": "integer"
-                },
-                "songID": {
-                    "type": "string"
-                },
-                "songName": {
-                    "type": "string"
-                },
-                "spotifyID": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "username": {
                     "type": "string"
                 }
             }

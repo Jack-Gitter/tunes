@@ -64,6 +64,15 @@ definitions:
       paginationKey:
         type: string
     type: object
+  responses.PaginationResponse-array_responses_PostPreview-time_Time:
+    properties:
+      dataResponse:
+        items:
+          $ref: '#/definitions/responses.PostPreview'
+        type: array
+      paginationKey:
+        type: string
+    type: object
   responses.PaginationResponse-array_responses_User-string:
     properties:
       dataResponse:
@@ -71,39 +80,6 @@ definitions:
           $ref: '#/definitions/responses.User'
         type: array
       paginationKey:
-        type: string
-    type: object
-  responses.Post:
-    properties:
-      albumArtURI:
-        type: string
-      albumID:
-        type: string
-      albumName:
-        type: string
-      createdAt:
-        type: string
-      dislikes:
-        items:
-          $ref: '#/definitions/responses.UserIdentifer'
-        type: array
-      likes:
-        items:
-          $ref: '#/definitions/responses.UserIdentifer'
-        type: array
-      rating:
-        type: integer
-      songID:
-        type: string
-      songName:
-        type: string
-      spotifyID:
-        type: string
-      text:
-        type: string
-      updatedAt:
-        type: string
-      username:
         type: string
     type: object
   responses.PostPreview:
@@ -559,7 +535,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.Post'
+            $ref: '#/definitions/responses.PostPreview'
         "400":
           description: Bad Request
           schema:
@@ -844,9 +820,13 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.PaginationResponse-array_responses_Comment-time_Time'
+            $ref: '#/definitions/responses.PaginationResponse-array_responses_PostPreview-time_Time'
         "401":
           description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
           schema:
             type: string
         "500":
@@ -922,6 +902,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.PostPreview'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
         "401":
           description: Unauthorized
           schema:
@@ -1047,6 +1031,46 @@ paths:
       tags:
       - Users
   /users/{spotifyID}/followers/:
+    get:
+      consumes:
+      - application/json
+      description: Gets a users followers by their spotify ID
+      parameters:
+      - description: User spotify ID
+        in: path
+        name: spotifyID
+        required: true
+        type: string
+      - description: Pagination Key for follow up responses. This key is a spotify
+          ID
+        in: query
+        name: spotifyID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaginationResponse-array_responses_User-string'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Gets a users followers by their spotify ID
+      tags:
+      - Users
+  /users/{spotifyID}/following/:
     get:
       consumes:
       - application/json
@@ -1277,10 +1301,6 @@ paths:
       responses:
         "204":
           description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            type: string
         "401":
           description: Unauthorized
           schema:
@@ -1303,6 +1323,41 @@ paths:
       tags:
       - Users
   /users/current/followers/:
+    get:
+      consumes:
+      - application/json
+      description: Gets the current users followers
+      parameters:
+      - description: Pagination Key for follow up responses. This key is a spotify
+          ID
+        in: query
+        name: spotifyID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaginationResponse-array_responses_User-string'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Gets the current users followers
+      tags:
+      - Users
+  /users/current/following/:
     get:
       consumes:
       - application/json
