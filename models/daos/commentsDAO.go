@@ -1,8 +1,10 @@
 package daos
 
 import (
+	"fmt"
 	"net/http"
 	"time"
+
 	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
@@ -16,7 +18,7 @@ type ICommentsDAO interface {
     CreateComment(executor db.QueryExecutor, commentorID string, posterID string, songID string, commentText string) (*responses.Comment, error)
     DeleteComment(executor db.QueryExecutor, commentID string) error
     GetCommentProperties(executor db.QueryExecutor, commentID string) (*responses.Comment, error) 
-    GetCommentLikes(executor db.QueryExecutor, commentID string) (int, int, error)
+    GetCommentVotes(executor db.QueryExecutor, commentID string) ([]responses.UserIdentifer, []responses.UserIdentifer, error)
     LikeComment(executor db.QueryExecutor, commentID string, spotifyID string) error 
     DislikeComment(executor db.QueryExecutor, commentID string, spotifyID string) error 
     RemoveCommentVote(executor db.QueryExecutor, commentID string, spotifyID string) error 
@@ -93,27 +95,31 @@ func(c *CommentsDAO) GetCommentProperties(executor db.QueryExecutor, commentID s
 
 }
 
-func(cs *CommentsDAO) GetCommentLikes(executor db.QueryExecutor, commentID string) (int, int, error) {
-    query := `SELECT liked FROM comment_votes WHERE commentid = $1`
+func(cs *CommentsDAO) GetCommentVotes(executor db.QueryExecutor, commentID string) ([]responses.UserIdentifer, []responses.UserIdentifer, error) {
+    query := `SELECT comment_votes.voterspotifyid, users.username, comment_votes.liked
+              FROM comment_votes INNER JOIN users ON comment_votes.voterspotifyid = users.spotifyid
+              WHERE commentid = $1`
 
     row, err := executor.Query(query, commentID)
 
     if err != nil {
-        return 0, 0, customerrors.WrapBasicError(err)
+        return nil, nil, customerrors.WrapBasicError(err)
     }
 
-    likes := 0
-    dislikes := 0
+    likes := []responses.UserIdentifer{}
+    dislikes := []responses.UserIdentifer{}
+
     for row.Next() {
-       val := true 
-       err := row.Scan(&val)
+       user := responses.UserIdentifer{}
+       liked := true
+       err := row.Scan(&user.SpotifyID, &user.Username, &liked)
        if err != nil {
-           return 0, 0, customerrors.WrapBasicError(err)
+           return nil, nil, customerrors.WrapBasicError(err)
        }
-       if val {
-           likes +=1
+       if liked {
+           likes = append(likes, user)
        } else {
-           dislikes+=1
+           dislikes = append(dislikes, user)
        }
     }
 
@@ -123,6 +129,8 @@ func(cs *CommentsDAO) GetCommentLikes(executor db.QueryExecutor, commentID strin
 
 func(c *CommentsDAO) LikeComment(executor db.QueryExecutor, commentID string, spotifyID string) error {
     
+    fmt.Println(spotifyID)
+    fmt.Println(commentID)
     query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE set liked = $2`
 
     res, err := executor.Exec(query, commentID, true, spotifyID)

@@ -55,8 +55,6 @@ func(p *PostsDAO) CreatePost(executor db.QueryExecutor, spotifyID string, songID
 }
 
 func(p *PostsDAO) GetPostVotes(executor db.QueryExecutor, postID string, spotifyID string)  ([]responses.UserIdentifer, []responses.UserIdentifer, error) {
-    fmt.Println(spotifyID)
-    fmt.Println(postID)
         query2 := `SELECT post_votes.voterspotifyid, users.username, post_votes.liked 
                    FROM post_votes INNER JOIN users ON post_votes.voterspotifyid = users.spotifyid
                    WHERE post_votes.posterspotifyid = $1 AND post_votes.postsongid = $2`

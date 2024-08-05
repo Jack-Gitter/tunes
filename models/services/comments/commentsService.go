@@ -171,7 +171,7 @@ func(cs *CommentsService) GetComment(c *gin.Context)  {
         return
     }
 
-    likes, dislikes, err := cs.CommentsDAO.GetCommentLikes(tx, commentID)
+    likes, dislikes, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
 
     if err != nil {
         c.Error(err)
@@ -179,8 +179,8 @@ func(cs *CommentsService) GetComment(c *gin.Context)  {
         return
     }
 
-    comment.Likes = likes 
-    comment.Dislikes = dislikes
+    comment.Likes = len(likes)
+    comment.Dislikes = len(dislikes)
 
     err = tx.Commit()
 
@@ -219,10 +219,52 @@ func(cs *CommentsService) LikeComment(c *gin.Context) {
         return
     }
 
-    err := cs.CommentsDAO.LikeComment(cs.DB, commentID, spotifyID.(string))
+    tx, err := cs.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    likes, dislikes, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
 
     if err != nil {
         c.Error(err)
+        c.Abort()
+        return
+    }
+
+    for _, userIdentifier := range likes {
+        if userIdentifier.SpotifyID == spotifyID {
+            c.Error(&customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a message twice"})
+            c.Abort()
+            return
+        }
+    }
+
+    for _, userIdentifier := range dislikes {
+        if userIdentifier.SpotifyID == spotifyID {
+            c.Error(&customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot dislike a message twice"})
+            c.Abort()
+            return
+        }
+    }
+
+    err = cs.CommentsDAO.LikeComment(tx, commentID, spotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
@@ -347,7 +389,7 @@ func(cs *CommentsService) UpdateComment(c *gin.Context) {
         return
     }
 
-    likes, dislikes, err := cs.CommentsDAO.GetCommentLikes(tx, commentID)
+    likes, dislikes, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
 
     if err != nil {
         c.Error(err)
@@ -364,8 +406,8 @@ func(cs *CommentsService) UpdateComment(c *gin.Context) {
     }
 
     resp.CommentorUsername = newcomment.CommentorUsername
-    resp.Likes = likes
-    resp.Dislikes = dislikes
+    resp.Likes = len(likes)
+    resp.Dislikes = len(dislikes)
 
     err = tx.Commit()
 

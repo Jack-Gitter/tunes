@@ -767,7 +767,7 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
     comments, err := p.PostsDAO.GetPostComments(tx, spotifyID, songID, t)
 
     for i := 0; i < len(comments); i++ {
-        likes, dislikes, err := p.CommentsDAO.GetCommentLikes(tx, fmt.Sprint(comments[i].CommentID))
+        likes, dislikes, err := p.CommentsDAO.GetCommentVotes(tx, fmt.Sprint(comments[i].CommentID))
 
         if err != nil {
             c.Error(err)
@@ -775,8 +775,8 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
             return
         }
 
-        comments[i].Likes = likes
-        comments[i].Dislikes = dislikes
+        comments[i].Likes = len(likes)
+        comments[i].Dislikes = len(dislikes)
 
         if i == len(comments)-1 {
             paginatedComments.PaginationKey = comments[i].CreatedAt
