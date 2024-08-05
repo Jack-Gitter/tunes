@@ -200,6 +200,7 @@ func(p *PostsService) DislikePost(c *gin.Context) {
 // @Param spotifyID path string true "The user whos posts are recieved. Value is a spotify ID"
 // @Param createdAt query string false "Pagination Key. Format is UTC timestamp"
 // @Success 200 {object} responses.PostPreview
+// @Failure 400 {string} string 
 // @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 500 {string} string 
@@ -223,6 +224,8 @@ func(p *PostsService) GetAllPostsForUserByID(c *gin.Context) {
         }
 
 	}
+
+    paginationResponse := responses.PaginationResponse[[]responses.PostPreview, time.Time]{PaginationKey: time.Now().UTC()}
 
     tx, err := p.DB.BeginTx(context.Background(), nil)
 
@@ -261,6 +264,11 @@ func(p *PostsService) GetAllPostsForUserByID(c *gin.Context) {
         posts[i].Dislikes = dislikes
     }
 
+    paginationResponse.DataResponse = posts
+    if len(posts) > 0 {
+        paginationResponse.PaginationKey = posts[len(posts)-1].CreatedAt
+    }
+
     err = tx.Commit()
 
     if err != nil {
@@ -269,7 +277,7 @@ func(p *PostsService) GetAllPostsForUserByID(c *gin.Context) {
         return
     }
 
-	c.JSON(http.StatusOK, posts)
+	c.JSON(http.StatusOK, paginationResponse)
 }
 
 // @Summary Get all of a users post previews
