@@ -385,7 +385,7 @@ func(u *UserService) GetFollowing(c *gin.Context) {
         return
     }
 
-	followersPaginated, err := u.UsersDAO.GetUserFollowing(tx, spotifyID.(string), paginationKey)
+	followers, err := u.UsersDAO.GetUserFollowing(tx, spotifyID.(string), paginationKey)
 
 	if err != nil {
 		c.Error(err)
@@ -400,6 +400,15 @@ func(u *UserService) GetFollowing(c *gin.Context) {
         c.Abort()
         return
     }
+
+    followersPaginated := responses.PaginationResponse[[]responses.User, string]{DataResponse: followers}
+
+    resultPaginationKey := "0"
+    if len(followers) > 0 {
+        resultPaginationKey = followers[len(followers)-1].SpotifyID
+    }
+
+    followersPaginated.PaginationKey = resultPaginationKey
 
 	c.JSON(http.StatusOK, followersPaginated)
     

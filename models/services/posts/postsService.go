@@ -162,7 +162,7 @@ func(p *PostsService) LikePost(c *gin.Context) {
 
         for _, userIdentifier := range likes {
             if userIdentifier.SpotifyID == spotifyID {
-                return customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a post twice"}
+                return &customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a post twice"}
             }
         }
 
@@ -238,7 +238,7 @@ func(p *PostsService) DislikePost(c *gin.Context) {
 
         for _, userIdentifier := range dislikes {
             if userIdentifier.SpotifyID == spotifyID {
-                return customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a post twice"}
+                return &customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a post twice"}
             }
         }
 

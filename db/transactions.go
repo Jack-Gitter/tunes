@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"math"
 	"net/http"
 	"time"
@@ -30,6 +31,7 @@ func RunTransactionWithExponentialBackoff(transFunc func() error, retryTimes int
                         return err
                     }
                 default: 
+                    fmt.Println(err.Error())
                     return failureError
             }
         } else {
