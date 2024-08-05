@@ -229,7 +229,7 @@ func(cs *CommentsService) LikeComment(c *gin.Context) {
 
     defer tx.Rollback()
 
-    likes, dislikes, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
+    likes, _, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
 
     if err != nil {
         c.Error(err)
@@ -240,14 +240,6 @@ func(cs *CommentsService) LikeComment(c *gin.Context) {
     for _, userIdentifier := range likes {
         if userIdentifier.SpotifyID == spotifyID {
             c.Error(&customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a message twice"})
-            c.Abort()
-            return
-        }
-    }
-
-    for _, userIdentifier := range dislikes {
-        if userIdentifier.SpotifyID == spotifyID {
-            c.Error(&customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot dislike a message twice"})
             c.Abort()
             return
         }
@@ -296,7 +288,17 @@ func(cs *CommentsService) DislikeComment(c *gin.Context) {
         return
     }
 
-    err := cs.CommentsDAO.DislikeComment(cs.DB, commentID, spotifyID.(string))
+    tx, err := cs.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    _, dislikes, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
 
     if err != nil {
         c.Error(err)
@@ -304,6 +306,29 @@ func(cs *CommentsService) DislikeComment(c *gin.Context) {
         return
     }
 
+    for _, userIdentifier := range dislikes {
+        if userIdentifier.SpotifyID == spotifyID {
+            c.Error(&customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a message twice"})
+            c.Abort()
+            return
+        }
+    }
+
+    err = cs.CommentsDAO.DislikeComment(tx, commentID, spotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
 
     c.Status(http.StatusNoContent)
 }
