@@ -75,7 +75,7 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
             {
 
                 commentGroup.GET("/:commentID",  validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.GetComment)
-                commentGroup.POST("/:spotifyID/:songID", validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData[requests.CreateCommentDTO](), commentsService.CreateComment)
+                commentGroup.POST("/:spotifyID/:songID", validation.ValidateData[requests.CreateCommentDTO](), commentsService.CreateComment)
                 commentGroup.POST("/like/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.LikeComment)
                 commentGroup.POST("/dislike/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.DislikeComment)
                 commentGroup.PATCH("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData(validation.ValidateUpdateCommentDTO), commentsService.UpdateComment)

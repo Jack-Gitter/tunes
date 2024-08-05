@@ -706,6 +706,14 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
 
     defer tx.Rollback()
 
+    _, err = p.PostsDAO.GetPostProperties(tx, songID, spotifyID)
+    
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
     paginatedComments, err := p.PostsDAO.GetPostCommentsPaginated(tx, spotifyID, songID, t)
 
     comments := paginatedComments.DataResponse
