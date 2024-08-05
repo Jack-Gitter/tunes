@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
@@ -237,6 +238,14 @@ func(p *PostsService) GetAllPostsForUserByID(c *gin.Context) {
 
     defer tx.Rollback()
 
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
     _, err = p.UsersDAO.GetUser(tx, spotifyID)
 
     if err != nil {
@@ -328,6 +337,13 @@ func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
 
     defer tx.Rollback()
 
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
     _, err = p.UsersDAO.GetUser(tx, spotifyID.(string))
 
     if err != nil {
@@ -399,6 +415,14 @@ func(p *PostsService) GetPostBySpotifyIDAndSongID(c *gin.Context) {
 
     defer tx.Rollback()
 
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
     post, err := p.PostsDAO.GetPostProperties(tx, songID, spotifyID)
 
     if err != nil {
@@ -462,6 +486,14 @@ func(p *PostsService) GetPostCurrentUserBySongID(c *gin.Context) {
     }
 
     defer tx.Rollback()
+
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
 
     post, err := p.PostsDAO.GetPostProperties(tx, songID, currentUserSpotifyID.(string))
 
@@ -599,6 +631,14 @@ func(p *PostsService) UpdateCurrentUserPost(c *gin.Context) {
 
     defer tx.Rollback()
 
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
 	preview, err := p.PostsDAO.UpdatePost(tx, spotifyID.(string), songID, updatePostReq, spotifyUsername.(string))
 
     if err != nil {
@@ -705,6 +745,14 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
     }
 
     defer tx.Rollback()
+
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
 
     _, err = p.PostsDAO.GetPostProperties(tx, songID, spotifyID)
     

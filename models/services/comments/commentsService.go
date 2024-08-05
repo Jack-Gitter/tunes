@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
@@ -153,6 +154,14 @@ func(cs *CommentsService) GetComment(c *gin.Context)  {
     }
 
     defer tx.Rollback()
+
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
 
     comment, err := cs.CommentsDAO.GetCommentProperties(tx, commentID)
 
@@ -321,6 +330,14 @@ func(cs *CommentsService) UpdateComment(c *gin.Context) {
     }
 
     defer tx.Rollback()
+
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
 
     resp, err := cs.CommentsDAO.UpdateComment(tx, commentID, updateCommentDTO)
 

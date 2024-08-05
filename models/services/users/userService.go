@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
@@ -128,6 +129,14 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
 
     defer tx.Rollback()
 
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
     _, err = u.UsersDAO.GetUser(tx, spotifyID)
 
     if err != nil {
@@ -192,6 +201,14 @@ func(u *UserService) GetFollowers(c *gin.Context) {
     }
 
     defer tx.Rollback()
+
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
 
     _, err = u.UsersDAO.GetUser(tx, spotifyID.(string))
 

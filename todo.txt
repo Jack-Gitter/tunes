@@ -13,7 +13,7 @@ endpoints:
     comments
         can like and dislike multiple times
     users
-        pagination is fucked
+        pagination is not working becuase of strings i think 
 
 
 testing:
