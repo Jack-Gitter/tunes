@@ -2,8 +2,6 @@ package daos
 
 import (
 	"database/sql"
-	"fmt"
-
 	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
@@ -21,8 +19,8 @@ type IUsersDAO interface {
     DeleteUser(executor db.QueryExecutor, spotifyID string) error
     UnfollowUser(executor db.QueryExecutor, spotifyID string, otherUserSpotifyID string) error
     FollowUser(executor db.QueryExecutor, spotifyID string, otherUserSpotifyID string) error 
-    GetUserFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error)
-    GetUserFollowing(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error)
+    GetUserFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error)
+    GetUserFollowing(executor db.QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error)
 }
 
 func(u *UsersDAO) UpsertUser(executor db.QueryExecutor, username string, spotifyID string) (*responses.User, error) {
@@ -155,11 +153,8 @@ func(u *UsersDAO) FollowUser(executor db.QueryExecutor, spotifyID string, otherU
 	return nil
 }
 
-func(u *UsersDAO) GetUserFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
+func(u *UsersDAO) GetUserFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error) {
 
-    paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
-
-    fmt.Println(paginationKey)
     query := ` SELECT users.spotifyid, users.username, users.bio, users.userrole 
                 FROM followers 
                 INNER JOIN  users 
@@ -185,20 +180,10 @@ func(u *UsersDAO) GetUserFollowers(executor db.QueryExecutor, spotifyID string, 
         followers = append(followers, user)
     }
 
-    paginationResponse.DataResponse = followers
-    paginationResponse.PaginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-
-    if len(followers) > 0 {
-        paginationResponse.PaginationKey = followers[len(followers)-1].SpotifyID
-    } 
-
-    return paginationResponse, nil
+    return followers, nil
 }
 
-func(u *UsersDAO) GetUserFollowing(executor db.QueryExecutor, spotifyID string, paginationKey string) (*responses.PaginationResponse[[]responses.User, string], error) {
-
-
-    paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
+func(u *UsersDAO) GetUserFollowing(executor db.QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error) {
 
     query := ` SELECT users.spotifyid, users.username, users.bio, users.userrole 
                 FROM followers 
@@ -212,7 +197,7 @@ func(u *UsersDAO) GetUserFollowing(executor db.QueryExecutor, spotifyID string, 
         return nil, customerrors.WrapBasicError(err)
     }
 
-    followers := []responses.User{}
+    following := []responses.User{}
     bio := sql.NullString{}
 
     for rows.Next() {
@@ -222,18 +207,9 @@ func(u *UsersDAO) GetUserFollowing(executor db.QueryExecutor, spotifyID string, 
             return nil, customerrors.WrapBasicError(err)
         }
         user.Bio = bio.String
-        followers = append(followers, user)
+        following = append(following, user)
     }
 
-    paginationResponse.DataResponse = followers
-    paginationResponse.PaginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-
-    if len(followers) > 0 {
-        paginationResponse.PaginationKey = followers[len(followers)-1].SpotifyID
-    } 
-
-    return paginationResponse, nil
-
-
+    return following, nil
 
 }

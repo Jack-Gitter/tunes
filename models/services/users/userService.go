@@ -9,6 +9,7 @@ import (
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,7 +22,9 @@ type IUserSerivce interface {
     GetUserById(c *gin.Context)
     UnFollowUser(c *gin.Context)
     GetFollowersByID(c *gin.Context)
+    GetFollowingByID(c *gin.Context)
     GetFollowers(c *gin.Context) 
+    GetFollowing(c *gin.Context) 
     FollowUser(c *gin.Context)
     GetCurrentUser(c *gin.Context) 
     UpdateUserBySpotifyID(c *gin.Context)
@@ -121,6 +124,8 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
 
     tx, err := u.DB.BeginTx(context.Background(), nil)
 
+    paginatedFollowers := responses.PaginationResponse[[]responses.User, string]{PaginationKey: paginationKey}
+
     if err != nil {
         c.Error(customerrors.WrapBasicError(err))
         c.Abort()
@@ -145,7 +150,13 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
         return
     }
 
-	followersPaginated, err := u.UsersDAO.GetUserFollowers(tx, spotifyID, paginationKey)
+	followers, err := u.UsersDAO.GetUserFollowers(tx, spotifyID, paginationKey)
+
+    paginatedFollowers.DataResponse = followers
+
+    if len(followers) > 0 {
+        paginatedFollowers.PaginationKey = followers[len(followers)-1].SpotifyID
+    }
 
 	if err != nil {
 		c.Error(err)
@@ -161,7 +172,82 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
         return
     }
 
-	c.JSON(http.StatusOK, followersPaginated)
+	c.JSON(http.StatusOK, paginatedFollowers)
+
+}
+
+// @Summary Gets a users followers by their spotify ID
+// @Description Gets a users followers by their spotify ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param spotifyID path string true "User spotify ID"
+// @Param spotifyID query string false "Pagination Key for follow up responses. This key is a spotify ID"
+// @Success 200 {object} responses.PaginationResponse[[]responses.User, string]
+// @Failure 401 {string} string 
+// @Failure 404 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/{spotifyID}/following/ [get]
+// @Security Bearer
+func(u *UserService) GetFollowingByID(c *gin.Context) {
+	spotifyID := c.Param("spotifyID")
+	paginationKey := c.Query("spotifyID")
+
+	if paginationKey == "" {
+		paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+	}
+
+    tx, err := u.DB.BeginTx(context.Background(), nil)
+
+    paginatedFollowers := responses.PaginationResponse[[]responses.User, string]{PaginationKey: paginationKey}
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    _, err = u.UsersDAO.GetUser(tx, spotifyID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+	followers, err := u.UsersDAO.GetUserFollowing(tx, spotifyID, paginationKey)
+
+    paginatedFollowers.DataResponse = followers
+
+    if len(followers) > 0 {
+        paginatedFollowers.PaginationKey = followers[len(followers)-1].SpotifyID
+    }
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+	c.JSON(http.StatusOK, paginatedFollowers)
 
 }
 
@@ -236,6 +322,78 @@ func(u *UserService) GetFollowers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, followersPaginated)
 
+}
+
+// @Summary Gets the current users followers
+// @Description Gets the current users followers
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param spotifyID query string false "Pagination Key for follow up responses. This key is a spotify ID"
+// @Success 200 {object} responses.PaginationResponse[[]responses.User, string]
+// @Failure 400 {string} string 
+// @Failure 401 {string} string 
+// @Failure 500 {string} string 
+// @Router /users/current/following/ [get]
+// @Security Bearer
+func(u *UserService) GetFollowing(c *gin.Context) {
+	spotifyID, found := c.Get("spotifyID")
+	paginationKey := c.Query("spotifyID")
+
+	if !found {
+		c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Jwt issue"})
+		c.Abort()
+		return
+	}
+
+	if paginationKey == "" {
+		paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+	}
+
+    tx, err := u.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+
+    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    _, err = u.UsersDAO.GetUser(tx, spotifyID.(string))
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+	followersPaginated, err := u.UsersDAO.GetUserFollowing(tx, spotifyID.(string), paginationKey)
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+	c.JSON(http.StatusOK, followersPaginated)
+    
 }
 
 // @Summary Follows a user for the current user
@@ -449,4 +607,5 @@ func(u *UserService) DeleteUserBySpotifyID(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
 
