@@ -4,7 +4,7 @@ general
 
 endpoints:
     general
-        do transaction retries anywhere that we are using tx and calling a method that does insert or update
+        do transaction retries for postservice
     posts
         get user feed endpoint!!!
 

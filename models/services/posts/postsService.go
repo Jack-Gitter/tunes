@@ -26,15 +26,15 @@ type PostsService struct {
 
 type IPostsService interface {
     CreatePostForCurrentUser(c *gin.Context) 
-    LikePost(c *gin.Context) 
-    DislikePost(c *gin.Context) 
+    LikePost(c *gin.Context)
+    DislikePost(c *gin.Context)
     GetAllPostsForUserByID(c *gin.Context) 
     GetAllPostsForCurrentUser(c *gin.Context) 
     GetPostBySpotifyIDAndSongID(c *gin.Context)
     GetPostCurrentUserBySongID(c *gin.Context) 
-    DeletePostBySpotifyIDAndSongID(c *gin.Context) 
+    DeletePostBySpotifyIDAndSongID(c *gin.Context)  
     DeletePostForCurrentUserBySongID(c *gin.Context) 
-    UpdateCurrentUserPost(c *gin.Context) 
+    UpdateCurrentUserPost(c *gin.Context) // yes
     RemovePostVote(c *gin.Context) 
     GetPostCommentsPaginated(c *gin.Context) 
 //    GetCurrentUserFeed(c *gin.Context) 
@@ -143,44 +143,48 @@ func(p *PostsService) LikePost(c *gin.Context) {
 		return
 	}
 
-    tx, err := p.DB.BeginTx(context.Background(), nil)
+    transaction := func() error {
 
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
+        tx, err := p.DB.BeginTx(context.Background(), nil)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        defer tx.Rollback()
+        
+        likes, _, err := p.PostsDAO.GetPostVotes(tx, songID, spotifyID)
+
+        if err != nil {
+            return err
+        }
+
+        for _, userIdentifier := range likes {
+            if userIdentifier.SpotifyID == spotifyID {
+                return customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a post twice"}
+            }
+        }
+
+        err = p.PostsDAO.LikePost(tx, currentUserSpotifyID.(string), spotifyID, songID)
+
+        if err != nil {
+            return err
+        }
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        return nil
+
     }
 
-    defer tx.Rollback()
-    
-    likes, _, err := p.PostsDAO.GetPostVotes(tx, songID, spotifyID)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         c.Error(err)
-        c.Abort()
-        return
-    }
-
-    for _, userIdentifier := range likes {
-        if userIdentifier.SpotifyID == spotifyID {
-            c.Error(customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a post twice"})
-            c.Abort()
-            return
-        }
-    }
-
-    err = p.PostsDAO.LikePost(tx, currentUserSpotifyID.(string), spotifyID, songID)
-
-	if err != nil {
-		c.Error(err)
-		c.Abort()
-		return
-	}
-
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
@@ -215,44 +219,48 @@ func(p *PostsService) DislikePost(c *gin.Context) {
 		return
 	}
     
-    tx, err := p.DB.BeginTx(context.Background(), nil)
+    transaction := func() error {
 
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
+        tx, err := p.DB.BeginTx(context.Background(), nil)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        defer tx.Rollback()
+        
+        _, dislikes, err := p.PostsDAO.GetPostVotes(tx, songID, spotifyID)
+
+        if err != nil {
+            return err
+        }
+
+        for _, userIdentifier := range dislikes {
+            if userIdentifier.SpotifyID == spotifyID {
+                return customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a post twice"}
+            }
+        }
+
+        err = p.PostsDAO.DislikePost(tx, currentUserSpotifyID.(string), spotifyID, songID)
+
+        if err != nil {
+            return err
+        }
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        return nil
+
     }
 
-    defer tx.Rollback()
-    
-    _, dislikes, err := p.PostsDAO.GetPostVotes(tx, songID, spotifyID)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         c.Error(err)
-        c.Abort()
-        return
-    }
-
-    for _, userIdentifier := range dislikes {
-        if userIdentifier.SpotifyID == spotifyID {
-            c.Error(customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot dislike a post twice"})
-            c.Abort()
-            return
-        }
-    }
-
-    err = p.PostsDAO.DislikePost(tx, currentUserSpotifyID.(string), spotifyID, songID)
-
-	if err != nil {
-		c.Error(err)
-		c.Abort()
-		return
-	}
-
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
@@ -688,17 +696,50 @@ func(p *PostsService) UpdateCurrentUserPost(c *gin.Context) {
 		return
 	}
 
-    tx, err := p.DB.BeginTx(context.Background(), nil)
+    post := &responses.PostPreview{}
 
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
+    transaction := func() error {
+
+        tx, err := p.DB.BeginTx(context.Background(), nil)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        defer tx.Rollback()
+
+        err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+        if err != nil {
+            return err
+        }
+
+        post, err = p.PostsDAO.UpdatePost(tx, spotifyID.(string), songID, updatePostReq, spotifyUsername.(string))
+
+        if err != nil {
+            return err
+        }
+
+        likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, post.SongID, spotifyID.(string))
+
+        if err != nil {
+            return err
+        }
+
+        post.Likes = likes
+        post.Dislikes = dislikes
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        return nil
+
     }
 
-    defer tx.Rollback()
-
-    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         c.Error(err)
@@ -706,34 +747,7 @@ func(p *PostsService) UpdateCurrentUserPost(c *gin.Context) {
         return
     }
 
-	preview, err := p.PostsDAO.UpdatePost(tx, spotifyID.(string), songID, updatePostReq, spotifyUsername.(string))
-
-    if err != nil {
-        c.Error(err)
-        c.Abort()
-        return
-    }
-
-    likes, dislikes, err := p.PostsDAO.GetPostVotes(tx, preview.SongID, spotifyID.(string))
-
-    if err != nil {
-        c.Error(err)
-        c.Abort()
-        return
-    }
-
-    preview.Likes = likes
-    preview.Dislikes = dislikes
-
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
-	c.JSON(http.StatusOK, preview)
+	c.JSON(http.StatusOK, post)
 }
 
 // @Summary Removes a vote for the current user on a post
