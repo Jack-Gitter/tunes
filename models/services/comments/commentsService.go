@@ -338,6 +338,15 @@ func(cs *CommentsService) UpdateComment(c *gin.Context) {
         return
     }
 
+    newcomment, err := cs.CommentsDAO.GetCommentProperties(tx, commentID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    resp.CommentorUsername = newcomment.CommentorUsername
     resp.Likes = likes
     resp.Dislikes = dislikes
 
