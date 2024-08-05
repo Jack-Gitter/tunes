@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/gin-gonic/gin"
 )
 type CommentsService struct {
@@ -213,50 +213,52 @@ func(cs *CommentsService) LikeComment(c *gin.Context) {
     commentID := c.Param("commentID")
     spotifyID, exists := c.Get("spotifyID")
 
-    if !exists {
-        c.Error(customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuck"})
-        c.Abort()
-        return
-    }
+    transaction := func() error {
 
-    tx, err := cs.DB.BeginTx(context.Background(), nil)
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
-    defer tx.Rollback()
-
-    likes, _, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
-
-    if err != nil {
-        c.Error(err)
-        c.Abort()
-        return
-    }
-
-    for _, userIdentifier := range likes {
-        if userIdentifier.SpotifyID == spotifyID {
-            c.Error(&customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a message twice"})
-            c.Abort()
-            return
+        if !exists {
+            return customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuck"}
         }
+
+        tx, err := cs.DB.BeginTx(context.Background(), nil)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        defer tx.Rollback()
+
+        likes, _, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
+
+        if err != nil {
+            return err
+        }
+
+        for _, userIdentifier := range likes {
+            if userIdentifier.SpotifyID == spotifyID {
+                return &customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a message twice"}
+            }
+        }
+
+        err = cs.CommentsDAO.LikeComment(tx, commentID, spotifyID.(string))
+
+        if err != nil {
+            return err
+        }
+
+        err = tx.Commit()
+
+        if err != nil {
+            customerrors.WrapBasicError(err)
+        }
+
+        return nil
+
     }
 
-    err = cs.CommentsDAO.LikeComment(tx, commentID, spotifyID.(string))
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         c.Error(err)
-        c.Abort()
-        return
-    }
-
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
@@ -288,44 +290,52 @@ func(cs *CommentsService) DislikeComment(c *gin.Context) {
         return
     }
 
-    tx, err := cs.DB.BeginTx(context.Background(), nil)
+    transaction := func() error {
 
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
-    defer tx.Rollback()
-
-    _, dislikes, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
-
-    if err != nil {
-        c.Error(err)
-        c.Abort()
-        return
-    }
-
-    for _, userIdentifier := range dislikes {
-        if userIdentifier.SpotifyID == spotifyID {
-            c.Error(&customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a message twice"})
-            c.Abort()
-            return
+        if !exists {
+            return customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "fuck"}
         }
+
+        tx, err := cs.DB.BeginTx(context.Background(), nil)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        defer tx.Rollback()
+
+        _, dislikes, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
+
+        if err != nil {
+            return err
+        }
+
+        for _, userIdentifier := range dislikes {
+            if userIdentifier.SpotifyID == spotifyID {
+                return &customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot dislike a comment twice"}
+            }
+        }
+
+        err = cs.CommentsDAO.DislikeComment(tx, commentID, spotifyID.(string))
+
+        if err != nil {
+            return err
+        }
+
+        err = tx.Commit()
+
+        if err != nil {
+            customerrors.WrapBasicError(err)
+        }
+
+        return nil
+
     }
 
-    err = cs.CommentsDAO.DislikeComment(tx, commentID, spotifyID.(string))
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         c.Error(err)
-        c.Abort()
-        return
-    }
-
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
         c.Abort()
         return
     }
@@ -388,17 +398,57 @@ func(cs *CommentsService) UpdateComment(c *gin.Context) {
     updateCommentDTO := &requests.UpdateCommentDTO{}
     c.ShouldBindBodyWithJSON(updateCommentDTO)
 
-    tx, err := cs.DB.BeginTx(context.Background(), nil)
+    comment := &responses.Comment{}
 
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
+    transaction := func() error {
+
+        tx, err := cs.DB.BeginTx(context.Background(), nil)
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+
+        defer tx.Rollback()
+
+        err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+
+        if err != nil {
+            return err
+        }
+
+        comment, err = cs.CommentsDAO.UpdateComment(tx, commentID, updateCommentDTO)
+
+        if err != nil {
+            return err
+        }
+
+        likes, dislikes, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
+
+        if err != nil {
+            return err
+        }
+
+        newcomment, err := cs.CommentsDAO.GetCommentProperties(tx, commentID)
+
+        if err != nil {
+            return err
+        }
+
+        comment.CommentorUsername = newcomment.CommentorUsername
+        comment.Likes = len(likes)
+        comment.Dislikes = len(dislikes)
+
+        err = tx.Commit()
+
+        if err != nil {
+            return customerrors.WrapBasicError(err)
+        }
+        return nil
+
     }
 
-    defer tx.Rollback()
 
-    err = db.SetTransactionIsolationLevel(tx, sql.LevelRepeatableRead)
+    err := db.RunTransactionWithExponentialBackoff(transaction, 5)
 
     if err != nil {
         c.Error(err)
@@ -406,42 +456,6 @@ func(cs *CommentsService) UpdateComment(c *gin.Context) {
         return
     }
 
-    resp, err := cs.CommentsDAO.UpdateComment(tx, commentID, updateCommentDTO)
-
-    if err != nil {
-        c.Error(err)
-        c.Abort()
-        return
-    }
-
-    likes, dislikes, err := cs.CommentsDAO.GetCommentVotes(tx, commentID)
-
-    if err != nil {
-        c.Error(err)
-        c.Abort()
-        return
-    }
-
-    newcomment, err := cs.CommentsDAO.GetCommentProperties(tx, commentID)
-
-    if err != nil {
-        c.Error(err)
-        c.Abort()
-        return
-    }
-
-    resp.CommentorUsername = newcomment.CommentorUsername
-    resp.Likes = len(likes)
-    resp.Dislikes = len(dislikes)
-
-    err = tx.Commit()
-
-    if err != nil {
-        c.Error(customerrors.WrapBasicError(err))
-        c.Abort()
-        return
-    }
-
-    c.JSON(http.StatusOK, resp)
+    c.JSON(http.StatusOK, comment)
 
 }

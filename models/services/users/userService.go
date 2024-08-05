@@ -20,17 +20,17 @@ type UserService struct {
 
 type IUserSerivce interface {
     GetUserById(c *gin.Context)
-    UnFollowUser(c *gin.Context)
-    GetFollowersByID(c *gin.Context)
-    GetFollowingByID(c *gin.Context)
+    GetCurrentUser(c *gin.Context) 
     GetFollowers(c *gin.Context) 
     GetFollowing(c *gin.Context) 
+    GetFollowersByID(c *gin.Context)
+    GetFollowingByID(c *gin.Context)
     FollowUser(c *gin.Context)
-    GetCurrentUser(c *gin.Context) 
-    UpdateUserBySpotifyID(c *gin.Context)
-    UpdateCurrentUserProperties(c *gin.Context) 
+    UnFollowUser(c *gin.Context)
+    UpdateCurrentUser(c *gin.Context) 
+    UpdateUserByID(c *gin.Context)
     DeleteCurrentUser(c *gin.Context)
-    DeleteUserBySpotifyID(c *gin.Context)
+    DeleteUserByID(c *gin.Context)
 }
 
 // @Summary Gets a tunes user by their spotify ID
@@ -485,7 +485,7 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
 // @Failure 500 {string} string 
 // @Router /users/admin/{spotifyID} [patch]
 // @Security Bearer
-func(u *UserService) UpdateUserBySpotifyID(c *gin.Context) {
+func(u *UserService) UpdateUserByID(c *gin.Context) {
 
 	userUpdateRequest := &requests.UpdateUserRequestDTO{}
 	spotifyID := c.Param("spotifyID")
@@ -524,7 +524,7 @@ func(u *UserService) UpdateUserBySpotifyID(c *gin.Context) {
 // @Failure 500 {string} string 
 // @Router /users/current [patch]
 // @Security Bearer
-func(u *UserService) UpdateCurrentUserProperties(c *gin.Context) {
+func(u *UserService) UpdateCurrentUser(c *gin.Context) {
 
 	userUpdateRequest := &requests.UpdateUserRequestDTO{}
 	spotifyID, spotifyIdExists := c.Get("spotifyID")
@@ -593,7 +593,7 @@ func(u *UserService) DeleteCurrentUser(c *gin.Context) {
 // @Failure 500 {string} string 
 // @Router /users/admin/{spotifyID} [delete]
 // @Security Bearer
-func(u *UserService) DeleteUserBySpotifyID(c *gin.Context) {
+func(u *UserService) DeleteUserByID(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
 
