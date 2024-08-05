@@ -316,6 +316,7 @@ func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
 
 	}
 
+    paginationResponse := responses.PaginationResponse[[]responses.PostPreview, time.Time]{PaginationKey: time.Now().UTC()}
 
     tx, err := p.DB.BeginTx(context.Background(), nil)
 
@@ -354,6 +355,11 @@ func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
         posts[i].Dislikes = dislikes
     }
 
+    paginationResponse.DataResponse = posts
+    if len(posts) > 0 {
+        paginationResponse.PaginationKey = posts[len(posts)-1].CreatedAt
+    }
+
     err = tx.Commit()
 
 	if err != nil {
@@ -362,7 +368,7 @@ func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, posts)
+	c.JSON(http.StatusOK, paginationResponse)
 }
 // @Summary Get apath specific post
 // @Description Get a specific post
