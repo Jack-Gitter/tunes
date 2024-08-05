@@ -8,8 +8,10 @@ endpoints:
     posts
         get user feed endpoint!!!
         can like and dislike multiple times
+            first get the post votes for a specific post. Then search through them to see if the user's id is there. if is and the post has been liked/disliked already, then 409!
     comments
         can like and dislike multiple times
+            switch the dao method to actually get the likes and dislikes from the votes table, then in the service layer get the length of those arrays for the likes/dislikes
     users
         pagination is not working becuase of strings i think 
 
