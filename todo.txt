@@ -3,9 +3,6 @@ tunes todos:
 general 
 
 endpoints:
-    general
-    posts
-        get user feed endpoint!!!
 
 testing:
     test all of the endpoints again!!!! lmao kms
