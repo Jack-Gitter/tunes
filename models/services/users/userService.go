@@ -118,7 +118,7 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
 	paginationKey := c.Query("spotifyID")
 
 	if paginationKey == "" {
-		paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+		paginationKey = "0"
 	}
 
     tx, err := u.DB.BeginTx(context.Background(), nil)
@@ -193,7 +193,7 @@ func(u *UserService) GetFollowingByID(c *gin.Context) {
 	paginationKey := c.Query("spotifyID")
 
 	if paginationKey == "" {
-		paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+		paginationKey = "0"
 	}
 
     tx, err := u.DB.BeginTx(context.Background(), nil)
@@ -274,7 +274,7 @@ func(u *UserService) GetFollowers(c *gin.Context) {
 	}
 
 	if paginationKey == "" {
-		paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+		paginationKey = "0"
 	}
 
     tx, err := u.DB.BeginTx(context.Background(), nil)
@@ -315,7 +315,7 @@ func(u *UserService) GetFollowers(c *gin.Context) {
     paginatedFollowers := responses.PaginationResponse[[]responses.User, string]{}
     paginatedFollowers.DataResponse = followers
 
-    resultPaginationKey := "aaaaaaaaaaaaaaaaaaaaaaaa"
+    resultPaginationKey := "0"
     if len(followers) > 0 {
         resultPaginationKey = followers[len(followers)-1].SpotifyID
     }
@@ -356,7 +356,7 @@ func(u *UserService) GetFollowing(c *gin.Context) {
 	}
 
 	if paginationKey == "" {
-		paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+		paginationKey = "0"
 	}
 
     tx, err := u.DB.BeginTx(context.Background(), nil)
