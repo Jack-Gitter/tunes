@@ -7,12 +7,6 @@ endpoints:
         do transaction retries anywhere that we are using tx and calling a method that does insert or update
     posts
         get user feed endpoint!!!
-        can like and dislike multiple times
-            first get the post votes for a specific post. Then search through them to see if the user's id is there. if is and the post has been liked/disliked already, then 409!
-    comments
-        can like and dislike multiple times
-    users
-        pagination is not working becuase of strings i think 
 
 
 testing:
