@@ -738,6 +738,8 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
 
     tx, err := p.DB.BeginTx(context.Background(), nil)
 
+    paginatedComments := responses.PaginationResponse[[]responses.Comment, time.Time]{PaginationKey: time.Now().UTC()}
+
     if err != nil {
         c.Error(customerrors.WrapBasicError(err))
         c.Abort()
@@ -762,9 +764,7 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
         return
     }
 
-    paginatedComments, err := p.PostsDAO.GetPostCommentsPaginated(tx, spotifyID, songID, t)
-
-    comments := paginatedComments.DataResponse
+    comments, err := p.PostsDAO.GetPostComments(tx, spotifyID, songID, t)
 
     for i := 0; i < len(comments); i++ {
         likes, dislikes, err := p.CommentsDAO.GetCommentLikes(tx, fmt.Sprint(comments[i].CommentID))
@@ -777,7 +777,14 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
 
         comments[i].Likes = likes
         comments[i].Dislikes = dislikes
+
+        if i == len(comments)-1 {
+            paginatedComments.PaginationKey = comments[i].CreatedAt
+        }
+
     }
+
+    paginatedComments.DataResponse = comments
 
     err = tx.Commit()
 

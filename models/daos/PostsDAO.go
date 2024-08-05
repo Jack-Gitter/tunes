@@ -24,7 +24,7 @@ type IPostsDAO interface {
     LikePost(executor db.QueryExecutor, spotifyID string, posterSpotifyID string, songID string) error
     DislikePost(executor db.QueryExecutor, spotifyID string, posterSpotifyID string, songID string) error
     DeletePost(executor db.QueryExecutor, songID string, spotifyID string) error
-    GetPostCommentsPaginated(executor db.QueryExecutor, spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error)
+    GetPostComments(executor db.QueryExecutor, spotifyID string, songID string, paginationKey time.Time) ([]responses.Comment, error)
 }
 
 func(p *PostsDAO) CreatePost(executor db.QueryExecutor, spotifyID string, songID string, songName string, albumID string, albumName string, albumImage string, rating int, text string, createdAt time.Time, username string) (*responses.PostPreview, error) {
@@ -275,9 +275,7 @@ func(p *PostsDAO) DislikePost(executor db.QueryExecutor, spotifyID string, poste
 
 }
 
-func(p *PostsDAO) GetPostCommentsPaginated(executor db.QueryExecutor, spotifyID string, songID string, paginationKey time.Time) (*responses.PaginationResponse[[]responses.Comment, time.Time], error) {
-
-    paginationResponse := &responses.PaginationResponse[[]responses.Comment, time.Time]{PaginationKey: time.Now().UTC()}
+func(p *PostsDAO) GetPostComments(executor db.QueryExecutor, spotifyID string, songID string, paginationKey time.Time) ([]responses.Comment, error) {
 
     query := `SELECT commentid, commentorspotifyid, posterspotifyid, songid, commenttext, createdat, updatedat 
               FROM comments
@@ -308,13 +306,8 @@ func(p *PostsDAO) GetPostCommentsPaginated(executor db.QueryExecutor, spotifyID 
 
     }
 
-    paginationResponse.DataResponse = comments
 
-    if len(comments) > 0 {
-        paginationResponse.PaginationKey = comments[len(comments)-1].CreatedAt
-    }
-
-    return paginationResponse, nil
+    return comments, nil
 }
 
 
