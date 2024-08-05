@@ -9,6 +9,12 @@ endpoints:
         clean up some data models? I'm returning some fields that are nil when I'm doing the getProperties methods, can clean that up into postPropertyDTO, userPropertyDTO, and commentPropertyDTO
     posts
         get user feed endpoint!!!
+        can like and dislike multiple times
+    comments
+        can like and dislike multiple times
+    users
+        pagination is fucked
+
 
 testing:
     test all of the endpoints again!!!! lmao kms

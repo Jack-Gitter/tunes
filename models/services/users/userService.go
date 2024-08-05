@@ -128,7 +128,6 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
 
     defer tx.Rollback()
 
-    // check if user exist
     _, err = u.UsersDAO.GetUser(tx, spotifyID)
 
     if err != nil {
@@ -137,7 +136,6 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
         return
     }
 
-    // get said user followers
 	followersPaginated, err := u.UsersDAO.GetUserFollowers(tx, spotifyID, paginationKey)
 
 	if err != nil {
@@ -230,7 +228,6 @@ func(u *UserService) GetFollowers(c *gin.Context) {
 // @Produce json
 // @Param otherUserSpotifyID path string true "Spotify ID of other user to follow"
 // @Success 204 
-// @Failure 400 {string} string 
 // @Failure 401 {string} string 
 // @Failure 404 {string} string 
 // @Failure 409 {string} string 

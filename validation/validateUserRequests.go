@@ -36,7 +36,10 @@ func CanSetRole(currentUserRole responses.Role, roleToSet responses.Role) bool {
             }
             return true
         case responses.BASIC_USER:
-            return  false
+            if roleToSet != responses.BASIC_USER {
+                return false
+            }
+            return  true
         default: 
             return false
     }

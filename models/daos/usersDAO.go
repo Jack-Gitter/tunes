@@ -161,7 +161,7 @@ func(u *UsersDAO) GetUserFollowers(executor db.QueryExecutor, spotifyID string, 
                 FROM followers 
                 INNER JOIN  users 
                 ON users.spotifyid = followers.follower 
-                WHERE followers.userfollowed = $1 AND users.spotifyid < $2 ORDER BY users.spotifyid LIMIT 25 `
+                WHERE followers.userfollowed = $1 AND followers.follower < $2 ORDER BY users.spotifyid LIMIT 25 `
 
     rows, err := executor.Query(query, spotifyID, paginationKey)
 
@@ -179,7 +179,7 @@ func(u *UsersDAO) GetUserFollowers(executor db.QueryExecutor, spotifyID string, 
             return nil, customerrors.WrapBasicError(err)
         }
         user.Bio = bio.String
-        followers = append(followers, user)
+        followers = append([]responses.User{user}, followers...)
     }
 
     paginationResponse.DataResponse = followers

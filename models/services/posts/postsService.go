@@ -308,6 +308,7 @@ func(p *PostsService) GetAllPostsForCurrentUser(c *gin.Context) {
 
 	}
 
+
     tx, err := p.DB.BeginTx(context.Background(), nil)
 
     if err != nil {

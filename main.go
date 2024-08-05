@@ -35,10 +35,10 @@ func main() {
     postsDAO := &daos.PostsDAO{}
     commentsDAO := &daos.CommentsDAO{}
 
-    userService := users.UserService{UsersDAO: usersDAO, DB: db}
-    postsService := posts.PostsService{PostsDAO: postsDAO, DB: db}
-    commentsService := comments.CommentsService{CommentsDAO: commentsDAO, DB: db}
     spotifyService := &spotify.SpotifyService{}
+    userService := users.UserService{UsersDAO: usersDAO, DB: db}
+    postsService := posts.PostsService{PostsDAO: postsDAO, UsersDAO: usersDAO, SpotifyService: spotifyService, DB: db}
+    commentsService := comments.CommentsService{CommentsDAO: commentsDAO, DB: db}
     jwtService := &jwt.JWTService{}
     authService := auth.AuthService{UsersDAO: usersDAO, SpotifyService: spotifyService, JWTService: jwtService, DB: db}
 

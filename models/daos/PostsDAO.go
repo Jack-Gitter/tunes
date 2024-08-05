@@ -2,7 +2,9 @@ package daos
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
+
 	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
@@ -52,32 +54,36 @@ func(p *PostsDAO) CreatePost(executor db.QueryExecutor, spotifyID string, songID
 	return postPreview, nil
 }
 
-func(p *PostsDAO) GetPostVotes(executor db.QueryExecutor, postID string, spotifyID string) ([]responses.UserIdentifer, []responses.UserIdentifer, error) {
+func(p *PostsDAO) GetPostVotes(executor db.QueryExecutor, spotifyID string, postID string) ([]responses.UserIdentifer, []responses.UserIdentifer, error) {
+    fmt.Println(spotifyID)
+    fmt.Println(postID)
         query2 := `SELECT post_votes.voterspotifyid, users.username, post_votes.liked 
                    FROM post_votes INNER JOIN users ON post_votes.voterspotifyid = users.spotifyid
-                   WHERE post_votes.posterspotifyid = $1 AND post_votes.postsongid = $2 `
+                   WHERE post_votes.posterspotifyid = $1 AND post_votes.postsongid = $2`
 
        likes := []responses.UserIdentifer{}
        dislikes := []responses.UserIdentifer{}
 
-        rows, err := executor.Query(query2, spotifyID, postID)
+
+       rows, err := executor.Query(query2, spotifyID, postID)
 
         if err != nil {
             return nil, nil, customerrors.WrapBasicError(err)
         }
 
         for rows.Next() {
+            fmt.Println("liked is")
             userID := responses.UserIdentifer{}
             liked := true
-            err := rows.Scan(&userID.SpotifyID, &userID.Username, &liked)
-            if err != nil {
-                return nil, nil, customerrors.WrapBasicError(err)
-            }
+            rows.Scan(&userID.SpotifyID, &userID.Username, &liked)
+            fmt.Println("liked is")
+            fmt.Println(liked)
             if liked {
                 likes = append(likes, userID)
             } else {
                 dislikes = append(dislikes, userID)
             }
+            fmt.Println(likes, dislikes)
         }
 
         return likes, dislikes, nil
