@@ -4,9 +4,7 @@ general
 
 endpoints:
     general
-        make sure to set transaction isolation level to repeatable read everywhere we do a transaction!!!
         do transaction retires where applicable!!! when we're inserting, not just for reading because we don't need it then
-        clean up some data models? I'm returning some fields that are nil when I'm doing the getProperties methods, can clean that up into postPropertyDTO, userPropertyDTO, and commentPropertyDTO
     posts
         get user feed endpoint!!!
         can like and dislike multiple times
