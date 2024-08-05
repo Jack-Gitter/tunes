@@ -4,7 +4,7 @@ general
 
 endpoints:
     general
-        do transaction retires where applicable!!! when we're inserting, not just for reading because we don't need it then
+        do transaction retries anywhere that we are using tx and calling a method that does insert or update
     posts
         get user feed endpoint!!!
         can like and dislike multiple times
