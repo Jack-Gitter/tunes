@@ -116,7 +116,7 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
 	paginationKey := c.Query("spotifyID")
 
 	if paginationKey == "" {
-		paginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
+		paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
 	}
 
     tx, err := u.DB.BeginTx(context.Background(), nil)
@@ -189,7 +189,7 @@ func(u *UserService) GetFollowers(c *gin.Context) {
 	}
 
 	if paginationKey == "" {
-		paginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
+		paginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
 	}
 
     tx, err := u.DB.BeginTx(context.Background(), nil)

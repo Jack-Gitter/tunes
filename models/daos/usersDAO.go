@@ -2,6 +2,8 @@ package daos
 
 import (
 	"database/sql"
+	"fmt"
+
 	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
@@ -157,11 +159,12 @@ func(u *UsersDAO) GetUserFollowers(executor db.QueryExecutor, spotifyID string, 
 
     paginationResponse := &responses.PaginationResponse[[]responses.User, string]{}
 
+    fmt.Println(paginationKey)
     query := ` SELECT users.spotifyid, users.username, users.bio, users.userrole 
                 FROM followers 
                 INNER JOIN  users 
                 ON users.spotifyid = followers.follower 
-                WHERE followers.userfollowed = $1 AND followers.follower < $2 ORDER BY users.spotifyid LIMIT 25 `
+                WHERE followers.userfollowed = $1 AND followers.follower > $2 ORDER BY users.spotifyid LIMIT 25 `
 
     rows, err := executor.Query(query, spotifyID, paginationKey)
 
@@ -179,11 +182,11 @@ func(u *UsersDAO) GetUserFollowers(executor db.QueryExecutor, spotifyID string, 
             return nil, customerrors.WrapBasicError(err)
         }
         user.Bio = bio.String
-        followers = append([]responses.User{user}, followers...)
+        followers = append(followers, user)
     }
 
     paginationResponse.DataResponse = followers
-    paginationResponse.PaginationKey = "zzzzzzzzzzzzzzzzzzzzzzzzzz"
+    paginationResponse.PaginationKey = "aaaaaaaaaaaaaaaaaaaaaaaaaa"
 
     if len(followers) > 0 {
         paginationResponse.PaginationKey = followers[len(followers)-1].SpotifyID
