@@ -142,8 +142,34 @@ func(p *PostsService) LikePost(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
     
-    err := p.PostsDAO.LikePost(p.DB, currentUserSpotifyID.(string), spotifyID, songID)
+    likes, _, err := p.PostsDAO.GetPostVotes(tx, songID, spotifyID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    for _, userIdentifier := range likes {
+        if userIdentifier.SpotifyID == spotifyID {
+            c.Error(customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot like a post twice"})
+            c.Abort()
+            return
+        }
+    }
+
+    err = p.PostsDAO.LikePost(tx, currentUserSpotifyID.(string), spotifyID, songID)
 
 	if err != nil {
 		c.Error(err)
@@ -151,6 +177,13 @@ func(p *PostsService) LikePost(c *gin.Context) {
 		return
 	}
 
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
 
 	c.Status(http.StatusNoContent)
 }
@@ -182,13 +215,47 @@ func(p *PostsService) DislikePost(c *gin.Context) {
 		return
 	}
     
-    err := p.PostsDAO.DislikePost(p.DB, currentUserSpotifyID.(string), spotifyID, songID)
+    tx, err := p.DB.BeginTx(context.Background(), nil)
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
+
+    defer tx.Rollback()
+    
+    _, dislikes, err := p.PostsDAO.GetPostVotes(tx, songID, spotifyID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    for _, userIdentifier := range dislikes {
+        if userIdentifier.SpotifyID == spotifyID {
+            c.Error(customerrors.CustomError{StatusCode: http.StatusConflict, Msg: "cannot dislike a post twice"})
+            c.Abort()
+            return
+        }
+    }
+
+    err = p.PostsDAO.DislikePost(tx, currentUserSpotifyID.(string), spotifyID, songID)
 
 	if err != nil {
 		c.Error(err)
 		c.Abort()
 		return
 	}
+
+    err = tx.Commit()
+
+    if err != nil {
+        c.Error(customerrors.WrapBasicError(err))
+        c.Abort()
+        return
+    }
 
 	c.Status(http.StatusNoContent)
 }
