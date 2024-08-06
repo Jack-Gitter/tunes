@@ -58,11 +58,6 @@ func GetRedisConnection() *redis.Client {
         panic("could not connect to redis!")
     }
 
-    err := rdb.Set(context.Background(), "key", "value", 0).Err()
-    if err != nil {
-        panic(err)
-    }
-
     return rdb
 }
 
