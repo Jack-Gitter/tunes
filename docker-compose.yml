@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres
-    profiles: [postgres-full, postgres]
+    profiles: [backend, postgres-full, postgres]
     restart: always
     ports:
       - ${DB_PORT}:5432
@@ -11,7 +11,7 @@ services:
       POSTGRES_DB: ${DB_NAME}
   pgadmin: 
     image: dpage/pgadmin4
-    profiles: [postgres-full, pgadmin]
+    profiles: [backend, postgres-full, pgadmin]
     restart: always
     ports:
       - 4000:80
@@ -20,7 +20,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PG_PASS}
   redis: 
     image: redis/redis-stack:latest
-    profiles: [redis]
+    profiles: [backend, redis]
     ports:
       - 6379:6379
       - 8001:8001

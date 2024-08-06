@@ -1,9 +1,13 @@
 package cache
 
-type Cache struct {
-    // is going to hold a connection to REDIS
-    // implement the icache interface
+import (
+	"context"
+	"github.com/redis/go-redis/v9"
+)
 
+type Cache struct {
+    redis redis.Client
+    ctx context.Context
 }
 
 type ICache interface {
@@ -11,6 +15,7 @@ type ICache interface {
     Get(key string) (any, error)
     Delete(key string) error
     Clear() error
+    GenerateKey(v any) (int, error)
 }
 
 func(c *Cache) Set(key string, value any) error {
@@ -27,4 +32,8 @@ func(c *Cache) Delete(key string) error {
 
 func(c *Cache) Clear() error {
     return nil
+}
+
+func(c *Cache) GenerateKey(v any) (int, error) {
+    return 0, nil
 }
