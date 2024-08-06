@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/services/auth"
+	"github.com/Jack-Gitter/tunes/models/services/cache"
 	"github.com/Jack-Gitter/tunes/models/services/comments"
 	"github.com/Jack-Gitter/tunes/models/services/jwt"
 	"github.com/Jack-Gitter/tunes/models/services/posts"
@@ -30,6 +33,10 @@ func main() {
 
     db := db.ConnectToDB()
     defer db.Close()
+
+    cache := cache.GetRedisConnection()
+
+    fmt.Println(cache)
 
     usersDAO := &daos.UsersDAO{}
     postsDAO := &daos.PostsDAO{}

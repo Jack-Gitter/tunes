@@ -2,6 +2,9 @@ package cache
 
 import (
 	"context"
+	"fmt"
+	"os"
+
 	"github.com/redis/go-redis/v9"
 )
 
@@ -37,3 +40,29 @@ func(c *Cache) Clear() error {
 func(c *Cache) GenerateKey(v any) (int, error) {
     return 0, nil
 }
+
+func GetRedisConnection() *redis.Client {
+
+	redisHost := os.Getenv("REDIS_HOST")
+	redisPort := os.Getenv("REDIS_PORT")
+
+    rdb := redis.NewClient(&redis.Options{
+        Addr: fmt.Sprintf("%s:%s", redisHost, redisPort),
+        Password: "", 
+        DB:       0, 
+    })
+
+    statusCMD := rdb.Ping(context.Background())
+
+    if statusCMD.Err() != nil {
+        panic("could not connect to redis!")
+    }
+
+    err := rdb.Set(context.Background(), "key", "value", 0).Err()
+    if err != nil {
+        panic(err)
+    }
+
+    return rdb
+}
+
