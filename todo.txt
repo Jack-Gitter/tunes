@@ -1,7 +1,6 @@
 tunes todos:
 
 dockerize:
-    postgres
     redis
 
 documentation: 
