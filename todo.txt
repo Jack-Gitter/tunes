@@ -3,12 +3,11 @@ tunes todos:
 general 
 
 endpoints:
-    posts
-        feed: 
-            pagination not working
+    pagination_endpoints: 
+        look at where I'm doing pagination, and make sure that the results are in the correct order!!!
+
 
 testing:
-    test all of the endpoints again!!!! lmao kms
 
 documentation: 
     readme

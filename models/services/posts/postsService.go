@@ -894,7 +894,7 @@ func(p *PostsService) GetPostCommentsPaginated(c *gin.Context) {
 // @Security Bearer
 func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
     spotifyID, exists := c.Get("spotifyID")
-    createdAt := c.Param("createdAt")
+    createdAt := c.Query("createdAt")
 
 	var t time.Time = time.Now().UTC()
     var err error
@@ -907,7 +907,6 @@ func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
             c.Abort()
             return
         }
-
 	}
 
     if !exists {
@@ -950,7 +949,7 @@ func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
     }
 
     sort.Slice(posts, func(i, j int) bool {
-        return posts[i].CreatedAt.Before(posts[j].CreatedAt)
+        return posts[i].CreatedAt.After(posts[j].CreatedAt)
     })
 
     feedLength := 25

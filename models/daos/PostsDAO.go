@@ -310,11 +310,12 @@ func(p *PostsDAO) GetPostComments(executor db.QueryExecutor, spotifyID string, s
 
 
 func(p *PostsDAO) GetUserPostsProperties(executor db.QueryExecutor, spotifyID string, createdAt time.Time) ([]responses.PostPreview, error) {
+    fmt.Println(createdAt)
     query := `SELECT posts.albumarturi, posts.albumid, posts.albumname, posts.createdat, posts.rating, posts.songid, posts.songname, posts.review, posts.updatedat, posts.posterspotifyid, users.username
                 FROM posts 
                 INNER JOIN users 
                 ON users.spotifyid = posts.posterspotifyid
-                WHERE posts.posterspotifyid = $1 AND posts.createdat < $2 ORDER BY posts.createdat DESC LIMIT 25 `
+                WHERE posts.posterspotifyid = $1 AND posts.createdat < $2 ORDER BY posts.createdat LIMIT 25 `
 
     postPreviews := []responses.PostPreview{}
 
