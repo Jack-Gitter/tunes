@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/daos"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/Jack-Gitter/tunes/models/services/auth"
 	"github.com/Jack-Gitter/tunes/models/services/cache"
 	"github.com/Jack-Gitter/tunes/models/services/comments"
@@ -34,9 +35,25 @@ func main() {
     db := db.ConnectToDB()
     defer db.Close()
 
-    cache := cache.GetRedisConnection()
 
-    fmt.Println(cache)
+
+
+
+    redisConnection := cache.GetRedisConnection()
+    defer redisConnection.Close()
+
+    cache := cache.Cache{Redis: redisConnection}
+    user := responses.UserIdentifer{}
+    user.Username = "test"
+    user.SpotifyID = "1234"
+    cache.Set(user, time.Hour)
+
+    
+
+
+
+
+
 
     usersDAO := &daos.UsersDAO{}
     postsDAO := &daos.PostsDAO{}
