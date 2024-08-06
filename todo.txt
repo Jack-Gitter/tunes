@@ -7,7 +7,9 @@ endpoints:
         look at where I'm doing pagination, and make sure that the results are in the correct order!!!
 
 
-testing:
+dockerize:
+    postgres
+    redis
 
 documentation: 
     readme
@@ -23,13 +25,12 @@ documentation:
         explain swagger usage 
         caching/redis approach
 
-dockerize:
-    postgres
-    redis
-
 caching:
     redis 
         read up on caching techniques!!!  -- or do in memory lol, i'm a lazy bitch
+
+testing
+    mocks and spies for DAO responses -- could easily do this if i wanted to, but would take a fuckton of time -- probably just do caching first :) 
 
 testing:
     implement tests -- e2e test with testing library!
@@ -37,7 +38,3 @@ testing:
 
 admin: 
     cors
-
-caching questions: 
-    i validate cadhe on every data change — what about data race with get and data change where data change clears cache but get reaches db first and caches data?
-    also updating cache after db writes — we have one post then another which changes a value. A hits db first then b, but b writes to cache first then a. how to prevent?
