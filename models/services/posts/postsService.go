@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"sort"
+	"slices"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
@@ -948,8 +948,11 @@ func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
 
     }
 
-    sort.Slice(posts, func(i, j int) bool {
-        return posts[i].CreatedAt.After(posts[j].CreatedAt)
+    slices.SortFunc[[]responses.PostPreview](posts, func(p1, p2 responses.PostPreview) int {
+        if p1.CreatedAt.After(p2.CreatedAt) {
+            return -1
+        }
+        return 1
     })
 
     feedLength := 25
