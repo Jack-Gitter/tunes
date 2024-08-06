@@ -3,6 +3,9 @@ tunes todos:
 general 
 
 endpoints:
+    posts
+        feed: 
+            pagination not working
 
 testing:
     test all of the endpoints again!!!! lmao kms
