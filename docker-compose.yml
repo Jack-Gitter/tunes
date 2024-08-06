@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres
+    profiles: [postgres-full, postgres]
+    restart: always
+    ports:
+      - ${DB_PORT}:5432
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+  pgadmin: 
+    image: dpage/pgadmin4
+    profiles: [postgres-full, pgadmin]
+    restart: always
+    ports:
+      - 4000:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PG_USER}
+      PGADMIN_DEFAULT_PASSWORD: ${PG_PASS}
+
