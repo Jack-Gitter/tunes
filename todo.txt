@@ -1,12 +1,5 @@
 tunes todos:
 
-general 
-
-endpoints:
-    pagination_endpoints: 
-        look at where I'm doing pagination, and make sure that the results are in the correct order!!!
-
-
 dockerize:
     postgres
     redis
