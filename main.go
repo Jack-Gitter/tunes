@@ -43,7 +43,7 @@ func main() {
     defer redisConnection.Close()
 
     cache := cache.Cache{Redis: redisConnection}
-    user := responses.UserIdentifer{}
+    user := responses.User{}
     user.Username = "test"
     user.SpotifyID = "1234"
     cache.Set(user, time.Hour)

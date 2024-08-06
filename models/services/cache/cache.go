@@ -5,12 +5,15 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"sync"
 	"time"
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -64,9 +67,19 @@ func(c *Cache) Clear() error {
 }
 
 func(c *Cache) GenerateKey(v any) (string, error) {
-    var bytes bytes.Buffer
-    gob.NewEncoder(&bytes).Encode(v)
-    return bytes.String(), nil
+    switch reflect.TypeOf(v) {
+        case reflect.TypeOf(responses.User{}):
+            user := v.(responses.User)
+            return user.SpotifyID + user.Username, nil
+        case reflect.TypeOf(responses.UserIdentifer{}):
+            return "", customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "caching user ids is not supported"}
+        case reflect.TypeOf(responses.PostPreview{}):
+            return "", customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "caching posts is not supported"}
+        case reflect.TypeOf(responses.Comment{}):
+            return "", customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "caching comments is not supported"}
+        default: 
+            return "", customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "trying to cache an unknown type!"}
+    }
 }
 
 func(c *Cache) TransformValueToString(v any) (string, error) {
