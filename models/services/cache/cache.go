@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
@@ -15,6 +16,7 @@ import (
 
 type Cache struct {
     Redis *redis.Client
+    Locks map[string]sync.RWMutex
 }
 
 type ICache interface {
@@ -23,6 +25,8 @@ type ICache interface {
     Delete(key string) error
     Clear() error
     GenerateKey(v any) (string, error)
+    LockMutex(key string) error
+    UnlockMutex(key string) error
 }
 
 func(c *Cache) Set(value any, ttl time.Duration) error {
@@ -69,6 +73,14 @@ func(c *Cache) TransformValueToString(v any) (string, error) {
     var bytes bytes.Buffer
     gob.NewEncoder(&bytes).Encode(v)
     return bytes.String(), nil
+}
+
+func(c *Cache) LockMutex(key string) error {
+    return nil
+}
+
+func(c *Cache) UnlockMutex(key string) error {
+    return nil
 }
 
 func GetRedisConnection() *redis.Client {
