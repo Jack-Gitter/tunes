@@ -18,4 +18,9 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PG_USER}
       PGADMIN_DEFAULT_PASSWORD: ${PG_PASS}
-
+  redis: 
+    image: redis/redis-stack:latest
+    profiles: [redis]
+    ports:
+      - 6379:6379
+      - 8001:8001
