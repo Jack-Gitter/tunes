@@ -20,6 +20,3 @@ documentation:
 caching:
     redis 
         read up on caching techniques!!!
-
-admin: 
-    cors
