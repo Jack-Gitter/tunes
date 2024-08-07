@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
@@ -44,16 +46,15 @@ func main() {
 
     cache := cache.Cache{Redis: redisConnection}
     user := responses.User{}
-    user.Username = "test"
-    user.SpotifyID = "1234"
+    user.Bio = "hi"
+    user.SpotifyID = "blah"
+    user.Username = "hi"
     cache.Set(user, time.Hour)
-
-    
-
-
-
-
-
+    key, _:= cache.GenerateKey(user)
+    bytes, _ := cache.Get(key)
+    newUser := responses.User{}
+    json.Unmarshal(bytes, &newUser)
+    fmt.Println(newUser)
 
     usersDAO := &daos.UsersDAO{}
     postsDAO := &daos.PostsDAO{}

@@ -1,9 +1,8 @@
 package cache
 
 import (
-	"bytes"
 	"context"
-	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -24,7 +23,7 @@ type Cache struct {
 
 type ICache interface {
     Set(value any, ttl time.Duration) error
-    Get(key string) (any, error)
+    Get(key string) ([]byte, error)
     Delete(key string) error
     Clear() error
     GenerateKey(v any) (string, error)
@@ -39,13 +38,13 @@ func(c *Cache) Set(value any, ttl time.Duration) error {
         return customerrors.WrapBasicError(err)
     }
 
-    stringVal, err := c.TransformValueToString(value)
+    bytes, err := c.TransformValueToByteArray(value)
 
     if err != nil {
         return customerrors.WrapBasicError(err)
     }
 
-    err = c.Redis.Set(context.Background(), key, stringVal, ttl).Err()
+    err = c.Redis.Set(context.Background(), key, bytes, ttl).Err()
 
     if err != nil {
         panic(err)
@@ -54,8 +53,15 @@ func(c *Cache) Set(value any, ttl time.Duration) error {
     return nil
 }
 
-func(c *Cache) Get(key string) (any, error) {
-    return nil, nil
+func(c *Cache) Get(key string) ([]byte, error) {
+    cmd := c.Redis.Get(context.Background(), key)
+    bytes, err := cmd.Bytes()
+
+    if err != nil {
+        panic(err)
+    }
+
+    return bytes, nil
 }
 
 func(c *Cache) Delete(key string) error {
@@ -82,10 +88,12 @@ func(c *Cache) GenerateKey(v any) (string, error) {
     }
 }
 
-func(c *Cache) TransformValueToString(v any) (string, error) {
-    var bytes bytes.Buffer
-    gob.NewEncoder(&bytes).Encode(v)
-    return bytes.String(), nil
+func(c *Cache) TransformValueToByteArray(v any) ([]byte, error) {
+    bytes, err := json.Marshal(v)
+    if err != nil {
+        return []byte{}, customerrors.WrapBasicError(err)
+    }
+    return bytes, nil
 }
 
 func(c *Cache) LockMutex(key string) error {
