@@ -3,7 +3,7 @@ package cache
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/gob"
 	"fmt"
 	"net/http"
 	"os"
@@ -19,6 +19,7 @@ import (
 
 type Cache struct {
     Redis *redis.Client
+    ctx context.Context
     Locks map[string]sync.RWMutex
 }
 
@@ -32,12 +33,7 @@ type ICache interface {
     UnlockMutex(key string) error
 }
 
-func(c *Cache) Set(value any, ttl time.Duration) error {
-    key, err := c.GenerateKey(value)
-
-    if err != nil {
-        return customerrors.WrapBasicError(err)
-    }
+func(c *Cache) Set(key string, value any, ttl time.Duration) error {
 
     bytes, err := c.TransformValueToByteArray(value)
 
@@ -45,7 +41,7 @@ func(c *Cache) Set(value any, ttl time.Duration) error {
         return customerrors.WrapBasicError(err)
     }
 
-    err = c.Redis.Set(context.Background(), key, bytes, ttl).Err()
+    err = c.Redis.Set(c.ctx, key, bytes, ttl).Err()
 
     if err != nil {
         panic(err)
@@ -55,7 +51,9 @@ func(c *Cache) Set(value any, ttl time.Duration) error {
 }
 
 func(c *Cache) Get(key string) ([]byte, error) {
-    cmd := c.Redis.Get(context.Background(), key)
+
+    cmd := c.Redis.Get(c.ctx, key)
+
     bytes, err := cmd.Bytes()
 
     if err != nil {
@@ -66,10 +64,18 @@ func(c *Cache) Get(key string) ([]byte, error) {
 }
 
 func(c *Cache) Delete(key string) error {
+    _, err := c.Redis.Del(c.ctx, key).Result()
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
     return nil
 }
 
 func(c *Cache) Clear() error {
+    _, err := c.Redis.FlushDB(c.ctx).Result()
+    if err != nil {
+        return customerrors.WrapBasicError(err)
+    }
     return nil
 }
 
@@ -90,11 +96,15 @@ func(c *Cache) GenerateKey(v any) (string, error) {
 }
 
 func(c *Cache) TransformValueToByteArray(v any) ([]byte, error) {
-    bytes, err := json.Marshal(v)
+    var buffer bytes.Buffer
+
+    err := gob.NewEncoder(&buffer).Encode(v)
+
     if err != nil {
         return []byte{}, customerrors.WrapBasicError(err)
     }
-    return bytes, nil
+
+    return buffer.Bytes(), nil
 }
 
 func(c *Cache) LockMutex(key string) error {

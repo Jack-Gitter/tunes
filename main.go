@@ -1,7 +1,8 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"time"
 
@@ -44,17 +45,7 @@ func main() {
     redisConnection := cache.GetRedisConnection()
     defer redisConnection.Close()
 
-    cache := cache.Cache{Redis: redisConnection}
-    user := responses.User{}
-    user.Bio = "hi"
-    user.SpotifyID = "blah"
-    user.Username = "hi"
-    cache.Set(user, time.Hour)
-    key, _:= cache.GenerateKey(user)
-    bytes, _ := cache.Get(key)
-    newUser := responses.User{}
-    json.Unmarshal(bytes, &newUser)
-    fmt.Println(newUser)
+    //cache := cache.Cache{Redis: redisConnection}
 
     usersDAO := &daos.UsersDAO{}
     postsDAO := &daos.PostsDAO{}
