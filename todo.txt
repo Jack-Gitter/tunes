@@ -21,12 +21,5 @@ caching:
     redis 
         read up on caching techniques!!!  -- or do in memory lol, i'm a lazy bitch
 
-testing
-    mocks and spies for DAO responses -- could easily do this if i wanted to, but would take a fuckton of time -- probably just do caching first :) 
-
-testing:
-    implement tests -- e2e test with testing library!
-    implement a git workflow to run tests on push
-
 admin: 
     cors
