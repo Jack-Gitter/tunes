@@ -1,6 +1,9 @@
 package server
 
 import (
+	"os"
+	"time"
+
 	_ "github.com/Jack-Gitter/tunes/docs"
 	"github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
@@ -9,13 +12,29 @@ import (
 	"github.com/Jack-Gitter/tunes/models/services/posts"
 	"github.com/Jack-Gitter/tunes/models/services/users"
 	"github.com/Jack-Gitter/tunes/validation"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPostsService, commentsService comments.ICommentsService, authSerivce auth.IAuthService) *gin.Engine {
+
+    frontend_uri := os.Getenv("FRONTEND_URI")
+
+    cors := cors.New(
+        cors.Config {
+            AllowOrigins:     []string{frontend_uri},
+            AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+            AllowHeaders:     []string{"Content-Type, Content-Length, Accept-Encoding, Authorization, Accept, Origin, X-Requested-With"},
+            AllowCredentials: true,
+            MaxAge: 12 * time.Hour, 
+        },
+    )
+
 	r := gin.Default()
+
+    r.Use(cors)
 
     baseGroup := r.Group("", customerrors.ErrorHandlerMiddleware) 
     {
