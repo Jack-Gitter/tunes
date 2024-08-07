@@ -17,7 +17,7 @@ import (
 func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPostsService, commentsService comments.ICommentsService, authSerivce auth.IAuthService) *gin.Engine {
 	r := gin.Default()
 
-    baseGroup := r.Group("", customerrors.ErrorHandlerMiddleware)
+    baseGroup := r.Group("", customerrors.ErrorHandlerMiddleware) 
     {
         loginGroup := baseGroup.Group("/login") 
         {
@@ -39,12 +39,12 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
                 userGroup.GET("/:spotifyID/following", userService.GetFollowingByID)
                 userGroup.POST("/current/follow/:otherUserSpotifyID", userService.FollowUser)
                 userGroup.DELETE("/current/unfollow/:otherUserSpotifyID", userService.UnFollowUser)
-                userGroup.PATCH("/current", validation.ValidateData(validation.ValidateUserRequestDTO), userService.UpdateCurrentUser)
+                userGroup.PATCH("/current", validation.ValidateContentTypeJSON, validation.ValidateData(validation.ValidateUserRequestDTO), userService.UpdateCurrentUser)
                 userGroup.DELETE("/current", userService.DeleteCurrentUser)
 
                 adminOnly := userGroup.Group("/admin", authSerivce.ValidateAdminUser)
                 {
-                    adminOnly.PATCH("/:spotifyID", validation.ValidateData(validation.ValidateUserRequestDTO), userService.UpdateUserByID)
+                    adminOnly.PATCH("/:spotifyID", validation.ValidateContentTypeJSON, validation.ValidateData(validation.ValidateUserRequestDTO), userService.UpdateUserByID)
                     adminOnly.DELETE("/:spotifyID", userService.DeleteUserByID)
                 }
 
@@ -59,10 +59,10 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
                 postGroup.GET("/previews/users/:spotifyID", postsService.GetAllPostsForUserByID)
                 postGroup.GET("/comments/:spotifyID/:songID", postsService.GetPostCommentsPaginated)
                 postGroup.GET("/feed", postsService.GetCurrentUserFeed)
-                postGroup.POST("/", validation.ValidateData(validation.ValidateCreatePostDTO),  postsService.CreatePostForCurrentUser)
+                postGroup.POST("/", validation.ValidateContentTypeJSON, validation.ValidateData(validation.ValidateCreatePostDTO), postsService.CreatePostForCurrentUser)
                 postGroup.POST("/likes/:spotifyID/:songID", postsService.LikePost)
                 postGroup.POST("/dislikes/:spotifyID/:songID", postsService.DislikePost)
-                postGroup.PATCH("/current/:songID", validation.ValidateData(validation.ValidateUpdatePostRequestDTO), postsService.UpdateCurrentUserPost)
+                postGroup.PATCH("/current/:songID", validation.ValidateContentTypeJSON, validation.ValidateData(validation.ValidateUpdatePostRequestDTO), postsService.UpdateCurrentUserPost)
                 postGroup.DELETE("/current/:songID", postsService.DeletePostForCurrentUserBySongID)
                 postGroup.DELETE("/votes/current/:posterSpotifyID/:songID",  postsService.RemovePostVote)
 
@@ -77,10 +77,10 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
             {
 
                 commentGroup.GET("/:commentID",  validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.GetComment)
-                commentGroup.POST("/:spotifyID/:songID", validation.ValidateData[requests.CreateCommentDTO](), commentsService.CreateComment)
+                commentGroup.POST("/:spotifyID/:songID", validation.ValidateContentTypeJSON, validation.ValidateData[requests.CreateCommentDTO](), commentsService.CreateComment)
                 commentGroup.POST("/like/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.LikeComment)
                 commentGroup.POST("/dislike/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.DislikeComment)
-                commentGroup.PATCH("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData(validation.ValidateUpdateCommentDTO), commentsService.UpdateComment)
+                commentGroup.PATCH("/current/:commentID", validation.ValidateContentTypeJSON, validation.ValidatePathParams[requests.CommentIDPathParams](), validation.ValidateData(validation.ValidateUpdateCommentDTO), commentsService.UpdateComment)
                 commentGroup.DELETE("/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.DeleteCurrentUserComment)
                 commentGroup.DELETE("/votes/current/:commentID", validation.ValidatePathParams[requests.CommentIDPathParams](), commentsService.RemoveCommentVote)
 

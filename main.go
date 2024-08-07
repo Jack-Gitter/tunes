@@ -1,14 +1,9 @@
 package main
 
 import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/daos"
-	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/Jack-Gitter/tunes/models/services/auth"
 	"github.com/Jack-Gitter/tunes/models/services/cache"
 	"github.com/Jack-Gitter/tunes/models/services/comments"
@@ -37,10 +32,6 @@ func main() {
 
     db := db.ConnectToDB()
     defer db.Close()
-
-
-
-
 
     redisConnection := cache.GetRedisConnection()
     defer redisConnection.Close()

@@ -19,7 +19,7 @@ documentation:
 
 caching:
     redis 
-        read up on caching techniques!!!  -- or do in memory lol, i'm a lazy bitch
+        read up on caching techniques!!!
 
 admin: 
     cors
