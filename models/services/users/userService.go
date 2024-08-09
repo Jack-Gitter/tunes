@@ -165,7 +165,6 @@ func(u *UserService) GetFollowersByID(c *gin.Context) {
     }
 
 	followers, err := u.UsersDAO.GetUserFollowers(tx, spotifyID, paginationKey)
-
     paginatedFollowers.DataResponse = followers
 
     if len(followers) > 0 {
