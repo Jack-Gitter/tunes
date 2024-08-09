@@ -41,11 +41,7 @@ Make api-start
 
 ## Environment Variable File
 
-Within the project there exists a .env.example file. This serves as an example for users to populate their own. Simply 
-```
-cp .env.example .env 
-```
-then populate this file with the required environment variables to get started
+Within the project there exists a .env.example file. This serves as an example for users to populate their own. Simply ` cp .env.example .env` then populate this file with the required environment variables to get started
 
 ## Makefile
 
