@@ -32,13 +32,11 @@ RedisUI is located at http(s)://your_host:8001
 
 ## Backend Architecture
 
+![image](./images/overall-structure)
+
 ## Backend CODE Architecture
 
 ### NOTE
-The architecture design is meant to represent how the code is broken up logically. In reality, this is just a single monolith with the external dependencies being on Postgres and Reids
-All services and DAOs are self contained. Additionally, the model is simplified. In reality services talk to multiple DAOs in order to get the required data they need for respective business logic
-
-(dont forget about the auth service!!!!!!! duh that was so fucking dumb)
 
 ![image](./images/backend-code-structure.png)
 
