@@ -84,7 +84,7 @@ func(u *UserService) GetUserById(c *gin.Context) {
 		return
 	}
 
-    u.CacheService.Set(key, user, u.TTL)
+    err = u.CacheService.Set(key, user, u.TTL)
 
 	if err != nil {
 		c.Error(err)
@@ -538,7 +538,7 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
 		return
 	}
 
-    u.CacheService.Set(key, user, u.TTL)
+    err = u.CacheService.Set(key, user, u.TTL)
 
 	if err != nil {
 		c.Error(err)
