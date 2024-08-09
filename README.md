@@ -107,8 +107,8 @@ migrations which will get the postgres database set up properly to integrate wit
 
 ## Swagger
 
-In order to easily interface with the Tunes backend API, swagger has been implemented. Simply go to http(s)://HOST_NAME:PORT/swagger/index.html
-This will load the swagger webpage where all of the endpoints are accessable. In order to start hitting endpoints, the Authorization header must be set
-This can be done by navigating to http(s)://HOST_NAME:PORT/login and logging in with spotify credentials. Afterwards, checking the cookies in the browser
-For the ACCESS_JWT cookie. Copy this cookie, and navigate back to the Swagger page. In the top right, there is a "Authorization" button. Click this button
-and insert "Bearer your_copied_token" This will attach the access JWT along in the Authorization header with each request made via Swagger
+* Swagger: http(s)://${your_host}:${your_port}:/swagger/index.html
+* Setting Authorization header
+    * hit -> http(s)://HOST_NAME:PORT/login and login
+    * grab ACCESS_JWT from cookies
+    * swagger authorize button -> "Bearer your_access_token"
