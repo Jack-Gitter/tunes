@@ -12,7 +12,11 @@ Inspired by [letterbox](https://letterboxd.com/)
 
 ## Backend Architecture
 
+The architecture design is meant to represent how the code is broken up logically. In reality, this is just a single monoloith with the external dependencies being on Postgres and Reids
+All services and DAOs are self contained. Additionally, the model is simplified. In reality services talk to multiple DAOs in order to get the required data they need for respective business logic
+
 <img src="./images/backend-code-structure.png" height="700px" width="450px">
+
 
 ### Design Details
 
