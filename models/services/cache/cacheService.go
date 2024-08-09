@@ -21,7 +21,7 @@ type CacheService struct {
 }
 
 type ICacheService interface {
-    Set(value any, ttl time.Duration) error
+    Set(key string, value any, ttl time.Duration) error
     Get(key string) ([]byte, error)
     Delete(key string) error
     Clear() error

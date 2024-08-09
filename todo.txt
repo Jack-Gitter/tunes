@@ -1,7 +1,7 @@
 tunes todos:
 
-dockerize:
-    redis
+todo: 
+    make constructors for everything! main is messy lol
 
 documentation: 
     readme

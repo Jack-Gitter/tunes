@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os"
+	"strconv"
+	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/daos"
@@ -36,14 +39,23 @@ func main() {
     redisConnection := cache.GetRedisConnection()
     defer redisConnection.Close()
 
-    //cache := cache.Cache{Redis: redisConnection}
+    userCacheTTLString := os.Getenv("USER_CACHE_TTL_IN_SECONDS")
+    userCacheTTLNumber, err := strconv.Atoi(userCacheTTLString)
+
+    if err != nil {
+        panic("cache TTL must be a number")
+    }
+
+    userCacheTTLDuration := time.Duration(float64(userCacheTTLNumber) * float64(time.Second))
+
+    cacheService := &cache.CacheService{Redis: redisConnection}
 
     usersDAO := &daos.UsersDAO{}
     postsDAO := &daos.PostsDAO{}
     commentsDAO := &daos.CommentsDAO{}
 
     spotifyService := &spotify.SpotifyService{}
-    userService := users.UserService{UsersDAO: usersDAO, DB: db}
+    userService := users.UserService{UsersDAO: usersDAO, DB: db, CacheService: cacheService, TTL: userCacheTTLDuration}
     postsService := posts.PostsService{PostsDAO: postsDAO, UsersDAO: usersDAO, SpotifyService: spotifyService, DB: db}
     commentsService := comments.CommentsService{CommentsDAO: commentsDAO, DB: db}
     jwtService := &jwt.JWTService{}
