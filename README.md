@@ -29,6 +29,7 @@ Make api-start
 
 * PgAdmin is located at http(s)://${your_host}:4000 
 * RedisUI is located at http(s)://${your_host}:8001
+* Swagger is located at http(s)://${your_host}:${your_port}/swagger/index.html
 
 ## Backend Architecture
 
