@@ -15,12 +15,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type Cache struct {
+type CacheService struct {
     Redis *redis.Client
     ctx context.Context
 }
 
-type ICache interface {
+type ICacheService interface {
     Set(value any, ttl time.Duration) error
     Get(key string) ([]byte, error)
     Delete(key string) error
@@ -28,7 +28,7 @@ type ICache interface {
     GenerateKey(v any) (string, error)
 }
 
-func(c *Cache) Set(key string, value any, ttl time.Duration) error {
+func(c *CacheService) Set(key string, value any, ttl time.Duration) error {
 
     bytes, err := c.TransformValueToByteArray(value)
 
@@ -45,7 +45,7 @@ func(c *Cache) Set(key string, value any, ttl time.Duration) error {
     return nil
 }
 
-func(c *Cache) Get(key string) ([]byte, error) {
+func(c *CacheService) Get(key string) ([]byte, error) {
 
     cmd := c.Redis.Get(c.ctx, key)
 
@@ -58,7 +58,7 @@ func(c *Cache) Get(key string) ([]byte, error) {
     return bytes, nil
 }
 
-func(c *Cache) Delete(key string) error {
+func(c *CacheService) Delete(key string) error {
     _, err := c.Redis.Del(c.ctx, key).Result()
     if err != nil {
         return customerrors.WrapBasicError(err)
@@ -66,7 +66,7 @@ func(c *Cache) Delete(key string) error {
     return nil
 }
 
-func(c *Cache) Clear() error {
+func(c *CacheService) Clear() error {
     _, err := c.Redis.FlushDB(c.ctx).Result()
     if err != nil {
         return customerrors.WrapBasicError(err)
@@ -74,7 +74,7 @@ func(c *Cache) Clear() error {
     return nil
 }
 
-func(c *Cache) GenerateKey(v any) (string, error) {
+func(c *CacheService) GenerateKey(v any) (string, error) {
     switch reflect.TypeOf(v) {
         case reflect.TypeOf(responses.User{}):
             user := v.(responses.User)
@@ -90,7 +90,7 @@ func(c *Cache) GenerateKey(v any) (string, error) {
     }
 }
 
-func(c *Cache) TransformValueToByteArray(v any) ([]byte, error) {
+func(c *CacheService) TransformValueToByteArray(v any) ([]byte, error) {
     var buffer bytes.Buffer
 
     err := gob.NewEncoder(&buffer).Encode(v)
