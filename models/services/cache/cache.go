@@ -9,7 +9,6 @@ import (
 	"os"
 	"reflect"
 	"strconv"
-	"sync"
 	"time"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
@@ -19,7 +18,6 @@ import (
 type Cache struct {
     Redis *redis.Client
     ctx context.Context
-    Locks map[string]*sync.RWMutex
 }
 
 type ICache interface {
@@ -28,8 +26,6 @@ type ICache interface {
     Delete(key string) error
     Clear() error
     GenerateKey(v any) (string, error)
-    LockMutex(key string) error
-    UnlockMutex(key string) error
 }
 
 func(c *Cache) Set(key string, value any, ttl time.Duration) error {
@@ -104,22 +100,6 @@ func(c *Cache) TransformValueToByteArray(v any) ([]byte, error) {
     }
 
     return buffer.Bytes(), nil
-}
-
-func(c *Cache) LockMutex(key string) error {
-    lock, ok := c.Locks[key]
-    
-    if ok {
-        lock.Lock()
-    } else {
-        return customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "mutex with given key is not found"}
-    }
-
-    return nil
-}
-
-func(c *Cache) UnlockMutex(key string) error {
-    return nil
 }
 
 func GetRedisConnection() *redis.Client {
