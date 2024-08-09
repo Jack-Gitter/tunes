@@ -12,7 +12,7 @@ Inspired by [letterbox](https://letterboxd.com/)
 
 ## Backend Architecture
 
-![image info](./images/backend-code-structure.png)
+![image info](./images/backend-code-structure.png){height=250px}
 
 ### Design Details
 
