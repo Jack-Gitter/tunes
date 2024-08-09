@@ -102,7 +102,7 @@ Docker, and utilize the .env variables to do so
 
 ## Goose
 
-golang [goose](https://github.com/pressly/goose) is utilized to run database migrations. The database initially is completely empty. Within the migrations folder of the Tunes backend, there are database
+[goose](https://github.com/pressly/goose) is utilized to run database migrations. The database initially is completely empty. Within the migrations folder of the Tunes backend, there are database
 migrations which will get the postgres database set up properly to integrate with the Tunes application
 
 
