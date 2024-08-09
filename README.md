@@ -27,14 +27,14 @@ Start backend API
 Make api-start
 ```
 
-PgAdmin is located at http(s)://your_host:4000
+PgAdmin is located at http(s)://your_host:4000 \n
 RedisUI is located at http(s)://your_host:8001
 
 ## Backend Architecture
 
 ![image](./images/overall-structure.png)
 
-## Backend CODE Architecture
+## Backend code structure
 
 ### NOTE
 
