@@ -4,17 +4,22 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+	"time"
+
 	"github.com/Jack-Gitter/tunes/db"
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
+	"github.com/Jack-Gitter/tunes/models/services/cache"
 	"github.com/gin-gonic/gin"
 )
 
 type UserService struct {
     DB *sql.DB
     UsersDAO daos.IUsersDAO
+    CacheService cache.ICacheService
+    TTL time.Duration
 }
 
 type IUserSerivce interface {
@@ -49,6 +54,16 @@ func(u *UserService) GetUserById(c *gin.Context) {
 	spotifyID := c.Param("spotifyID")
 
 	user, err := u.UsersDAO.GetUser(u.DB, spotifyID)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    key, err := u.CacheService.GenerateKey(user)
+
+    u.CacheService.Set(key, u.TTL)
 
 	if err != nil {
 		c.Error(err)
@@ -485,6 +500,16 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
 		return
 	}
 
+    key, err := u.CacheService.GenerateKey(user)
+
+    u.CacheService.Set(key, u.TTL)
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
 	c.JSON(http.StatusOK, user)
 }
 
@@ -518,6 +543,22 @@ func(u *UserService) UpdateUserByID(c *gin.Context) {
 
 
     resp, err := u.UsersDAO.UpdateUser(u.DB, spotifyID, userUpdateRequest)
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+    key, err := u.CacheService.GenerateKey(resp)
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+    err = u.CacheService.Delete(key)
 
 	if err != nil {
 		c.Error(err)
@@ -563,6 +604,23 @@ func(u *UserService) UpdateCurrentUser(c *gin.Context) {
 		return
 	}
 
+    key, err := u.CacheService.GenerateKey(resp)
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+    err = u.CacheService.Delete(key)
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+
 	c.JSON(http.StatusOK, resp)
 
 }
@@ -580,7 +638,9 @@ func(u *UserService) UpdateCurrentUser(c *gin.Context) {
 // @Security Bearer
 func(u *UserService) DeleteCurrentUser(c *gin.Context) {
 	spotifyID, spotifyIdExists := c.Get("spotifyID")
-	if !spotifyIdExists {
+    spotifyUsername, spotifyUsernameExists := c.Get("spotifyUsername")
+
+	if !spotifyIdExists || !spotifyUsernameExists {
 		c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Bad"})
 		c.Abort()
 		return
@@ -593,6 +653,26 @@ func(u *UserService) DeleteCurrentUser(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
+    deletedUser := responses.User{}
+    deletedUser.Username = spotifyUsername.(string)
+    deletedUser.SpotifyID = spotifyID.(string)
+
+    key, err := u.CacheService.GenerateKey(deletedUser)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    err = u.CacheService.Delete(key)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
 
 	c.Status(http.StatusNoContent)
 }
