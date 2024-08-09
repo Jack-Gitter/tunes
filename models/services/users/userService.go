@@ -1,9 +1,14 @@
 package users
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/gob"
+	"errors"
+	"fmt"
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
@@ -53,15 +58,31 @@ func(u *UserService) GetUserById(c *gin.Context) {
 
 	spotifyID := c.Param("spotifyID")
 
-	user, err := u.UsersDAO.GetUser(u.DB, spotifyID)
+    key, err := u.CacheService.GenerateKey(reflect.TypeOf(responses.User{}), cache.UserCacheKey{SpotifyID: spotifyID})
+
+    userBytes, err := u.CacheService.Get(key)
 
     if err != nil {
-        c.Error(err)
-        c.Abort()
-        return
+        if !errors.Is(err, cache.CacheMissError) {
+            c.Error(customerrors.WrapBasicError(err))
+            c.Abort()
+            return
+        } 
+    } else {
+        fmt.Println("hit the cache!")
+        userResponse := &responses.User{}
+        bytesReader := bytes.NewReader(userBytes)
+        gob.NewDecoder(bytesReader).Decode(userResponse)
+        c.JSON(http.StatusOK, userResponse)
     }
 
-    key, err := u.CacheService.GenerateKey(user)
+	user, err := u.UsersDAO.GetUser(u.DB, spotifyID)
+
+	if err != nil {
+		c.Error(err)
+		c.Abort()
+		return
+	}
 
     u.CacheService.Set(key, user, u.TTL)
 
@@ -491,6 +512,24 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
 		return
 	}
 
+    key, err := u.CacheService.GenerateKey(reflect.TypeOf(responses.User{}), cache.UserCacheKey{SpotifyID: spotifyID.(string)})
+
+    userBytes, err := u.CacheService.Get(key)
+
+    if err != nil {
+        if !errors.Is(err, cache.CacheMissError) {
+            c.Error(customerrors.WrapBasicError(err))
+            c.Abort()
+            return
+        } 
+    } else {
+        fmt.Println("hit the cache!")
+        userResponse := &responses.User{}
+        bytesReader := bytes.NewReader(userBytes)
+        gob.NewDecoder(bytesReader).Decode(userResponse)
+        c.JSON(http.StatusOK, userResponse)
+    }
+
 	user, err := u.UsersDAO.GetUser(u.DB, spotifyID.(string))
 
 	if err != nil {
@@ -498,8 +537,6 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
-    key, err := u.CacheService.GenerateKey(user)
 
     u.CacheService.Set(key, user, u.TTL)
 
@@ -549,7 +586,7 @@ func(u *UserService) UpdateUserByID(c *gin.Context) {
 		return
 	}
 
-    key, err := u.CacheService.GenerateKey(resp)
+    key, err := u.CacheService.GenerateKey(reflect.TypeOf(responses.User{}), cache.UserCacheKey{SpotifyID: (*resp).SpotifyID})
 
 	if err != nil {
 		c.Error(err)
@@ -603,7 +640,7 @@ func(u *UserService) UpdateCurrentUser(c *gin.Context) {
 		return
 	}
 
-    key, err := u.CacheService.GenerateKey(resp)
+    key, err := u.CacheService.GenerateKey(reflect.TypeOf(responses.User{}), cache.UserCacheKey{SpotifyID: (*resp).SpotifyID})
 
 	if err != nil {
 		c.Error(err)
@@ -637,9 +674,8 @@ func(u *UserService) UpdateCurrentUser(c *gin.Context) {
 // @Security Bearer
 func(u *UserService) DeleteCurrentUser(c *gin.Context) {
 	spotifyID, spotifyIdExists := c.Get("spotifyID")
-    spotifyUsername, spotifyUsernameExists := c.Get("spotifyUsername")
 
-	if !spotifyIdExists || !spotifyUsernameExists {
+	if !spotifyIdExists {
 		c.Error(&customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "Bad"})
 		c.Abort()
 		return
@@ -653,11 +689,7 @@ func(u *UserService) DeleteCurrentUser(c *gin.Context) {
 		return
 	}
 
-    deletedUser := responses.User{}
-    deletedUser.Username = spotifyUsername.(string)
-    deletedUser.SpotifyID = spotifyID.(string)
-
-    key, err := u.CacheService.GenerateKey(deletedUser)
+    key, err := u.CacheService.GenerateKey(reflect.TypeOf(responses.User{}), cache.UserCacheKey{SpotifyID: spotifyID.(string)})
 
     if err != nil {
         c.Error(err)
@@ -701,6 +733,22 @@ func(u *UserService) DeleteUserByID(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
+    key, err := u.CacheService.GenerateKey(reflect.TypeOf(responses.User{}), cache.UserCacheKey{SpotifyID: spotifyID})
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
+
+    err = u.CacheService.Delete(key)
+
+    if err != nil {
+        c.Error(err)
+        c.Abort()
+        return
+    }
 
 	c.Status(http.StatusNoContent)
 }

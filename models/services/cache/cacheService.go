@@ -4,20 +4,28 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"reflect"
 	"strconv"
 	"time"
+
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/redis/go-redis/v9"
 )
 
+var CacheMissError = errors.New("Cache Miss")
+
+type UserCacheKey struct {
+    SpotifyID string
+}
+
 type CacheService struct {
     Redis *redis.Client
-    ctx context.Context
+    CTX context.Context
 }
 
 type ICacheService interface {
@@ -25,7 +33,7 @@ type ICacheService interface {
     Get(key string) ([]byte, error)
     Delete(key string) error
     Clear() error
-    GenerateKey(v any) (string, error)
+    GenerateKey(t reflect.Type, v any) (string, error)
 }
 
 func(c *CacheService) Set(key string, value any, ttl time.Duration) error {
@@ -36,7 +44,7 @@ func(c *CacheService) Set(key string, value any, ttl time.Duration) error {
         return customerrors.WrapBasicError(err)
     }
 
-    err = c.Redis.Set(c.ctx, key, bytes, ttl).Err()
+    err = c.Redis.Set(c.CTX, key, bytes, ttl).Err()
 
     if err != nil {
         panic(err)
@@ -47,7 +55,7 @@ func(c *CacheService) Set(key string, value any, ttl time.Duration) error {
 
 func(c *CacheService) Get(key string) ([]byte, error) {
 
-    cmd := c.Redis.Get(c.ctx, key)
+    cmd := c.Redis.Get(c.CTX, key)
 
     bytes, err := cmd.Bytes()
 
@@ -55,11 +63,15 @@ func(c *CacheService) Get(key string) ([]byte, error) {
         panic(err)
     }
 
+    if len(bytes) == 0 {
+        return nil, CacheMissError
+    }
+
     return bytes, nil
 }
 
 func(c *CacheService) Delete(key string) error {
-    _, err := c.Redis.Del(c.ctx, key).Result()
+    _, err := c.Redis.Del(c.CTX, key).Result()
     if err != nil {
         return customerrors.WrapBasicError(err)
     }
@@ -67,26 +79,26 @@ func(c *CacheService) Delete(key string) error {
 }
 
 func(c *CacheService) Clear() error {
-    _, err := c.Redis.FlushDB(c.ctx).Result()
+    _, err := c.Redis.FlushDB(c.CTX).Result()
     if err != nil {
         return customerrors.WrapBasicError(err)
     }
     return nil
 }
 
-func(c *CacheService) GenerateKey(v any) (string, error) {
-    switch reflect.TypeOf(v) {
-        case reflect.TypeOf(responses.User{}):
-            user := v.(responses.User)
-            return user.SpotifyID + user.Username, nil
+func(c *CacheService) GenerateKey(t reflect.Type, v any) (string, error) {
+    switch t {
+        case reflect.TypeOf(responses.User{}): 
+            user := v.(UserCacheKey)
+            return user.SpotifyID, nil
         case reflect.TypeOf(responses.UserIdentifer{}):
-            return "", customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "caching user ids is not supported"}
+            return "", &customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "caching user ids is not supported"}
         case reflect.TypeOf(responses.PostPreview{}):
-            return "", customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "caching posts is not supported"}
+            return "", &customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "caching posts is not supported"}
         case reflect.TypeOf(responses.Comment{}):
-            return "", customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "caching comments is not supported"}
+            return "", &customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "caching comments is not supported"}
         default: 
-            return "", customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "trying to cache an unknown type!"}
+            return "", &customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "trying to cache an unknown type!"}
     }
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"strconv"
 	"time"
@@ -48,7 +49,7 @@ func main() {
 
     userCacheTTLDuration := time.Duration(float64(userCacheTTLNumber) * float64(time.Second))
 
-    cacheService := &cache.CacheService{Redis: redisConnection}
+    cacheService := &cache.CacheService{Redis: redisConnection, CTX: context.Background()}
 
     usersDAO := &daos.UsersDAO{}
     postsDAO := &daos.PostsDAO{}
