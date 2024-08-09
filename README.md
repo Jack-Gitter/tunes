@@ -110,5 +110,5 @@ migrations which will get the postgres database set up properly to integrate wit
 * Swagger: `http(s)://${your_host}:${your_port}:/swagger/index.html`
 * Setting Authorization header
     * Go to `http(s)://${your_host}:${your_port}/login` and login
-    * Grab ACCESS_JWT from cookies
-    * Swagger authorize button -> "Bearer your_access_token"
+    * Grab `ACCESS_JWT` from cookies
+    * Click the swagger authorize button and enter `Bearer your_access_token`
