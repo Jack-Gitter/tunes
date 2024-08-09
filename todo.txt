@@ -1,23 +1,5 @@
-tunes todos:
+If you are seeing this, then it means that the project is probably done :) We'll see if I ever actually build the frontend
 
 todo: 
     make constructors for everything! main is messy lol
 
-documentation: 
-    readme
-       // spotify integration
-       // explain auth -- double submit cookies
-        explain database schema
-       // explain goose/database migrations
-        //explain dockerization
-        explain error handling middleware
-        explain auth middleware
-        explain transaction retries/isolation level race conditions
-        explain JWT/spotify login
-        explain swagger usage 
-        caching/redis approach
-        software design --> dependency injection with DAO interfaces and whatnot
-
-caching:
-    redis 
-        read up on caching techniques!!!
