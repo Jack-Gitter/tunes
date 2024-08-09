@@ -8,27 +8,27 @@ Inspired by [letterbox](https://letterboxd.com/)
 
 ## Usage
 
-Copy .env.example to .env file 
+* Copy .env.example to .env file 
 ```
 cp .env.example .env
 ```
-Fill out respective environment variables for the application
+* Fill out respective environment variables for the application
 
-Start All Dependencies (Postgres and Redis)
+* Start All Dependencies (Postgres and Redis)
 ```
 Make docker-start
 ```
-Run database migrations
+* Run database migrations
 ```
 Make goose-up
 ```
-Start backend API
+* Start backend API
 ```
 Make api-start
 ```
 
-* PgAdmin is located at http(s)://your_host:4000 
-* RedisUI is located at http(s)://your_host:8001
+* PgAdmin is located at http(s)://${your_host}:4000 
+* RedisUI is located at http(s)://${your_host}:8001
 
 ## Backend Architecture
 
@@ -36,30 +36,42 @@ Make api-start
 
 ## Backend code structure
 
-### NOTE
-
 ![image](./images/backend-code-structure.png)
+
+## Environment Variable File
+
+Within the project there exists a .env.example file. This serves as an example for users to populate their own. Simply cp .env.example .env and populate this file with the required environment variables
+to get started
+
+## Makefile
+
+A makefile is used to easily start the application, run the docker containers, and run database migrations. All of the relevant commands can be found in ~/Makefile 
+The makefile includes the .env file described above, so database migration and application integration are seamless
 
 ## Spotify Integration
 
 Tunes is directly integrated with spotify. In order to use the application, you will need a spotify premium account to log in with. All song, album, and artist information is pulled from the spotify [webAPI](https://developer.spotify.com/documentation/web-api)
 
-## Hand-rolled Authentication and User Sessions via JWT
+## Hand-rolled Authentication and Authorization/User Sessions via JWT
 
-Authentication is performed with a little bit of help from the spotify webAPI. Users log in with their spotify account by visiting the login endpoint
-provided by tunes. Tunes implements the spotify authorization code flow. Once users authenticate via spotify, their credentials are returned to the 
-Tunes application. Users are then entered into the Tunes database. The information returned by the spotify authentication endpoint is wrapped 
-in a Tunes-specific JWT, which adds some additional information which helps identify which permissions a user has on the website. It is signed with a 
-secret key, and returned to the user via cookies along with a refresh JWT. The refresh JWT is set to be http-only, while the access JWT is not
+* Authentication steps: 
+    * Integrate with spotify authorization code flow to retreieve a spotify API key via authorization code flow
+    * Wrap spotify API key along along with some extra user information in a JWT, and return this to the user in a cookie
+    * Upsert user into database with default role of "BASIC" 
+    * Return a refresh JWT in a http only cookie
 
-## CSRF Prevention and Double Submit Cookies
+* Authorization
+    * When users reach out to the Tunes API, they must attach the access JWT in their Authorization header with the format "Bearer access_jwt"
+    * User Authorization is handled via a middlewhere which checks the user role in the JWT
+
+# CSRF Prevention and Double Submit Cookies
 
 Authenication is implemented via the Authentication HTTP header, to mitigate CSRF attack vectors. The frontend application has to grab the JWT from the cookie and 
 put it in the authorization header with each request. This is safe, because other websites cannot read the cookies set for the Tunes frontend, meaning if they attempt
 a CSRF attack, the Authorization header will be empty (or falsely populated) and the Tunes backend will return either a 403 Forbidden or 401 Unauthorized. This JWT is short lived
 and therefore the frontend will need to utilize the refresh JWT in order to keep the access JWT up to date
 
-## Refreshing JWT
+# Refreshing JWT
 
 In order to refresh the access JWT provided by the tunes backend, the frontend simply hits the refresh JWT endpoint. The frontend needs to set the Authorization header with the expired 
 access JWT in order for the request to be successful, to mitigate CSRF attacks. Refreshing is implemented to limit the time an attacker has access to the users account in the event that the 
@@ -75,7 +87,12 @@ here is the schema
 
 ## Caching
 
-Caching for this application is a WIP. Connection to a redis database is set up to work as is, and service endpoints need to implement business logic to handle caching DB responses
+* Database entities that implement caching (WIP)
+    * Users
+
+* The caching strategy is a simple one. 
+    * When a request comes in, services first check the cache. If it is empty, they will populate the cache with the entry retrieved from the database
+    * When a resource is updated, the entry is first updated in the database. If an equivalent entry exists in the cache, it is removed
 
 ## Dockerization
 
@@ -87,25 +104,6 @@ Docker, and utilize the .env variables to do so
 golang [goose](https://github.com/pressly/goose) is utilized to run database migrations. The database initially is completely empty. Within the migrations folder of the Tunes backend, there are database
 migrations which will get the postgres database set up properly to integrate with the Tunes application
 
-## Environment Variable File
-
-Within the project there exists a .env.example file. This serves as an example for users to populate their own. Simply cp .env.example .env and populate this file with the required environment variables
-to get started
-
-## Makefile
-
-A makefile is used to easily start the application, run the docker containers, and run database migrations. Simply run 
-
-```
-Make docker-start // starts up Postgres, Pgadmin, and Redis
-Make goose-up // runs database migrations against Postgres defined at the environment variable location. In this case, docker
-```
-
-If you wish to run the application with local Postgres instance and Redis instance, than simply point the environment variables to their respective resources
-
-```
-Make goose-up // runs database migrations against Postgres defined at the environment variable location
-```
 
 ## Swagger
 
@@ -114,7 +112,3 @@ This will load the swagger webpage where all of the endpoints are accessable. In
 This can be done by navigating to http(s)://HOST_NAME:PORT/login and logging in with spotify credentials. Afterwards, checking the cookies in the browser
 For the ACCESS_JWT cookie. Copy this cookie, and navigate back to the Swagger page. In the top right, there is a "Authorization" button. Click this button
 and insert "Bearer your_copied_token" This will attach the access JWT along in the Authorization header with each request made via Swagger
-
-# Application Design
-
-Services, DAOs, interfaces for swapability

@@ -9,7 +9,7 @@ documentation:
        // explain auth -- double submit cookies
         explain database schema
        // explain goose/database migrations
-        explain dockerization
+        //explain dockerization
         explain error handling middleware
         explain auth middleware
         explain transaction retries/isolation level race conditions
