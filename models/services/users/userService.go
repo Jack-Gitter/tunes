@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"encoding/gob"
 	"errors"
-	"fmt"
 	"net/http"
 	"reflect"
 	"time"
@@ -523,7 +522,6 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
             return
         } 
     } else {
-        fmt.Println("hit the cache!")
         userResponse := &responses.User{}
         bytesReader := bytes.NewReader(userBytes)
         gob.NewDecoder(bytesReader).Decode(userResponse)
