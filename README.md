@@ -27,9 +27,9 @@ Make goose-up
 Make api-start
 ```
 
-* PgAdmin is located at http(s)://${your_host}:4000 
-* RedisUI is located at http(s)://${your_host}:8001
-* Swagger is located at http(s)://${your_host}:${your_port}/swagger/index.html
+* PgAdmin is located at `http(s)://${your_host}:4000`
+* RedisUI is located at `http(s)://${your_host}:8001`
+* Swagger is located at `http(s)://${your_host}:${your_port}/swagger/index.html`
 
 ## Backend Architecture
 
@@ -54,7 +54,7 @@ The makefile includes the .env file described above, so database migration and a
 
 ## Spotify Integration
 
-Tunes is directly integrated with spotify. In order to use the application, you will need a spotify premium account to log in with. All song, album, and artist information is pulled from the spotify [webAPI](https://developer.spotify.com/documentation/web-api)
+Tunes is directly integrated with spotify. In order to use the application, you will need a spotify premium account to log in with. All song, album, and artist information is pulled from the spotify [WebAPI](https://developer.spotify.com/documentation/web-api)
 
 ## Hand-rolled Authentication and Authorization/User Sessions via JWT
 
@@ -105,7 +105,7 @@ Docker, and utilize the .env variables to do so
 
 ## Goose
 
-[goose](https://github.com/pressly/goose) is utilized to run database migrations. The database initially is completely empty. Within the migrations folder of the Tunes backend, there are database
+[Goose](https://github.com/pressly/goose) is utilized to run database migrations. The database initially is completely empty. Within the migrations folder of the Tunes backend, there are database
 migrations which will get the postgres database set up properly to integrate with the Tunes application
 
 
