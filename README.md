@@ -2,15 +2,24 @@
 
 ## About
 
-This project is a backend API for the tunes webapp. Tunes is a music sharing social media, where 
+This project is the entire backend for the Tunes webapp. Tunes is a music sharing social media, where 
 users can post songs that they have recently listened to, and provide a rating and review. 
 Inspired by [letterbox](https://letterboxd.com/)
+
+
+## Usage
+
+
+## Backend Architecture
+
+[!Software Design Image](./images/backend-code-structure.png)
+
+### Design Details
 
 ## Spotify Integration
 
 Tunes is directly integrated with spotify. In order to use the application, you will need a spotify premium 
 account to log in with. All song, album, and artist information is pulled from the spotify [webAPI](https://developer.spotify.com/documentation/web-api)
-
 
 ## Hand-rolled Authentication and User Sessions via JWT
 
@@ -36,6 +45,10 @@ user leaks their access token. It is also useful to have a short lived access to
 ## Database
 
 This application uses a PostgresSQL database in order to store all data information. The data schema can be seen below
+
+# Schema
+
+here is the schema
 
 ## Caching
 
