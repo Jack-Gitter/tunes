@@ -4,7 +4,7 @@
 
 This project is the entire backend for the Tunes webapp. Tunes is a music sharing social media, where 
 users can post songs that they have recently listened to, and provide a rating and review. 
-Inspired by [letterbox](https://letterboxd.com/)
+Inspired by [Letterbox](https://letterboxd.com/)
 
 ## Usage
 
@@ -41,16 +41,16 @@ Make api-start
 
 ## Environment Variable File
 
-Within the project there exists a .env.example file. This serves as an example for users to populate their own. Simply ` cp .env.example .env` then populate this file with the required environment variables to get started
+Within the project there exists a .env.example file. This serves as an example for users to populate their own. Simply `cp .env.example .env` then populate this file with the required environment variables to get started
 
 ## Makefile
 
-A makefile is used to easily start the application, run the docker containers, and run database migrations. All of the relevant commands can be found in ~/Makefile 
+A Makefile is used to easily start the application, run the Docker containers, and run database migrations. All of the relevant commands can be found in `~/Makefile`
 The makefile includes the .env file described above, so database migration and application integration are seamless
 
 ## Spotify Integration
 
-Tunes is directly integrated with spotify. In order to use the application, you will need a spotify premium account to log in with. All song, album, and artist information is pulled from the spotify [WebAPI](https://developer.spotify.com/documentation/web-api)
+Tunes is directly integrated with spotify. In order to use the application, you will need a spotify premium account to log in with. All song, album, and artist information is pulled from the [Spotify WebAPI](https://developer.spotify.com/documentation/web-api)
 
 ## Hand-rolled Authentication and Authorization/User Sessions via JWT
 
@@ -83,7 +83,7 @@ This application uses a PostgresSQL database in order to store all data informat
 
 # Schema
 
-here is the schema
+[!image](./images/db-schema.png)
 
 ## Caching
 
@@ -102,7 +102,7 @@ Docker, and utilize the .env variables to do so
 ## Goose
 
 [Goose](https://github.com/pressly/goose) is utilized to run database migrations. The database initially is completely empty. Within the migrations folder of the Tunes backend, there are database
-migrations which will get the postgres database set up properly to integrate with the Tunes application
+migrations which will get the Postgres database set up properly to integrate with the Tunes application
 
 
 ## Swagger
