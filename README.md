@@ -9,16 +9,35 @@ Inspired by [letterbox](https://letterboxd.com/)
 
 ## Usage
 
+Copy .env.example to .env file 
+```
+cp .env.example .env
+```
+Fill out respective environment variables for the application
+
+Start All Dependencies (Postgres and Redis)
+```
+Make docker-start
+```
+Run database migrations
+```
+Make goose-up
+```
+Start backend API
+```
+Make api-start
+```
+
+PgAdmin is located at http(s)://your_host:4000
+RedisUI is located at http(s)://your_host:8001
 
 ## Backend Architecture
 
-The architecture design is meant to represent how the code is broken up logically. In reality, this is just a single monoloith with the external dependencies being on Postgres and Reids
+### NOTE
+The architecture design is meant to represent how the code is broken up logically. In reality, this is just a single monolith with the external dependencies being on Postgres and Reids
 All services and DAOs are self contained. Additionally, the model is simplified. In reality services talk to multiple DAOs in order to get the required data they need for respective business logic
 
 <img src="./images/backend-code-structure.png" height="700px" width="450px">
-
-
-### Design Details
 
 ## Spotify Integration
 

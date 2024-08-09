@@ -8,4 +8,6 @@ docker-start:
 	docker compose --profile backend up
 docker-stop:
 	docker compose --profile backend down
+api-start: 
+	go run main.go
 
