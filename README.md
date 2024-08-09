@@ -22,8 +22,7 @@ All services and DAOs are self contained. Additionally, the model is simplified.
 
 ## Spotify Integration
 
-Tunes is directly integrated with spotify. In order to use the application, you will need a spotify premium 
-account to log in with. All song, album, and artist information is pulled from the spotify [webAPI](https://developer.spotify.com/documentation/web-api)
+Tunes is directly integrated with spotify. In order to use the application, you will need a spotify premium account to log in with. All song, album, and artist information is pulled from the spotify [webAPI](https://developer.spotify.com/documentation/web-api)
 
 ## Hand-rolled Authentication and User Sessions via JWT
 
