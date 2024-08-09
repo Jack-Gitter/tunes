@@ -6,7 +6,6 @@ This project is the entire backend for the Tunes webapp. Tunes is a music sharin
 users can post songs that they have recently listened to, and provide a rating and review. 
 Inspired by [letterbox](https://letterboxd.com/)
 
-
 ## Usage
 
 Copy .env.example to .env file 
@@ -33,9 +32,13 @@ RedisUI is located at http(s)://your_host:8001
 
 ## Backend Architecture
 
+## Backend CODE Architecture
+
 ### NOTE
 The architecture design is meant to represent how the code is broken up logically. In reality, this is just a single monolith with the external dependencies being on Postgres and Reids
 All services and DAOs are self contained. Additionally, the model is simplified. In reality services talk to multiple DAOs in order to get the required data they need for respective business logic
+
+(dont forget about the auth service!!!!!!! duh that was so fucking dumb)
 
 <img src="./images/backend-code-structure.png" height="700px" width="450px">
 
