@@ -18,6 +18,7 @@ import (
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/Jack-Gitter/tunes/models/services/cache"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 type UserService struct {
@@ -63,7 +64,7 @@ func(u *UserService) GetUserById(c *gin.Context) {
     userBytes, err := u.CacheService.Get(key)
 
     if err != nil {
-        if !errors.Is(err, cache.CacheMissError) {
+        if !errors.Is(err, redis.Nil) {
             c.Error(customerrors.WrapBasicError(err))
             c.Abort()
             return
@@ -84,7 +85,7 @@ func(u *UserService) GetUserById(c *gin.Context) {
 		return
 	}
 
-    err = u.CacheService.Set(key, user, u.TTL)
+    err = u.CacheService.Set(key, *user, u.TTL)
 
 	if err != nil {
 		c.Error(err)
@@ -517,7 +518,7 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
     userBytes, err := u.CacheService.Get(key)
 
     if err != nil {
-        if !errors.Is(err, cache.CacheMissError) {
+        if !errors.Is(err, redis.Nil) {
             c.Error(customerrors.WrapBasicError(err))
             c.Abort()
             return
@@ -538,7 +539,7 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
 		return
 	}
 
-    err = u.CacheService.Set(key, user, u.TTL)
+    err = u.CacheService.Set(key, *user, u.TTL)
 
 	if err != nil {
 		c.Error(err)

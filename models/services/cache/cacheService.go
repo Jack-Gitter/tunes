@@ -17,8 +17,6 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-var CacheMissError = errors.New("Cache Miss")
-
 type UserCacheKey struct {
     SpotifyID string
 }
@@ -60,12 +58,13 @@ func(c *CacheService) Get(key string) ([]byte, error) {
     bytes, err := cmd.Bytes()
 
     if err != nil {
-        panic(err)
+        if errors.Is(err, redis.Nil) {
+            return nil, err
+        }
+
+        return nil, &customerrors.CustomError{StatusCode: http.StatusInternalServerError, Msg: "cahche bad"}
     }
 
-    if len(bytes) == 0 {
-        return nil, CacheMissError
-    }
 
     return bytes, nil
 }
