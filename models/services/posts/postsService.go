@@ -934,7 +934,6 @@ func(p *PostsService) GetCurrentUserFeed(c *gin.Context) {
     posts := []responses.PostPreview{}
 
     for _, user_followed := range following {
-        fmt.Println(user_followed.SpotifyID)
 
         user_posts, err := p.PostsDAO.GetUserPostsProperties(tx, user_followed.SpotifyID, t)
 

@@ -70,7 +70,6 @@ func(u *UserService) GetUserById(c *gin.Context) {
             return
         } 
     } else {
-        fmt.Println("hit the cache!")
         userResponse := &responses.User{}
         bytesReader := bytes.NewReader(userBytes)
         gob.NewDecoder(bytesReader).Decode(userResponse)

@@ -32,7 +32,6 @@ type IAuthService interface {
 }
 
 func(a *AuthService) Login(c *gin.Context) {
-    fmt.Println("hiya")
 
 	client_id := os.Getenv("CLIENT_ID")
 	scope := os.Getenv("SCOPES")

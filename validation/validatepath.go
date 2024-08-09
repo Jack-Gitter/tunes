@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"fmt"
 	"net/http"
 
 	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
@@ -15,7 +14,6 @@ func ValidatePathParams[T any]() func(c *gin.Context) {
         err := c.ShouldBindUri(&val)
 
         if err != nil {
-            fmt.Println(err.Error())
             c.Error(&customerrors.CustomError{StatusCode: http.StatusBadRequest, Msg: "bad path parameter value"})
             c.Abort()
             return

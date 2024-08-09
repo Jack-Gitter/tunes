@@ -3,7 +3,6 @@ package customerrors
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -59,7 +58,6 @@ func WrapBasicError(err error) error {
 
 func wrapPostgresDriverErrors(err error, customError *CustomError) bool {  
 	if err, ok := err.(*pq.Error); ok {
-        fmt.Println(err.Code)
 		switch err.Code {
 		case "23505":
 			customError.StatusCode = http.StatusConflict

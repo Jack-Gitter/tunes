@@ -2,7 +2,6 @@ package daos
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/Jack-Gitter/tunes/db"
@@ -70,18 +69,14 @@ func(p *PostsDAO) GetPostVotes(executor db.QueryExecutor, postID string, spotify
         }
 
         for rows.Next() {
-            fmt.Println("liked is")
             userID := responses.UserIdentifer{}
             liked := true
             rows.Scan(&userID.SpotifyID, &userID.Username, &liked)
-            fmt.Println("liked is")
-            fmt.Println(liked)
             if liked {
                 likes = append(likes, userID)
             } else {
                 dislikes = append(dislikes, userID)
             }
-            fmt.Println(likes, dislikes)
         }
 
         return likes, dislikes, nil
@@ -310,7 +305,6 @@ func(p *PostsDAO) GetPostComments(executor db.QueryExecutor, spotifyID string, s
 
 
 func(p *PostsDAO) GetUserPostsProperties(executor db.QueryExecutor, spotifyID string, createdAt time.Time) ([]responses.PostPreview, error) {
-    fmt.Println(createdAt)
     query := `SELECT posts.albumarturi, posts.albumid, posts.albumname, posts.createdat, posts.rating, posts.songid, posts.songname, posts.review, posts.updatedat, posts.posterspotifyid, users.username
                 FROM posts 
                 INNER JOIN users 

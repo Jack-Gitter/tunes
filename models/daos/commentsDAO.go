@@ -1,7 +1,6 @@
 package daos
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -129,8 +128,6 @@ func(cs *CommentsDAO) GetCommentVotes(executor db.QueryExecutor, commentID strin
 
 func(c *CommentsDAO) LikeComment(executor db.QueryExecutor, commentID string, spotifyID string) error {
     
-    fmt.Println(spotifyID)
-    fmt.Println(commentID)
     query := `INSERT INTO comment_votes (commentid, liked, voterspotifyid) values ($1, $2, $3) ON CONFLICT (commentid, voterspotifyid) DO UPDATE set liked = $2`
 
     res, err := executor.Exec(query, commentID, true, spotifyID)
