@@ -40,7 +40,7 @@ All services and DAOs are self contained. Additionally, the model is simplified.
 
 (dont forget about the auth service!!!!!!! duh that was so fucking dumb)
 
-<img src="./images/backend-code-structure.png" height="700px" width="450px">
+![image](./images/backend-code-structure.png)
 
 ## Spotify Integration
 
