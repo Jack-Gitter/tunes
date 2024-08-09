@@ -32,7 +32,7 @@ RedisUI is located at http(s)://your_host:8001
 
 ## Backend Architecture
 
-![image](./images/overall-structure)
+![image](./images/overall-structure.png)
 
 ## Backend CODE Architecture
 
