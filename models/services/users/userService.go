@@ -63,7 +63,7 @@ func(u *UserService) GetUserById(c *gin.Context) {
 
     key, err := u.CacheService.GenerateKey(user)
 
-    u.CacheService.Set(key, u.TTL)
+    u.CacheService.Set(key, user, u.TTL)
 
 	if err != nil {
 		c.Error(err)
@@ -502,7 +502,7 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
 
     key, err := u.CacheService.GenerateKey(user)
 
-    u.CacheService.Set(key, u.TTL)
+    u.CacheService.Set(key, user, u.TTL)
 
 	if err != nil {
 		c.Error(err)
