@@ -64,14 +64,14 @@ Tunes is directly integrated with spotify. In order to use the application, you 
     * When users reach out to the Tunes API, they must attach the access JWT in their Authorization header with the format "Bearer access_jwt"
     * User Authorization is handled via a middlewhere which checks the user role in the JWT
 
-# CSRF Prevention and Double Submit Cookies
+### CSRF Prevention and Double Submit Cookies
 
 Authenication is implemented via the Authentication HTTP header, to mitigate CSRF attack vectors. The frontend application has to grab the JWT from the cookie and 
 put it in the authorization header with each request. This is safe, because other websites cannot read the cookies set for the Tunes frontend, meaning if they attempt
 a CSRF attack, the Authorization header will be empty (or falsely populated) and the Tunes backend will return either a 403 Forbidden or 401 Unauthorized. This JWT is short lived
 and therefore the frontend will need to utilize the refresh JWT in order to keep the access JWT up to date
 
-# Refreshing JWT
+### Refreshing JWT
 
 In order to refresh the access JWT provided by the tunes backend, the frontend simply hits the refresh JWT endpoint. The frontend needs to set the Authorization header with the expired 
 access JWT in order for the request to be successful, to mitigate CSRF attacks. Refreshing is implemented to limit the time an attacker has access to the users account in the event that the 
@@ -81,7 +81,7 @@ user leaks their access token. It is also useful to have a short lived access to
 
 This application uses a PostgresSQL database in order to store all data information. The data schema can be seen below
 
-# Schema
+### Schema
 
 ![image](./images/db-schema.png)
 
