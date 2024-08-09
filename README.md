@@ -83,7 +83,7 @@ This application uses a PostgresSQL database in order to store all data informat
 
 # Schema
 
-[!image](./images/db-schema.png)
+![image](./images/db-schema.png)
 
 ## Caching
 
