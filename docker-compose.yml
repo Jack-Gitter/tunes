@@ -35,6 +35,10 @@ services:
     ports: 
       - ${RABBIT_MQ_PORT}:5672
       - ${RABBIT_MQ_UI_PORT}:15672
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json"
+    volumes: 
+      - ./definitions.json:/etc/rabbitmq/definitions.json
   tunes:
     build:
       dockerfile: Dockerfile

@@ -1,0 +1,55 @@
+{
+  "permissions": [
+    {
+      "configure": ".*",
+      "read": ".*",
+      "user": "admin",
+      "vhost": "/",
+      "write": ".*"
+    },
+    {
+      "configure": ".*",
+      "read": ".*",
+      "user": "guest",
+      "vhost": "/",
+      "write": ".*"
+    }
+  ],
+  "bindings": [],
+  "queues": [],
+  "parameters": [],
+  "policies": [],
+  "rabbitmq_version": "3.13.6",
+  "rabbit_version": "3.13.6",
+  "exchanges": [],
+  "users": [
+    {
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "limits": {},
+      "name": "admin",
+      "password_hash": "eM8++ygCePtbA/EbSal1GtguxNZzSbLJuMhYvH52zRwsYkzN",
+      "tags": []
+    },
+    {
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "limits": {},
+      "name": "guest",
+      "password_hash": "g8xyP/jSuVSwRqEFzfbiFvXT1TVVA+NDT2+y8cVSwoqLoOEW",
+      "tags": [
+        "administrator"
+      ]
+    }
+  ],
+  "topic_permissions": [],
+  "vhosts": [
+    {
+      "limits": [],
+      "metadata": {
+        "description": "Default virtual host",
+        "tags": []
+      },
+      "name": "/"
+    }
+  ],
+  "global_parameters": []
+}
