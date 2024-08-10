@@ -3,13 +3,16 @@ FROM golang as golang
 WORKDIR /tunes
 COPY . . 
 COPY .env .env
-RUN go build -o /bin/tunes ./main.go
+COPY .entrypoint.sh .entrypoint.sh
+RUN go build
 
 
-# Copy only binary to 
+# Copy only binary and .env to other container
 FROM golang
-WORKDIR /tunes
-COPY --from=golang /bin/tunes /bin/
+COPY --from=golang ./tunes/tunes /bin/tunes
 COPY --from=golang ./tunes/.env /bin/.env
+COPY --from=golang ./tunes/.entrypoint.sh /bin/.entrypoint.sh
+COPY --from=golang ./tunes/db/migrations /bin/db/migrations
+RUN chmod 755 /bin/.entrypoint.sh
 
-CMD ["/bin/tunes"]
+ENTRYPOINT ["/bin/.entrypoint.sh"]
