@@ -70,7 +70,7 @@ func(u *UsersDAO) UpdateUser(executor db.QueryExecutor, spotifyID string, update
     conditionals := make(map[string]any)
     conditionals["spotifyID"] = spotifyID
 
-    returning := []string{"bio", "userrole", "spotifyid", "username"}
+    returning := []string{"bio", "userrole", "spotifyid", "username", "email"}
 
     query, values := db.PatchQueryBuilder("users", updateUserMap, conditionals, returning)
 
@@ -78,8 +78,10 @@ func(u *UsersDAO) UpdateUser(executor db.QueryExecutor, spotifyID string, update
 
 	userResponse := &responses.User{}
 	bio := sql.NullString{}
-	err := res.Scan(&bio, &userResponse.Role, &userResponse.SpotifyID, &userResponse.Username)
+    email := sql.NullString{}
+	err := res.Scan(&bio, &userResponse.Role, &userResponse.SpotifyID, &userResponse.Username, &email)
 	userResponse.Bio = bio.String
+    userResponse.Email = email.String
 
 	if err != nil {
 		return nil, customerrors.WrapBasicError(err)
