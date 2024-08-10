@@ -40,24 +40,27 @@ func(u *UsersDAO) UpsertUser(executor db.QueryExecutor, username string, spotify
 	}
 
 	userResponse.Bio = bio.String
+    userResponse.Email = ""
 
 	return userResponse, nil
 }
 
 func(u *UsersDAO) GetUser(executor db.QueryExecutor, spotifyID string) (*responses.User, error) {
-	query := "SELECT spotifyid, userrole, username, bio FROM users WHERE spotifyid = $1"
+	query := "SELECT spotifyid, userrole, username, bio, email FROM users WHERE spotifyid = $1"
 	row := executor.QueryRow(query, spotifyID)
 
 	userResponse := &responses.User{}
 
 	bio := sql.NullString{}
-	err := row.Scan(&userResponse.SpotifyID, &userResponse.Role, &userResponse.Username, &bio)
+    email := sql.NullString{}
+	err := row.Scan(&userResponse.SpotifyID, &userResponse.Role, &userResponse.Username, &bio, &email)
 
 	if err != nil {
 		return nil, customerrors.WrapBasicError(err)
 	}
 
 	userResponse.Bio = bio.String
+    userResponse.Email = email.String
 
 	return userResponse, nil
 }

@@ -73,6 +73,7 @@ func(u *UserService) GetUserById(c *gin.Context) {
         bytesReader := bytes.NewReader(userBytes)
         gob.NewDecoder(bytesReader).Decode(userResponse)
         c.JSON(http.StatusOK, userResponse)
+        return
     }
 
 	user, err := u.UsersDAO.GetUser(u.DB, spotifyID)
@@ -526,6 +527,7 @@ func(u *UserService) GetCurrentUser(c *gin.Context) {
         bytesReader := bytes.NewReader(userBytes)
         gob.NewDecoder(bytesReader).Decode(userResponse)
         c.JSON(http.StatusOK, userResponse)
+        return
     }
 
 	user, err := u.UsersDAO.GetUser(u.DB, spotifyID.(string))
