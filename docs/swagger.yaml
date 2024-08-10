@@ -29,6 +29,8 @@ definitions:
     properties:
       bio:
         type: string
+      email:
+        type: string
       userRole:
         $ref: '#/definitions/responses.Role'
     type: object
@@ -128,6 +130,8 @@ definitions:
   responses.User:
     properties:
       bio:
+        type: string
+      email:
         type: string
       role:
         $ref: '#/definitions/responses.Role'

@@ -2051,6 +2051,9 @@ const docTemplate = `{
                 "bio": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
                 "userRole": {
                     "$ref": "#/definitions/responses.Role"
                 }
@@ -2200,6 +2203,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "bio": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "role": {

@@ -2043,6 +2043,9 @@
                 "bio": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
                 "userRole": {
                     "$ref": "#/definitions/responses.Role"
                 }
@@ -2192,6 +2195,9 @@
             "type": "object",
             "properties": {
                 "bio": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "role": {
