@@ -2,17 +2,16 @@
 FROM golang as golang
 WORKDIR /tunes
 COPY . . 
-COPY .env .env
-COPY .entrypoint.sh .entrypoint.sh
 RUN go build
 
 
 # Copy only binary and .env to other container
 FROM golang
-COPY --from=golang ./tunes/tunes /bin/tunes
-COPY --from=golang ./tunes/.env /bin/.env
-COPY --from=golang ./tunes/.entrypoint.sh /bin/.entrypoint.sh
-COPY --from=golang ./tunes/db/migrations /bin/db/migrations
-RUN chmod 755 /bin/.entrypoint.sh
+WORKDIR /tunes
+COPY --from=golang ./tunes/tunes ./tunes
+COPY --from=golang ./tunes/.env ./.env
+COPY --from=golang ./tunes/.entrypoint.sh ./.entrypoint.sh
+COPY --from=golang ./tunes/db/migrations ./db/migrations
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest 
 
-ENTRYPOINT ["/bin/.entrypoint.sh"]
+ENTRYPOINT ["./.entrypoint.sh"]

@@ -14,22 +14,14 @@ cp .env.example .env
 ```
 * Fill out respective environment variables for the application
 
-* Start All Dependencies (Postgres and Redis)
+* Start Application With Dependencies (Redis & Docker) and Run Migrations
 ```
 Make docker-start
 ```
-* Run database migrations
-```
-Make goose-up
-```
-* Start backend API
-```
-Make api-start
-```
 
-* PgAdmin is located at `http(s)://${your_host}:4000`
-* RedisUI is located at `http(s)://${your_host}:8001`
-* Swagger is located at `http(s)://${your_host}:${your_port}/swagger/index.html`
+* PgAdmin is located at `http(s)://${your_host}:${your_pgadmin_port}`
+* RedisUI is located at `http(s)://${your_host}:${your_redis_port}`
+* Swagger is located at `http(s)://${your_host}:${your_app_port}/swagger/index.html`
 
 ## Backend Architecture
 
@@ -102,7 +94,7 @@ Docker, and utilize the .env variables to do so
 ## Goose
 
 [Goose](https://github.com/pressly/goose) is utilized to run database migrations. The database initially is completely empty. Within the migrations folder of the Tunes backend, there are database
-migrations which will get the Postgres database set up properly to integrate with the Tunes application
+migrations which will get the Postgres database set up properly to integrate with the Tunes application. These are run automatically when docker is ran
 
 
 ## Swagger
