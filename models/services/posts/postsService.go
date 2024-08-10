@@ -108,16 +108,18 @@ func(p *PostsService) CreatePostForCurrentUser(c *gin.Context) {
 		spotifyUsername.(string),
 	)
 
-    rabbitMQMessage := rabbitmqservice.RabbitMQPostMessage{}
-    rabbitMQMessage.Type = "POST"
-    rabbitMQMessage.Poster = spotifyID.(string)
-    p.RabbitMQService.Enqueue(rabbitMQMessage)
-
 	if err != nil {
 		c.Error(err)
 		c.Abort()
 		return
 	}
+
+    rabbitMQMessage := rabbitmqservice.RabbitMQPostMessage{
+        Type: rabbitmqservice.POST,
+        Poster: spotifyID.(string),
+    }
+
+    p.RabbitMQService.Enqueue(rabbitMQMessage)
 
 	resp.Likes = []responses.UserIdentifer{}
 	resp.Dislikes = []responses.UserIdentifer{}

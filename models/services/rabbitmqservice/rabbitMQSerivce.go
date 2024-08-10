@@ -10,6 +10,9 @@ import (
 
 type QueueMessageType string 
 
+const (
+	POST QueueMessageType = "POST"
+)
 type RabbitMQPostMessage struct {
     Type QueueMessageType
     Poster string
@@ -31,7 +34,6 @@ func(rmq *RabbitMQService) Enqueue(v any) error {
     if err != nil {
         return customerrors.WrapBasicError(err)
     }
-
     return rmq.Chan.Publish(
         "",
         rmq.QName,
