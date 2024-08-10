@@ -2,8 +2,7 @@ package validation
 
 import (
 	"net/http"
-
-	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customerrors"
 	"github.com/gin-gonic/gin"
 )
 func ValidatePathParams[T any]() func(c *gin.Context) {

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	_ "github.com/Jack-Gitter/tunes/docs"
-	"github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customerrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/Jack-Gitter/tunes/models/services/auth"
 	"github.com/Jack-Gitter/tunes/models/services/comments"

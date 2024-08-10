@@ -2,7 +2,7 @@ package validation
 
 import (
 	"net/http"
-	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customerrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/gin-gonic/gin"

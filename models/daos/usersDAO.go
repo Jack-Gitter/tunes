@@ -3,7 +3,7 @@ package daos
 import (
 	"database/sql"
 	"github.com/Jack-Gitter/tunes/db"
-	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customerrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	_ "github.com/lib/pq"

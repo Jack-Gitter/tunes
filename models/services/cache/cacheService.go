@@ -11,8 +11,7 @@ import (
 	"reflect"
 	"strconv"
 	"time"
-
-	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customerrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/redis/go-redis/v9"
 )

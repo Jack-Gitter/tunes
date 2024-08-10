@@ -3,7 +3,7 @@ package jwt
 import (
 	"os"
 	"time"
-	customerrors "github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customerrors"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/golang-jwt/jwt/v5"

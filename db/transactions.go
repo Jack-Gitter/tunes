@@ -5,8 +5,7 @@ import (
 	"math"
 	"net/http"
 	"time"
-
-	"github.com/Jack-Gitter/tunes/models/customErrors"
+	"github.com/Jack-Gitter/tunes/models/customerrors"
 )
 
 func RunTransactionWithExponentialBackoff(transFunc func() error, retryTimes int) error {
