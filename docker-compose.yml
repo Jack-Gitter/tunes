@@ -28,6 +28,13 @@ services:
       - ${REDIS_UI_PORT}:8001
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
+  rabbit:
+    image: rabbitmq:management
+    profiles: [backend, rabbitmq]
+    restart: always
+    ports: 
+      - ${RABBIT_MQ_PORT}:5672
+      - ${RABBIT_MQ_UI_PORT}:15672
   tunes:
     build:
       dockerfile: Dockerfile

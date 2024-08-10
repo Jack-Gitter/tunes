@@ -13,6 +13,7 @@ import (
 	"github.com/Jack-Gitter/tunes/models/services/comments"
 	"github.com/Jack-Gitter/tunes/models/services/jwt"
 	"github.com/Jack-Gitter/tunes/models/services/posts"
+	"github.com/Jack-Gitter/tunes/models/services/rabbitmqservice"
 	"github.com/Jack-Gitter/tunes/models/services/spotify"
 	"github.com/Jack-Gitter/tunes/models/services/users"
 	"github.com/Jack-Gitter/tunes/server"
@@ -40,6 +41,12 @@ func main() {
     redisConnection := cache.GetRedisConnection()
     defer redisConnection.Close()
 
+
+    rabbitMQService := rabbitmqservice.RabbitMQService{}
+    rabbitMQService.Connect()
+    defer rabbitMQService.Conn.Close()
+    defer rabbitMQService.Chan.Close()
+
     userCacheTTLString := os.Getenv("USER_CACHE_TTL_IN_SECONDS")
     userCacheTTLNumber, err := strconv.Atoi(userCacheTTLString)
 
@@ -57,7 +64,7 @@ func main() {
 
     spotifyService := &spotify.SpotifyService{}
     userService := users.UserService{UsersDAO: usersDAO, DB: db, CacheService: cacheService, TTL: userCacheTTLDuration}
-    postsService := posts.PostsService{PostsDAO: postsDAO, UsersDAO: usersDAO, SpotifyService: spotifyService, DB: db}
+    postsService := posts.PostsService{PostsDAO: postsDAO, UsersDAO: usersDAO, SpotifyService: spotifyService, DB: db, RabbitMQService: &rabbitMQService}
     commentsService := comments.CommentsService{CommentsDAO: commentsDAO, DB: db}
     jwtService := &jwt.JWTService{}
     authService := auth.AuthService{UsersDAO: usersDAO, SpotifyService: spotifyService, JWTService: jwtService, DB: db}

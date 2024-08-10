@@ -13,6 +13,7 @@ import (
 	"github.com/Jack-Gitter/tunes/models/daos"
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
+	"github.com/Jack-Gitter/tunes/models/services/rabbitmqservice"
 	"github.com/Jack-Gitter/tunes/models/services/spotify"
 	"github.com/gin-gonic/gin"
 )
@@ -23,6 +24,7 @@ type PostsService struct {
     UsersDAO daos.IUsersDAO
     CommentsDAO daos.CommentsDAO
     SpotifyService spotify.ISpotifyService
+    RabbitMQService rabbitmqservice.IRabbitMQService
 }
 
 type IPostsService interface {
@@ -105,6 +107,11 @@ func(p *PostsService) CreatePostForCurrentUser(c *gin.Context) {
 		time.Now().UTC(),
 		spotifyUsername.(string),
 	)
+
+    rabbitMQMessage := rabbitmqservice.RabbitMQPostMessage{}
+    rabbitMQMessage.Type = "POST"
+    rabbitMQMessage.Poster = spotifyID.(string)
+    p.RabbitMQService.Enqueue(rabbitMQMessage)
 
 	if err != nil {
 		c.Error(err)
