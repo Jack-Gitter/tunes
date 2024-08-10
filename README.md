@@ -6,6 +6,9 @@ This project is the entire backend for the Tunes webapp. Tunes is a music sharin
 users can post songs that they have recently listened to, and provide a rating and review. 
 Inspired by [Letterbox](https://letterboxd.com/)
 
+* Other relevant repositories
+    * The email service repository, hooked up to RabbitMQ. Sends out emails to notify followers of post notifications via SMTP `https://github.com/Jack-Gitter/tunesEmail`
+
 ## Usage
 
 * Copy .env.example to .env file 
