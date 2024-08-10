@@ -1,10 +1,12 @@
 If you are seeing this, then it means that the project is probably done :) We'll see if I ever actually build the frontend
 
 
-
-update the Dockerfile to install go get goose on build time
-update readme with run instructions
-
+make the admin user a management user in rabitmq -- idk how to do that
+start on the consumer application. Its very simple, just needs to 
+    initialize a connection to the db 
+    do a query to get all user followersb
+    listen for incomming messages. If it is a post message, then do the above
+    send out an email to all followers who have an email in their account
 
 todo: 
     make constructors for everything! main is messy lol
