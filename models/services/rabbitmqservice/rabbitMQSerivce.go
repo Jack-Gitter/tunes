@@ -3,7 +3,6 @@ package rabbitmqservice
 import (
 	"encoding/json"
 	"os"
-
 	"github.com/Jack-Gitter/tunes/models/customerrors"
 	"github.com/rabbitmq/amqp091-go"
 )

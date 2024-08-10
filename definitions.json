@@ -28,7 +28,10 @@
       "limits": {},
       "name": "admin",
       "password_hash": "eM8++ygCePtbA/EbSal1GtguxNZzSbLJuMhYvH52zRwsYkzN",
-      "tags": []
+      "tags": [
+          "administrator",
+          "monitoring"
+      ]
     },
     {
       "hashing_algorithm": "rabbit_password_hashing_sha256",

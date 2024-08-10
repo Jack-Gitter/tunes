@@ -39,6 +39,8 @@ services:
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json"
     volumes: 
       - ./definitions.json:/etc/rabbitmq/definitions.json
+    healthcheck: 
+      test: rabbitmq-diagnostics -q ping
   tunes:
     build:
       dockerfile: Dockerfile
@@ -49,6 +51,8 @@ services:
       db: 
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbit:
         condition: service_healthy
 
 
