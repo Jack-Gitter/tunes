@@ -1,5 +1,7 @@
 If you are seeing this, then it means that the project is probably done :) We'll see if I ever actually build the frontend
 
+redis port
+docker compose for golang and everything working with that
 todo: 
     make constructors for everything! main is messy lol
 

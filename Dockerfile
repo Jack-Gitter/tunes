@@ -1,11 +1,15 @@
 # Copy all file and build
-FROM golang
+FROM golang as golang
 WORKDIR /tunes
 COPY . . 
+COPY .env .env
 RUN go build -o /bin/tunes ./main.go
 
 
 # Copy only binary to 
 FROM golang
-COPY --from=0 /bin/tunes /bin/tunes
+WORKDIR /tunes
+COPY --from=golang /bin/tunes /bin/
+COPY --from=golang ./tunes/.env /bin/.env
+
 CMD ["/bin/tunes"]
