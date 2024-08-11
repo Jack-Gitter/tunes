@@ -37,7 +37,6 @@ cp .env.example .env
 ```
 Make docker-start
 ```
-* Its that easy 😎
 
 * PgAdmin is located at `http(s)://${your_host}:${your_pgadmin_port}`
 * RedisUI is located at `http(s)://${your_host}:${your_redis_port}`
