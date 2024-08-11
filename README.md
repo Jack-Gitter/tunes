@@ -109,7 +109,7 @@ This application uses a PostgresSQL database in order to store all data informat
 
 ## Dockerization
 
-In order to run this application with ease, docker and docker-compose has been used in order to centralize the dependencies. Postgres, PGAdmin, and Redis are all available to be run with
+In order to run this application with ease, docker and docker-compose has been used in order to centralize the dependencies. Postgres, PGAdmin, Redis, RedisUI, RabbitMQ, and RabbitMQUI are all available to be run with
 Docker, and utilize the .env variables to do so
 
 ## Goose
