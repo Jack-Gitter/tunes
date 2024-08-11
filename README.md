@@ -32,7 +32,7 @@ Make docker-start
 
 ## Backend code structure
 
-![image](./images/backend-code-structure.png)
+![image](./images/backend-code-structure.jpg)
 
 ## Environment Variable File
 
