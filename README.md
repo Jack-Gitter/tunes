@@ -65,7 +65,7 @@ The makefile includes the .env file described above, so database migration and a
 
 Tunes is directly integrated with spotify. In order to use the application, you will need a spotify premium account to log in with. All song, album, and artist information is pulled from the [Spotify WebAPI](https://developer.spotify.com/documentation/web-api)
 
-## Authentication and Hand-rolled Authorization/User Sessions via JWT
+## Authentication and Hand-rolled Authorization and User Sessions via JWT
 
 * Authentication steps: 
     * Integrate with spotify authorization code flow to retreieve a spotify API key via authorization code flow
