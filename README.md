@@ -117,7 +117,6 @@ Docker, and utilize the .env variables to do so
 [Goose](https://github.com/pressly/goose) is utilized to run database migrations. The database initially is completely empty. Within the migrations folder of the Tunes backend, there are database
 migrations which will get the Postgres database set up properly to integrate with the Tunes application. These are run automatically when docker is ran
 
-
 ## Swagger
 
 * Swagger: `http(s)://${your_host}:${your_port}:/swagger/index.html`
