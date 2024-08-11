@@ -32,7 +32,8 @@ Make docker-start
 
 ## Backend code structure
 
-![image](./images/backend-code-structure.jpg =1000x1000)
+<img src="./images/backend-code-structure.jgp" width="800" height="1500" />
+
 
 ## Environment Variable File
 
