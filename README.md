@@ -23,10 +23,12 @@ cp .env.example .env
 ```
 * Fill out respective environment variables for the application
 
-* Start Application With Dependencies (Redis & Docker) and Run Migrations
+* Start Application With Dependencies (Redis & Docker) and Run Database Migrations
 ```
 Make docker-start
 ```
+
+Its that easy 😎
 
 * PgAdmin is located at `http(s)://${your_host}:${your_pgadmin_port}`
 * RedisUI is located at `http(s)://${your_host}:${your_redis_port}`
