@@ -8,7 +8,7 @@ Inspired by [Letterbox](https://letterboxd.com/)
 
 * Other relevant repositories
     * The email service repository, hooked up to RabbitMQ. Sends out emails to notify followers of post notifications via SMTP `https://github.com/Jack-Gitter/tunesEmail`
-    * The frontend for the website `https://github.com/Jack-Gitter/tunesFrontend` I will probably never do this because I dislike frontend development
+    * The frontend for the website `https://github.com/Jack-Gitter/tunesFrontend` This might take me a while to get around to... :) 
 
 ## Tunes Email Service
 
