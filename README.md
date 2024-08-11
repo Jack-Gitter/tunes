@@ -41,6 +41,7 @@ Make docker-start
 * PgAdmin is located at `http(s)://${your_host}:${your_pgadmin_port}`
 * RedisUI is located at `http(s)://${your_host}:${your_redis_port}`
 * Swagger is located at `http(s)://${your_host}:${your_app_port}/swagger/index.html`
+* If Email Service is running, RabbitMQUI is located at `http(s):/${your_host}:${your_rabbitmqui_port}`
 
 ## Backend Architecture
 
