@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"slices"
 	"time"
-
 	"github.com/Jack-Gitter/tunes/db"
 	"github.com/Jack-Gitter/tunes/models/customerrors"
 	"github.com/Jack-Gitter/tunes/models/daos"
@@ -119,7 +118,7 @@ func(p *PostsService) CreatePostForCurrentUser(c *gin.Context) {
         Poster: spotifyID.(string),
     }
 
-    p.RabbitMQService.Enqueue(rabbitMQMessage)
+    err = p.RabbitMQService.Enqueue(rabbitMQMessage)
 
 	resp.Likes = []responses.UserIdentifer{}
 	resp.Dislikes = []responses.UserIdentifer{}

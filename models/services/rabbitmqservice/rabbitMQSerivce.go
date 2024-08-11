@@ -27,7 +27,6 @@ type IRabbitMQService interface {
     Connect() 
     Enqueue(v any) error
 }
-
 func(rmq *RabbitMQService) Enqueue(v any) error {
     bytes, err := json.Marshal(v)
     if err != nil {
