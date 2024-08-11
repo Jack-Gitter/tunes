@@ -27,8 +27,17 @@ cp .env.example .env
 ```
 Make docker-start
 ```
-
-Its that easy 😎
+* Optionally check out the Email service repository
+* copy .env.example to .env file
+```
+cp .env.example .env
+```
+* Fill out environment variables
+* Start the application 
+```
+Make docker-start
+```
+* Its that easy 😎
 
 * PgAdmin is located at `http(s)://${your_host}:${your_pgadmin_port}`
 * RedisUI is located at `http(s)://${your_host}:${your_redis_port}`
