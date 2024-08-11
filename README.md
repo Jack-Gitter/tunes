@@ -9,6 +9,12 @@ Inspired by [Letterbox](https://letterboxd.com/)
 * Other relevant repositories
     * The email service repository, hooked up to RabbitMQ. Sends out emails to notify followers of post notifications via SMTP `https://github.com/Jack-Gitter/tunesEmail`
     * The frontend for the website `https://github.com/Jack-Gitter/tunesFrontend` I will probably never do this because I dislike frontend development
+
+## Tunes Email Service
+
+Tunes email service is the notification mechanism used to notify users when the people who they follow have posted. Tunes API publishes messages to a RabbitMQ message queue
+and the email service picks them up and deals with them accordingly. Please check out `https://github.com/Jack-Gitter/tunesEmail` for the full functionality!!!
+
 ## Usage
 
 * Copy .env.example to .env file 
