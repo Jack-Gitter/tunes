@@ -43,6 +43,10 @@ Make docker-start
 * Swagger is located at `http(s)://${your_host}:${your_app_port}/swagger/index.html`
 * If Email Service is running, RabbitMQUI is located at `http(s):/${your_host}:${your_rabbitmqui_port}`
 
+## Coming Soon
+
+    Nginx load balancing via reverse proxy and docker scaling
+
 ## Backend Architecture
 
 ![image](./images/overall-structure.png)
