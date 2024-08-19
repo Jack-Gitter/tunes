@@ -1,13 +1,17 @@
 If you are seeing this, then it means that the project is probably done :) We'll see if I ever actually build the frontend
 
 
-make the admin user a management user in rabitmq -- idk how to do that
-start on the consumer application. Its very simple, just needs to 
-    initialize a connection to the db 
-    do a query to get all user followersb
-    listen for incomming messages. If it is a post message, then do the above
-    send out an email to all followers who have an email in their account
+potentially should I use nginx as a reverse proxy just to become familiar with it? seems so easy and dumb for only one instance
 
 todo: 
-    make constructors for everything! main is messy lol
+    set up nginx as a reverse proxy
+        have docker spin up multiple instances of the tunesService
+        put an nginx container infront of it using docker -- It really doesn't make sense to have it on the same machine, but for learning sake yes
+        update the readme and resume
+
+
+
+
+
+
 
