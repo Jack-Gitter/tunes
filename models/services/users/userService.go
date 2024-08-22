@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/gob"
 	"errors"
+	"fmt"
 	"net/http"
 	"reflect"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"github.com/Jack-Gitter/tunes/models/dtos/requests"
 	"github.com/Jack-Gitter/tunes/models/dtos/responses"
 	"github.com/Jack-Gitter/tunes/models/services/cache"
+	"github.com/Jack-Gitter/tunes/models/services/s3Service"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
@@ -25,6 +27,7 @@ type UserService struct {
     UsersDAO daos.IUsersDAO
     CacheService cache.ICacheService
     TTL time.Duration
+    S3Service s3Service.Is3Service
 }
 
 type IUserSerivce interface {
@@ -38,6 +41,7 @@ type IUserSerivce interface {
     UnFollowUser(c *gin.Context)
     UpdateCurrentUser(c *gin.Context) 
     UpdateUserByID(c *gin.Context)
+    UpsertUserProfilePicture(c *gin.Context)
     DeleteCurrentUser(c *gin.Context)
     DeleteUserByID(c *gin.Context)
 }
@@ -753,3 +757,9 @@ func(u *UserService) DeleteUserByID(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func(u *UserService) UpsertUserProfilePicture(c *gin.Context) {
+
+    fmt.Println("we are uploading the profile picture")
+    u.S3Service.UploadToBucket()
+
+}

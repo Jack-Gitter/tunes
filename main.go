@@ -14,6 +14,7 @@ import (
 	"github.com/Jack-Gitter/tunes/models/services/jwt"
 	"github.com/Jack-Gitter/tunes/models/services/posts"
 	"github.com/Jack-Gitter/tunes/models/services/rabbitmqservice"
+	"github.com/Jack-Gitter/tunes/models/services/s3Service"
 	"github.com/Jack-Gitter/tunes/models/services/spotify"
 	"github.com/Jack-Gitter/tunes/models/services/users"
 	"github.com/Jack-Gitter/tunes/server"
@@ -62,8 +63,9 @@ func main() {
     postsDAO := &daos.PostsDAO{}
     commentsDAO := &daos.CommentsDAO{}
 
+    s3Service := &s3Service.S3Service{}
     spotifyService := &spotify.SpotifyService{}
-    userService := users.UserService{UsersDAO: usersDAO, DB: db, CacheService: cacheService, TTL: userCacheTTLDuration}
+    userService := users.UserService{UsersDAO: usersDAO, DB: db, CacheService: cacheService, TTL: userCacheTTLDuration, S3Service: s3Service}
     postsService := posts.PostsService{PostsDAO: postsDAO, UsersDAO: usersDAO, SpotifyService: spotifyService, DB: db, RabbitMQService: &rabbitMQService}
     commentsService := comments.CommentsService{CommentsDAO: commentsDAO, DB: db}
     jwtService := &jwt.JWTService{}

@@ -22,6 +22,7 @@ type IUsersDAO interface {
     GetUserFollowers(executor db.QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error)
     GetUserFollowing(executor db.QueryExecutor, spotifyID string, paginationKey string) ([]responses.User, error)
     GetAllUserFollowing(executor db.QueryExecutor, spotifyID string) ([]responses.User, error)
+    UpsertUserProfilePicture(executor db.QueryExecutor, spotifyID string) (*responses.ProfileImage, error)
 }
 
 func(u *UsersDAO) UpsertUser(executor db.QueryExecutor, username string, spotifyID string) (*responses.User, error) {
@@ -249,4 +250,8 @@ func(u *UsersDAO) GetAllUserFollowing(executor db.QueryExecutor, spotifyID strin
 
     return following, nil
 
+}
+
+func(u *UsersDAO) UpsertUserProfilePicture(executor db.QueryExecutor, spotifyID string) (*responses.ProfileImage, error) {
+    return nil, nil
 }

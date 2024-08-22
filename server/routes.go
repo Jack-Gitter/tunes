@@ -57,6 +57,7 @@ func InitializeHttpServer(userService users.IUserSerivce, postsService posts.IPo
                 userGroup.GET("/:spotifyID/followers", userService.GetFollowersByID)
                 userGroup.GET("/:spotifyID/following", userService.GetFollowingByID)
                 userGroup.POST("/current/follow/:otherUserSpotifyID", userService.FollowUser)
+                userGroup.POST("/current/uploadProfilePicture", userService.UpsertUserProfilePicture)
                 userGroup.DELETE("/current/unfollow/:otherUserSpotifyID", userService.UnFollowUser)
                 userGroup.PATCH("/current", validation.ValidateContentTypeJSON, validation.ValidateData(validation.ValidateUserRequestDTO), userService.UpdateCurrentUser)
                 userGroup.DELETE("/current", userService.DeleteCurrentUser)
