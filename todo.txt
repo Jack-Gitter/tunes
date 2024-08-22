@@ -8,6 +8,15 @@ todo:
         have docker spin up multiple instances of the tunesService
         put an nginx container infront of it using docker -- It really doesn't make sense to have it on the same machine, but for learning sake yes
         update the readme and resume
+    profile pictures
+        set up an s3 bucket to store profile pictures
+        set up an endpoint that is multipartform or octet-stream which resizes the images and then pushes them to s3
+        store the s3 url in the database and return to user on userGet for currentUser and getting other user
+        set up CDN to make loading profile pictures quicker
+        IAM policies???
+
+
+
 
 
 
