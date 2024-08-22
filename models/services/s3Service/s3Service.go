@@ -2,6 +2,7 @@ package s3Service
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -18,10 +19,11 @@ type Is3Service interface {
 }
 
 func(s3Service *S3Service) InitClient() {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
         panic(err)
     }
+    fmt.Println(cfg)
     client := s3.NewFromConfig(cfg)
     s3Service.client = client
 }
@@ -32,7 +34,7 @@ func(s3Service *S3Service) UploadToBucket() error {
 	})
 
 	if err != nil {
-		log.Fatal(err)
+        fmt.Println(err)
 	}
 
     log.Println("first page results:")
