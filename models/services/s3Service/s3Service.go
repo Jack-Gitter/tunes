@@ -3,7 +3,6 @@ package s3Service
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
