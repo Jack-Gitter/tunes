@@ -757,6 +757,14 @@ func(u *UserService) DeleteUserByID(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// @Summary Uploads a user profile picture
+// @Description Uploads a user profile picture
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 204
+// @Router /users/current/uploadProfilePicture [POST]
+// @Security Bearer
 func(u *UserService) UpsertUserProfilePicture(c *gin.Context) {
 
     fmt.Println("we are uploading the profile picture")

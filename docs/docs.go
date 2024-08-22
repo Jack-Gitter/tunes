@@ -1825,6 +1825,31 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/current/uploadProfilePicture": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Uploads a user profile picture",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Uploads a user profile picture",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/users/{spotifyID}": {
             "get": {
                 "security": [

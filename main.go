@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -64,6 +65,7 @@ func main() {
     commentsDAO := &daos.CommentsDAO{}
 
     s3Service := &s3Service.S3Service{}
+    s3Service.InitClient()
     spotifyService := &spotify.SpotifyService{}
     userService := users.UserService{UsersDAO: usersDAO, DB: db, CacheService: cacheService, TTL: userCacheTTLDuration, S3Service: s3Service}
     postsService := posts.PostsService{PostsDAO: postsDAO, UsersDAO: usersDAO, SpotifyService: spotifyService, DB: db, RabbitMQService: &rabbitMQService}
@@ -72,6 +74,8 @@ func main() {
     authService := auth.AuthService{UsersDAO: usersDAO, SpotifyService: spotifyService, JWTService: jwtService, DB: db}
 
 	r := server.InitializeHttpServer(&userService, &postsService, &commentsService, &authService)
-	r.Run(":2000")
+
+    port := os.Getenv("PORT")
+    r.Run(fmt.Sprintf(":%s", port))
 
 }

@@ -1429,6 +1429,21 @@ paths:
       summary: Unfollowers a user for the currently signed in user
       tags:
       - Users
+  /users/current/uploadProfilePicture:
+    post:
+      consumes:
+      - application/json
+      description: Uploads a user profile picture
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Uploads a user profile picture
+      tags:
+      - Users
 securityDefinitions:
   Bearer:
     description: '"Authorization header value"'
