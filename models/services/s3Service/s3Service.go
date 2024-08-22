@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -29,18 +31,19 @@ func(s3Service *S3Service) InitClient() {
 }
 
 func(s3Service *S3Service) UploadToBucket() error {
-	output, err := s3Service.client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
-		Bucket: aws.String("tunes-profile-pictures"),
-	})
+    reader := strings.NewReader("hello world!")
+    putObjectInput := &s3.PutObjectInput{
+        Bucket: aws.String("tunes-profile-pictures"),
+        Key: aws.String("hi"),
+        Body: reader,
+    }
 
-	if err != nil {
-        fmt.Println(err)
-	}
+    putObjectOutput, err := s3Service.client.PutObject(context.Background(), putObjectInput)
+    if err != nil {
+        return err
+    }
 
-    log.Println("first page results:")
+    fmt.Println(putObjectOutput)
 
-	for _, object := range output.Contents {
-		log.Printf("key=%s size=%d", aws.ToString(object.Key), object.Size)
-	}
     return nil
 }
